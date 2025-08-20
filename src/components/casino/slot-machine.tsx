@@ -3,49 +3,68 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Diamond, Heart, Club, Spade } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const symbols = [
-  { icon: <Diamond className="h-16 w-16 text-red-500" />, name: 'diamond' },
-  { icon: <Heart className="h-16 w-16 text-red-500" />, name: 'heart' },
-  { icon: <Club className="h-16 w-16 text-gray-400" />, name: 'club' },
-  { icon: <Spade className="h-16 w-16 text-gray-400" />, name: 'spade' },
-  { icon: <span className="text-5xl font-bold text-yellow-500">7</span>, name: 'seven' },
-  { icon: <span className="text-5xl font-bold text-yellow-400">BAR</span>, name: 'bar' },
+  { icon: <Diamond className="h-16 w-16 text-red-500" />, name: 'diamond', value: 50 },
+  { icon: <Heart className="h-16 w-16 text-red-500" />, name: 'heart', value: 40 },
+  { icon: <Club className="h-16 w-16 text-gray-400" />, name: 'club', value: 30 },
+  { icon: <Spade className="h-16 w-16 text-gray-400" />, name: 'spade', value: 30 },
+  { icon: <span className="text-5xl font-bold text-yellow-500">7</span>, name: 'seven', value: 100 },
+  { icon: <span className="text-5xl font-bold text-yellow-400">BAR</span>, name: 'bar', value: 20 },
 ];
 
 const getRandomSymbol = () => symbols[Math.floor(Math.random() * symbols.length)];
 
-export default function SlotMachine() {
+const SPIN_COST = 5;
+
+export default function SlotMachine({ balance, setBalance }: { balance: number, setBalance: (balance: number) => void }) {
   const [reels, setReels] = useState([symbols[0], symbols[1], symbols[2]]);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState('');
-
-  useEffect(() => {
-    if (!spinning) {
-      const [r1, r2, r3] = reels;
-      if (r1.name === r2.name && r2.name === r3.name) {
-        setResult(`Jackpot! You won with three ${r1.name}s!`);
-      } else {
-        setResult('');
-      }
-    }
-  }, [spinning, reels]);
+  const { toast } = useToast();
 
   const handleSpin = () => {
-    if (spinning) return;
+    if (spinning || balance < SPIN_COST) {
+      if(balance < SPIN_COST) {
+        toast({ title: 'Not enough balance', description: 'You do not have enough money to spin.', variant: 'destructive' });
+      }
+      return;
+    }
+
     setSpinning(true);
     setResult('');
+    setBalance(balance - SPIN_COST);
+
     let spinCount = 0;
+    const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+
     const interval = setInterval(() => {
       setReels([getRandomSymbol(), getRandomSymbol(), getRandomSymbol()]);
       spinCount++;
       if (spinCount > 15) {
         clearInterval(interval);
+        setReels(finalReels);
         setSpinning(false);
-        setReels([getRandomSymbol(), getRandomSymbol(), getRandomSymbol()]);
       }
     }, 100);
   };
+  
+  useEffect(() => {
+    if (!spinning) {
+      const [r1, r2, r3] = reels;
+      if (r1.name === r2.name && r2.name === r3.name) {
+        const winAmount = r1.value * SPIN_COST;
+        setResult(`Jackpot! You won $${winAmount} with three ${r1.name}s!`);
+        setBalance(balance + winAmount);
+        toast({ title: 'Jackpot!', description: `You won ${winAmount}!` });
+      } else {
+        setResult('');
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinning]);
+
 
   return (
     <Card className="w-full max-w-lg bg-card/50 border-primary/30 shadow-2xl">
@@ -72,11 +91,11 @@ export default function SlotMachine() {
       <CardFooter className="flex-col gap-4">
         <Button
           onClick={handleSpin}
-          disabled={spinning}
+          disabled={spinning || balance < SPIN_COST}
           size="lg"
           className="w-full max-w-xs text-xl font-bold h-16 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
         >
-          {spinning ? 'Spinning...' : 'SPIN TO WIN'}
+          {spinning ? 'Spinning...' : `SPIN FOR $${SPIN_COST}`}
         </Button>
         <p className="text-xs text-muted-foreground">Match three symbols to win the jackpot!</p>
       </CardFooter>

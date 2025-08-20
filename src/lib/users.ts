@@ -7,6 +7,7 @@ export type User = {
   password: string; // This is a placeholder for a real, salted hash
   name: string;
   role: 'admin' | 'user';
+  balance: number;
 };
 
 export const users: User[] = [
@@ -15,11 +16,13 @@ export const users: User[] = [
     password: 'password_admin_hashed',
     name: 'Admin User',
     role: 'admin',
+    balance: 10000,
   },
   {
     id: 'user123',
     password: 'password_user_hashed',
     name: 'Regular User',
     role: 'user',
+    balance: 1000,
   },
 ];
