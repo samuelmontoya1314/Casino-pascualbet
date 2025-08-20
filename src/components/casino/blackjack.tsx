@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,15 @@ const createDeck = (): CardType[] => {
   );
 };
 
+const shuffleDeck = (deck: CardType[]): CardType[] => {
+    const newDeck = [...deck];
+    for (let i = newDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+    }
+    return newDeck;
+  };
+
 export default function Blackjack({ balance, setBalance }: { balance: number, setBalance: (balance: number) => void }) {
   const [deck, setDeck] = useState<CardType[]>([]);
   const [playerHand, setPlayerHand] = useState<CardType[]>([]);
@@ -34,15 +43,6 @@ export default function Blackjack({ balance, setBalance }: { balance: number, se
   const [gameState, setGameState] = useState<'betting' | 'playing' | 'ended'>('betting');
   const [message, setMessage] = useState('Place your bet to start.');
   const { toast } = useToast();
-
-  const shuffleDeck = () => {
-    const newDeck = createDeck();
-    for (let i = newDeck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
-    }
-    setDeck(newDeck);
-  };
 
   const calculateHandValue = (hand: CardType[]) => {
     let value = hand.reduce((sum, card) => sum + card.value, 0);
@@ -57,9 +57,9 @@ export default function Blackjack({ balance, setBalance }: { balance: number, se
   const playerValue = useMemo(() => calculateHandValue(playerHand), [playerHand]);
   const dealerValue = useMemo(() => calculateHandValue(dealerHand), [dealerHand]);
 
-  const dealCard = (currentDeck: CardType[], hand: CardType[]): [CardType[], CardType] => {
+  const dealCard = (currentDeck: CardType[]): [CardType[], CardType] => {
     const card = currentDeck.pop()!;
-    return [currentDeck, card];
+    return [[...currentDeck], card];
   };
 
   const handleDeal = () => {
@@ -74,37 +74,36 @@ export default function Blackjack({ balance, setBalance }: { balance: number, se
     
     setBalance(balance - bet);
     setMessage('');
-    shuffleDeck();
-    setGameState('playing');
     
-    let currentDeck = createDeck();
+    let freshDeck = shuffleDeck(createDeck());
     let newPlayerHand: CardType[] = [];
     let newDealerHand: CardType[] = [];
     let card: CardType;
 
-    [currentDeck, card] = dealCard(currentDeck, newPlayerHand);
+    [freshDeck, card] = dealCard(freshDeck);
     newPlayerHand.push(card);
-    [currentDeck, card] = dealCard(currentDeck, newDealerHand);
+    [freshDeck, card] = dealCard(freshDeck);
     newDealerHand.push(card);
-    [currentDeck, card] = dealCard(currentDeck, newPlayerHand);
+    [freshDeck, card] = dealCard(freshDeck);
     newPlayerHand.push(card);
-    [currentDeck, card] = dealCard(currentDeck, newDealerHand);
+    [freshDeck, card] = dealCard(freshDeck);
     newDealerHand.push(card);
     
-    setDeck(currentDeck);
+    setDeck(freshDeck);
     setPlayerHand(newPlayerHand);
     setDealerHand(newDealerHand);
+    setGameState('playing');
   };
 
   const handleHit = () => {
     if (gameState !== 'playing') return;
-    let [newDeck, card] = dealCard([...deck], playerHand);
+    let [newDeck, card] = dealCard(deck);
     const newPlayerHand = [...playerHand, card];
     setDeck(newDeck);
     setPlayerHand(newPlayerHand);
   };
-
-  const handleStand = () => {
+  
+  const handleStand = useCallback(() => {
     if (gameState !== 'playing') return;
 
     let currentDealerHand = [...dealerHand];
@@ -113,39 +112,48 @@ export default function Blackjack({ balance, setBalance }: { balance: number, se
 
     while (dealerHandValue < 17) {
         let card: CardType;
-        [currentDeck, card] = dealCard(currentDeck, currentDealerHand);
+        [currentDeck, card] = dealCard(currentDeck);
         currentDealerHand.push(card);
         dealerHandValue = calculateHandValue(currentDealerHand);
     }
     setDeck(currentDeck);
     setDealerHand(currentDealerHand);
     setGameState('ended');
-  };
+  }, [deck, dealerHand, gameState]);
 
   useEffect(() => {
-    if (gameState === 'playing' && playerValue > 21) {
-      setMessage('Bust! You lose.');
-      setGameState('ended');
-      toast({ title: 'You Lose!', description: `You lost $${bet}.`, variant: 'destructive' });
-    } else if(gameState === 'playing' && playerValue === 21) {
-      handleStand();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerHand, gameState]);
-
-  useEffect(() => {
-    if (gameState === 'ended') {
-      const finalDealerValue = calculateHandValue(dealerHand);
-      if (playerValue > 21) {
+    if (gameState === 'playing') {
+      const pValue = calculateHandValue(playerHand);
+      if (pValue > 21) {
         setMessage('Bust! You lose.');
+        setGameState('ended');
+        toast({ title: 'You Lose!', description: `You lost $${bet}.`, variant: 'destructive' });
+      } else if (pValue === 21 && playerHand.length === 2) {
+        setMessage('Blackjack! You win!');
+        setBalance(balance + bet * 2.5);
+        toast({ title: 'Blackjack!', description: `You won $${(bet * 2.5).toFixed(0)}!` });
+        setGameState('ended');
+      } else if (pValue === 21) {
+        handleStand();
+      }
+    }
+  }, [playerHand, gameState, bet, balance, setBalance, toast, handleStand]);
+
+  useEffect(() => {
+    if (gameState === 'ended' && calculateHandValue(playerHand) !== 21) {
+      const finalDealerValue = calculateHandValue(dealerHand);
+      const finalPlayerValue = calculateHandValue(playerHand);
+      if (finalPlayerValue > 21) {
+        setMessage('Bust! You lose.');
+        // bet already deducted
       } else if (finalDealerValue > 21) {
         setMessage('Dealer busts! You win!');
         setBalance(balance + bet * 2);
         toast({ title: 'You Win!', description: `You won $${bet * 2}!` });
-      } else if (finalDealerValue > playerValue) {
+      } else if (finalDealerValue > finalPlayerValue) {
         setMessage('Dealer wins.');
         toast({ title: 'You Lose!', description: `You lost $${bet}.`, variant: 'destructive' });
-      } else if (finalDealerValue < playerValue) {
+      } else if (finalDealerValue < finalPlayerValue) {
         setMessage('You win!');
         setBalance(balance + bet * 2);
         toast({ title: 'You Win!', description: `You won $${bet * 2}!` });
@@ -204,7 +212,7 @@ export default function Blackjack({ balance, setBalance }: { balance: number, se
         {gameState === 'playing' && (
           <div className="flex gap-4">
             <Button onClick={handleHit} size="lg" className="w-32 text-lg">Hit</Button>
-            <Button onClick={handleStand} variant="outline" size="lg" className="w-32 text-lg">Stand</Button>
+            <Button onClick={() => handleStand()} variant="outline" size="lg" className="w-32 text-lg">Stand</Button>
           </div>
         )}
         {gameState === 'ended' && (
