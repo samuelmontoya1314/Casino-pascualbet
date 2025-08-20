@@ -27,7 +27,7 @@ export function LoginForm() {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" placeholder="e.g. password_admin_hashed" required />
+                <Input id="password" name="password" type="password" required />
             </div>
             
             {state?.error && (

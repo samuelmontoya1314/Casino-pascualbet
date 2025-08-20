@@ -41,7 +41,8 @@ export async function handleRegister(prevState: any, formData: FormData) {
   const validatedFields = registerSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields provided. Please check the requirements.' };
+    const errorMessages = validatedFields.error.errors.map(e => e.message).join(', ');
+    return { error: `Invalid fields: ${errorMessages}` };
   }
 
   const { userId, password, name } = validatedFields.data;
@@ -54,7 +55,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
   const newUser = {
     id: userId,
     // In a real app, hash this password!
-    password: `${password}_hashed`,
+    password: password,
     name: name,
     role: 'user' as const,
     balance: 1000, // Starting balance for new users
