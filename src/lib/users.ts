@@ -10,7 +10,8 @@ export type User = {
   balance: number;
 };
 
-export const users: User[] = [
+// Changed to 'let' to allow adding new users during runtime for the demo.
+export let users: User[] = [
   {
     id: 'admin',
     password: 'password_admin_hashed',
