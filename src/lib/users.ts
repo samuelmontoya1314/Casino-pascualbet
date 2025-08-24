@@ -9,7 +9,7 @@ export type User = {
 
 // This is a temporary in-memory "database".
 // In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
-const USERS_DB: User[] = [
+let USERS_DB: User[] = [
     {
       id: 'admin',
       password: 'password_admin_hashed',

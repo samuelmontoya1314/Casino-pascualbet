@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -19,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Star } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Star, Coins } from 'lucide-react';
 import type { User } from '@/lib/users';
 import { useState } from 'react';
 import SlotsGame from '@/components/games/slots';
@@ -86,7 +87,7 @@ export default function Dashboard({ user }: { user: User }) {
                           </DropdownMenuItem>
                         </DialogTrigger>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <DropdownMenuItem asChild>
                           <form action={handleLogout} className="w-full">
                               <button type="submit" className="w-full text-left flex items-center">
                                   <LogOut className="mr-2 h-4 w-4" />
@@ -121,6 +122,12 @@ export default function Dashboard({ user }: { user: User }) {
                         <span className="col-span-3">{formatCurrency(balance)}</span>
                       </div>
                     </div>
+                     <DialogFooter>
+                        <Button onClick={() => handleBalanceChange(100)} className="bg-accent hover:bg-accent/90">
+                            <Coins className="mr-2 h-4 w-4" />
+                            Agregar 100 COP
+                        </Button>
+                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
             </div>
