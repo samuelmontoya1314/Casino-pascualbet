@@ -10,7 +10,7 @@ export type User = {
   balance: number;
 };
 
-// Changed to 'let' to allow adding new users during runtime for the demo.
+// This is our "database" for the demo.
 export let users: User[] = [
   {
     id: 'admin',
@@ -27,3 +27,8 @@ export let users: User[] = [
     balance: 1000,
   },
 ];
+
+// This function simulates adding a user to a persistent store.
+export function addUser(user: User) {
+    users.push(user);
+}

@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
-import { users } from '@/lib/users';
+import { users, addUser } from '@/lib/users';
 import { createSession, deleteSession } from '@/lib/auth';
 
 const loginSchema = z.object({
@@ -61,7 +61,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     balance: 1000, // Starting balance for new users
   };
 
-  users.push(newUser);
+  addUser(newUser);
 
   await createSession(newUser.id);
   redirect('/');
