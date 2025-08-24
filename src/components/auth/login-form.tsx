@@ -11,7 +11,7 @@ function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? 'Signing In...' : <> <LogIn className="mr-2 h-4 w-4" /> Sign In </>}
+            {pending ? 'Iniciando Sesión...' : <> <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión </>}
         </Button>
     );
 }
@@ -22,18 +22,18 @@ export function LoginForm() {
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
-                <Label htmlFor="userId">User ID</Label>
-                <Input id="userId" name="userId" placeholder="e.g. admin" required />
+                <Label htmlFor="userId">ID de Usuario</Label>
+                <Input id="userId" name="userId" placeholder="ej. admin" required />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input id="password" name="password" type="password" required />
             </div>
             
             {state?.error && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Login Failed</AlertTitle>
+                    <AlertTitle>Fallo de Inicio de Sesión</AlertTitle>
                     <AlertDescription>{state.error}</AlertDescription>
                 </Alert>
             )}

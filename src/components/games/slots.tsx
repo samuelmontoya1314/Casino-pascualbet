@@ -27,7 +27,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
   const spinReels = useCallback(() => {
     if (balance < betAmount) {
-      setMessage("You don't have enough to play.");
+      setMessage("No tienes suficiente saldo para jugar.");
       return;
     }
     
@@ -47,15 +47,15 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
       if (finalReels[0].value === finalReels[1].value && finalReels[1].value === finalReels[2].value) {
         const winnings = betAmount * finalReels[0].multiplier;
-        setMessage(`Jackpot! You won $${winnings}!`);
+        setMessage(`¡Jackpot! ¡Ganaste $${winnings}!`);
         onBalanceChange(winnings);
       } else if (finalReels[0].value === finalReels[1].value || finalReels[1].value === finalReels[2].value) {
         const winSymbol = finalReels[0].value === finalReels[1].value ? finalReels[0] : finalReels[1];
         const winnings = betAmount * (winSymbol.multiplier / 2);
-        setMessage(`Two in a row! You won $${winnings}!`);
+        setMessage(`¡Dos en línea! ¡Ganaste $${winnings}!`);
         onBalanceChange(winnings);
       } else {
-        setMessage('No luck this time. Try again!');
+        setMessage('Sin suerte esta vez. ¡Intenta de nuevo!');
       }
 
     }, 2000);
@@ -64,8 +64,8 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
   return (
     <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary">Slot Machine</CardTitle>
-        <CardDescription>Match three symbols to win the jackpot!</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary">Tragamonedas</CardTitle>
+        <CardDescription>¡Alinea tres símbolos para ganar el premio gordo!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
         <div className="flex gap-6 p-6 bg-secondary rounded-xl border-4 border-border">
@@ -77,16 +77,16 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
         </div>
 
         {message && (
-          <Alert className={message.includes('won') ? 'border-accent text-accent' : 'border-destructive'}>
+          <Alert className={message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive'}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
 
         <div className="flex flex-col items-center gap-2">
             <Button size="lg" onClick={spinReels} disabled={spinning || balance < betAmount} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-16 py-8 text-2xl">
-              {spinning ? 'Spinning...' : 'SPIN'}
+              {spinning ? 'Girando...' : 'GIRAR'}
             </Button>
-            <p className="text-muted-foreground">Cost: ${betAmount}</p>
+            <p className="text-muted-foreground">Costo: ${betAmount}</p>
         </div>
       </CardContent>
     </Card>

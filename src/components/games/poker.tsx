@@ -49,17 +49,17 @@ const evaluateHand = (hand: Hand): { name: string; payout: number } => {
     const isFlush = new Set(suits).size === 1;
     const isStraight = ranks[4] - ranks[0] === 4 && new Set(ranks).size === 5;
     
-    if (isStraight && isFlush && ranks[4] === 14) return { name: 'Royal Flush', payout: 250 };
-    if (isStraight && isFlush) return { name: 'Straight Flush', payout: 50 };
-    if (counts[0] === 4) return { name: 'Four of a Kind', payout: 25 };
+    if (isStraight && isFlush && ranks[4] === 14) return { name: 'Escalera Real', payout: 250 };
+    if (isStraight && isFlush) return { name: 'Escalera de Color', payout: 50 };
+    if (counts[0] === 4) return { name: 'Póker', payout: 25 };
     if (counts[0] === 3 && counts[1] === 2) return { name: 'Full House', payout: 9 };
-    if (isFlush) return { name: 'Flush', payout: 6 };
-    if (isStraight) return { name: 'Straight', payout: 4 };
-    if (counts[0] === 3) return { name: 'Three of a Kind', payout: 3 };
-    if (counts[0] === 2 && counts[1] === 2) return { name: 'Two Pair', payout: 2 };
-    if (counts[0] === 2 && ranks.some(r => r >= 11)) return { name: 'Jacks or Better', payout: 1 };
+    if (isFlush) return { name: 'Color', payout: 6 };
+    if (isStraight) return { name: 'Escalera', payout: 4 };
+    if (counts[0] === 3) return { name: 'Trío', payout: 3 };
+    if (counts[0] === 2 && counts[1] === 2) return { name: 'Doble Pareja', payout: 2 };
+    if (counts[0] === 2 && ranks.some(r => r >= 11)) return { name: 'Jotas o Mejor', payout: 1 };
     
-    return { name: 'High Card', payout: 0 };
+    return { name: 'Carta Alta', payout: 0 };
 };
 
 
@@ -79,7 +79,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
-      setMessage("Not enough balance.");
+      setMessage("Saldo insuficiente.");
       return;
     }
     
@@ -123,10 +123,10 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
     if (result.payout > 0) {
         const winnings = bet * result.payout;
-        setMessage(`You got ${result.name}! You win $${winnings}.`);
+        setMessage(`¡Conseguiste ${result.name}! Ganaste $${winnings}.`);
         onBalanceChange(winnings);
     } else {
-        setMessage(`${result.name}. No win.`);
+        setMessage(`${result.name}. No has ganado.`);
     }
   };
 
@@ -138,22 +138,22 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   }
 
   const PAYOUT_TABLE = [
-    { name: 'Royal Flush', payout: 250 },
-    { name: 'Straight Flush', payout: 50 },
-    { name: 'Four of a Kind', payout: 25 },
+    { name: 'Escalera Real', payout: 250 },
+    { name: 'Escalera de Color', payout: 50 },
+    { name: 'Póker', payout: 25 },
     { name: 'Full House', payout: 9 },
-    { name: 'Flush', payout: 6 },
-    { name: 'Straight', payout: 4 },
-    { name: 'Three of a Kind', payout: 3 },
-    { name: 'Two Pair', payout: 2 },
-    { name: 'Jacks or Better', payout: 1 },
+    { name: 'Color', payout: 6 },
+    { name: 'Escalera', payout: 4 },
+    { name: 'Trío', payout: 3 },
+    { name: 'Doble Pareja', payout: 2 },
+    { name: 'Jotas o Mejor', payout: 1 },
   ];
 
   return (
     <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary">Video Poker</CardTitle>
-        <CardDescription>Jacks or Better - 5 Card Draw</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary">Video Póker</CardTitle>
+        <CardDescription>Jotas o Mejor - 5 Cartas</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
         
@@ -161,7 +161,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
             <div className="w-2/3 space-y-6">
                 {gameState !== 'betting' && (
                   <div>
-                    <h3 className="text-xl font-semibold text-center mb-4">Your Hand {handResult && <Badge>{handResult.name}</Badge>}</h3>
+                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge>{handResult.name}</Badge>}</h3>
                     <div className="flex justify-center gap-4">
                       {playerHand.map((card, index) => (
                         <GameCard key={index} card={card} isSelected={held[index]} onClick={() => handleHold(index)} />
@@ -178,19 +178,19 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
                 {gameState === 'betting' && (
                     <div className="flex flex-col items-center gap-4 pt-16">
-                        <div className="text-2xl font-bold">Place Your Bet</div>
+                        <div className="text-2xl font-bold">Haz tu Apuesta</div>
                         <div className="flex items-center gap-4">
                             <Button onClick={() => handleBetChange(-5)} disabled={bet <= 5}>-</Button>
                             <div className="text-3xl font-bold text-accent">${bet}</div>
                             <Button onClick={() => handleBetChange(5)} disabled={bet >= balance}>+</Button>
                         </div>
-                        <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Deal Hand</Button>
+                        <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Repartir</Button>
                     </div>
                 )}
             </div>
 
             <Card className="w-1/3">
-                <CardHeader><CardTitle>Payouts (per $1 bet)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Tabla de Pagos</CardTitle></CardHeader>
                 <CardContent>
                     <ul className="space-y-1 text-sm">
                         {PAYOUT_TABLE.map(p => (
@@ -207,12 +207,12 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
         {gameState === 'dealt' && (
           <div className="flex gap-4">
-            <Button size="lg" onClick={handleDraw} className="bg-accent hover:bg-accent/90">Draw</Button>
+            <Button size="lg" onClick={handleDraw} className="bg-accent hover:bg-accent/90">Cambiar</Button>
           </div>
         )}
 
         {gameState === 'finished' && (
-            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Play Again</Button>
+            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Jugar de Nuevo</Button>
         )}
       </CardContent>
     </Card>

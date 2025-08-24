@@ -80,7 +80,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
-      setMessage("Not enough balance to place the bet.");
+      setMessage("No tienes saldo suficiente para esa apuesta.");
       return;
     }
     
@@ -97,7 +97,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     const initialPlayerScore = calculateScore(initialPlayerHand);
     if (initialPlayerScore === 21) {
         setGameState('finished');
-        setMessage('Blackjack! You win!');
+        setMessage('¡Blackjack! ¡Has ganado!');
         onBalanceChange(bet * 1.5);
     }
   }, [balance, bet, onBalanceChange]);
@@ -117,7 +117,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     const newScore = calculateScore(newHand);
     if (newScore > 21) {
       setGameState('finished');
-      setMessage('Bust! You lose.');
+      setMessage('¡Te pasaste! Has perdido.');
       onBalanceChange(-bet);
     }
   };
@@ -142,13 +142,13 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     const finalDealerScore = calculateScore(currentDealerHand);
     
     if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
-      setMessage('You win!');
+      setMessage('¡Has ganado!');
       onBalanceChange(bet);
     } else if (finalPlayerScore < finalDealerScore) {
-      setMessage('Dealer wins.');
+      setMessage('El crupier gana.');
       onBalanceChange(-bet);
     } else {
-      setMessage("It's a push.");
+      setMessage("Es un empate.");
     }
   }, [gameState, dealerHand, deck, playerHand, onBalanceChange, bet]);
   
@@ -163,13 +163,13 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Blackjack</CardTitle>
-        <CardDescription>Get closer to 21 than the dealer without going over.</CardDescription>
+        <CardDescription>Acércate a 21 más que el crupier sin pasarte.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
         {gameState !== 'betting' && (
           <div className="w-full space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-center mb-2">Dealer's Hand <Badge>{gameState === 'playing' ? '?' : dealerScore}</Badge></h3>
+              <h3 className="text-xl font-semibold text-center mb-2">Mano del Crupier <Badge>{gameState === 'playing' ? '?' : dealerScore}</Badge></h3>
               <div className="flex justify-center gap-4">
                 {dealerHand.map((card, index) => (
                   <GameCard key={index} card={card} hidden={gameState === 'playing' && index === 1} />
@@ -177,7 +177,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-center mb-2">Your Hand <Badge>{playerScore}</Badge></h3>
+              <h3 className="text-xl font-semibold text-center mb-2">Tu Mano <Badge>{playerScore}</Badge></h3>
               <div className="flex justify-center gap-4">
                 {playerHand.map((card, index) => (
                   <GameCard key={index} card={card} />
@@ -188,32 +188,32 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
         )}
 
         {message && (
-          <Alert className={message.includes('win') ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
+          <Alert className={message.includes('ganado') ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
 
         {gameState === 'betting' && (
             <div className="flex flex-col items-center gap-4">
-                <div className="text-2xl font-bold">Place Your Bet</div>
+                <div className="text-2xl font-bold">Haz tu Apuesta</div>
                 <div className="flex items-center gap-4">
                     <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
                     <div className="text-3xl font-bold text-accent">${bet}</div>
                     <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
                 </div>
-                <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Deal Cards</Button>
+                <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Repartir Cartas</Button>
             </div>
         )}
 
         {gameState === 'playing' && (
           <div className="flex gap-4">
-            <Button size="lg" onClick={handleHit} className="bg-accent hover:bg-accent/90">Hit</Button>
-            <Button size="lg" onClick={handleStand} variant="secondary">Stand</Button>
+            <Button size="lg" onClick={handleHit} className="bg-accent hover:bg-accent/90">Pedir</Button>
+            <Button size="lg" onClick={handleStand} variant="secondary">Plantarse</Button>
           </div>
         )}
 
         {gameState === 'finished' && (
-            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Play Again</Button>
+            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Jugar de Nuevo</Button>
         )}
       </CardContent>
     </Card>

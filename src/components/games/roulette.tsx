@@ -31,7 +31,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
   const placeBet = (type: BetType, value?: number) => {
     if (betAmount > balance - totalBet) {
-      setMessage("Not enough balance for this bet.");
+      setMessage("No tienes saldo suficiente para esta apuesta.");
       return;
     }
     const newBet: Bet = { type, value, amount: betAmount };
@@ -43,7 +43,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
   const spinWheel = () => {
     if (bets.length === 0) {
-      setMessage("Place a bet before spinning!");
+      setMessage("¡Haz una apuesta antes de girar!");
       return;
     }
 
@@ -77,9 +77,9 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       
       if (winnings > 0) {
         onBalanceChange(winnings);
-        setMessage(`The number is ${winningNumber.num}. You won $${winnings - totalBet}!`);
+        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings - totalBet}!`);
       } else {
-        setMessage(`The number is ${winningNumber.num}. You lost $${totalBet}.`);
+        setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
       }
 
       setSpinning(false);
@@ -101,8 +101,8 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   return (
     <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary">Roulette</CardTitle>
-        <CardDescription>Place your bets and spin the wheel!</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary">Ruleta</CardTitle>
+        <CardDescription>¡Haz tus apuestas y gira la ruleta!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
         <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl">
@@ -135,21 +135,21 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert className={message.includes('won') ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
+          <Alert className={message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
 
         <div className="w-full max-w-2xl">
             <div className="text-center mb-4">
-                <Badge variant="secondary" className="text-lg">Total Bet: ${totalBet}</Badge>
+                <Badge variant="secondary" className="text-lg">Apuesta Total: ${totalBet}</Badge>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
               <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600">1-18</Button>
-              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600">Even</Button>
-              <Button onClick={() => placeBet('red')} className="bg-red-600 hover:bg-red-500">Red</Button>
-              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700">Black</Button>
-              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600">Odd</Button>
+              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600">Par</Button>
+              <Button onClick={() => placeBet('red')} className="bg-red-600 hover:bg-red-500">Rojo</Button>
+              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700">Negro</Button>
+              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600">Impar</Button>
               <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
@@ -160,16 +160,16 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 ))}
             </div>
             <div className="flex items-center gap-2 mt-4">
-                <span className="font-bold">Amount:</span>
+                <span className="font-bold">Monto:</span>
                 <Input type="number" value={betAmount} onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 1))} className="w-24" />
             </div>
         </div>
 
         <div className="flex gap-4">
           <Button size="lg" onClick={spinWheel} disabled={spinning || bets.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
-            {spinning ? 'Spinning...' : 'Spin'}
+            {spinning ? 'Girando...' : 'Girar'}
           </Button>
-          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning}>Clear Bets</Button>
+          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning}>Limpiar Apuestas</Button>
         </div>
         
       </CardContent>

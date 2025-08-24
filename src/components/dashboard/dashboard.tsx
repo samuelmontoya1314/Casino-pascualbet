@@ -2,7 +2,22 @@
 import { handleLogout } from '@/actions/auth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, User as UserIcon, Wallet, Star } from 'lucide-react';
 import type { User } from '@/lib/users';
@@ -23,9 +38,9 @@ export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'COP',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -39,7 +54,7 @@ export default function Dashboard({ user }: { user: User }) {
         <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
                 <LuigiLogo />
-                <h1 className="text-3xl font-bold text-primary" style={{fontFamily: "'Poppins', sans-serif"}}>Luigi's Casino</h1>
+                <h1 className="text-3xl font-bold text-primary" style={{fontFamily: "'Poppins', sans-serif"}}>Casino de Luigi</h1>
             </div>
             <div className="ml-auto flex items-center gap-4">
                 <div className="flex items-center gap-3 rounded-full bg-secondary px-4 py-2">
@@ -48,8 +63,9 @@ export default function Dashboard({ user }: { user: User }) {
                 </div>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{user.role} Role</p>
+                  <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
                 </div>
+                <Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="secondary" size="icon" className="overflow-hidden rounded-full h-12 w-12">
@@ -61,32 +77,61 @@ export default function Dashboard({ user }: { user: User }) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled>
-                            <UserIcon className="mr-2 h-4 w-4"/>
-                            Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <form action={handleLogout} className="w-full">
-                          <DropdownMenuItem asChild>
-                              <button type="submit" className="w-full text-left">
-                                  <LogOut className="mr-2 h-4 w-4" />
-                                  Logout
-                              </button>
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem>
+                              <UserIcon className="mr-2 h-4 w-4"/>
+                              Perfil
                           </DropdownMenuItem>
-                        </form>
+                        </DialogTrigger>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <form action={handleLogout} className="w-full">
+                              <button type="submit" className="w-full text-left flex items-center">
+                                  <LogOut className="mr-2 h-4 w-4" />
+                                  Cerrar Sesión
+                              </button>
+                          </form>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+                 <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Perfil de Usuario</DialogTitle>
+                      <DialogDescription>
+                        Esta es la información de tu cuenta.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <span className="text-right font-semibold">Nombre:</span>
+                        <span className="col-span-3">{user.name}</span>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <span className="text-right font-semibold">ID de Usuario:</span>
+                        <span className="col-span-3">{user.id}</span>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <span className="text-right font-semibold">Rol:</span>
+                        <span className="col-span-3 capitalize">{user.role}</span>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <span className="text-right font-semibold">Saldo:</span>
+                        <span className="col-span-3">{formatCurrency(balance)}</span>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
             </div>
         </header>
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
             <Tabs defaultValue="slots" className="w-full max-w-7xl mt-6">
                 <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="slots">Slots</TabsTrigger>
+                    <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
                     <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
-                    <TabsTrigger value="roulette">Roulette</TabsTrigger>
-                    <TabsTrigger value="poker">Poker</TabsTrigger>
+                    <TabsTrigger value="roulette">Ruleta</TabsTrigger>
+                    <TabsTrigger value="poker">Póker</TabsTrigger>
                 </TabsList>
                 <TabsContent value="slots">
                     <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} />

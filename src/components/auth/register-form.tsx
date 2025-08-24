@@ -11,7 +11,7 @@ function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? 'Registering...' : <> <UserPlus className="mr-2 h-4 w-4" /> Register </>}
+            {pending ? 'Registrando...' : <> <UserPlus className="mr-2 h-4 w-4" /> Registrarse </>}
         </Button>
     );
 }
@@ -22,22 +22,22 @@ export function RegisterForm() {
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" name="name" placeholder="e.g. John Doe" required />
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input id="name" name="name" placeholder="ej. John Doe" required />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="userId">User ID</Label>
-                <Input id="userId" name="userId" placeholder="e.g. johndoe" required />
+                <Label htmlFor="userId">ID de Usuario</Label>
+                <Input id="userId" name="userId" placeholder="ej. johndoe" required />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input id="password" name="password" type="password" required />
             </div>
             
             {state?.error && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Registration Failed</AlertTitle>
+                    <AlertTitle>Fallo de Registro</AlertTitle>
                     <AlertDescription>{state.error}</AlertDescription>
                 </Alert>
             )}

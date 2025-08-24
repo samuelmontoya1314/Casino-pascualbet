@@ -6,14 +6,14 @@ import { users, addUser } from '@/lib/users';
 import { createSession, deleteSession } from '@/lib/auth';
 
 const loginSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-  password: z.string().min(1, 'Password is required'),
+  userId: z.string().min(1, 'El ID de usuario es requerido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 const registerSchema = z.object({
-    name: z.string().min(2, 'Name is required'),
-    userId: z.string().min(3, 'User ID must be at least 3 characters'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    name: z.string().min(2, 'El nombre es requerido'),
+    userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
+    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
 
@@ -21,7 +21,7 @@ export async function handleLogin(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields provided.' };
+    return { error: 'Campos inválidos.' };
   }
 
   const { userId, password } = validatedFields.data;
@@ -33,7 +33,7 @@ export async function handleLogin(prevState: any, formData: FormData) {
     await createSession(user.id);
     redirect('/');
   } else {
-    return { error: 'Invalid user ID or password.' };
+    return { error: 'ID de usuario o contraseña inválidos.' };
   }
 }
 
@@ -42,14 +42,14 @@ export async function handleRegister(prevState: any, formData: FormData) {
 
   if (!validatedFields.success) {
     const errorMessages = validatedFields.error.errors.map(e => e.message).join(', ');
-    return { error: `Invalid fields: ${errorMessages}` };
+    return { error: `Campos inválidos: ${errorMessages}` };
   }
 
   const { userId, password, name } = validatedFields.data;
   
   const existingUser = users.find(u => u.id === userId);
   if (existingUser) {
-    return { error: 'User ID already exists. Please choose another.' };
+    return { error: 'El ID de usuario ya existe. Por favor, elige otro.' };
   }
 
   const newUser = {
