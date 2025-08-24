@@ -7,32 +7,33 @@ export type User = {
   balance: number;
 };
 
-
-let users: User[] = [
-  {
-    id: 'admin',
-    password: 'password_admin_hashed',
-    name: 'Admin User',
-    role: 'admin',
-    balance: 10000,
-  },
-  {
-    id: 'user123',
-    password: 'password_user_hashed',
-    name: 'Regular User',
-    role: 'user',
-    balance: 1000,
-  },
+// This is a temporary in-memory "database".
+// In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
+const USERS_DB: User[] = [
+    {
+      id: 'admin',
+      password: 'password_admin_hashed',
+      name: 'Admin User',
+      role: 'admin',
+      balance: 10000,
+    },
+    {
+      id: 'user123',
+      password: 'password_user_hashed',
+      name: 'Regular User',
+      role: 'user',
+      balance: 1000,
+    },
 ];
 
 
 export function getAllUsers(): User[] {
-    return users;
+    return USERS_DB;
 }
 
 
 export function findUserById(id: string): User | undefined {
-    return users.find(u => u.id === id);
+    return USERS_DB.find(u => u.id === id);
 }
 
 
@@ -41,5 +42,5 @@ export function addUser(user: User): void {
         console.warn(`User with id ${user.id} already exists.`);
         return;
     }
-    users.push(user);
+    USERS_DB.push(user);
 }

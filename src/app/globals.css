@@ -61,3 +61,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(1440deg); }
+    }
+}

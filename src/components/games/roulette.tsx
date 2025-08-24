@@ -30,6 +30,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   const [message, setMessage] = useState('');
 
   const placeBet = (type: BetType, value?: number) => {
+    if (spinning) return;
     if (betAmount > balance - totalBet) {
       setMessage("No tienes saldo suficiente para esta apuesta.");
       return;
@@ -105,8 +106,14 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         <CardDescription>¡Haz tus apuestas y gira la ruleta!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
-        <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl">
-            <div className={`absolute w-full h-full transition-transform duration-[4000ms] ease-out ${spinning ? 'rotate-[1440deg]' : ''}`}>
+        <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl overflow-hidden">
+            <div 
+              className={`absolute w-full h-full transition-transform duration-[4000ms] ease-out ${spinning ? 'animate-spin-slow' : ''}`}
+              style={{
+                  transform: result && !spinning ? `rotate(${ (360/37) * numbers.findIndex(n => n.num === result.num) * -1 }deg)`: 'none',
+                  animation: spinning ? 'spin 4s ease-out forwards' : 'none'
+              }}
+            >
                 {numbers.map(({num, color}, index) => (
                     <div key={num} className="absolute w-full h-full" style={{transform: `rotate(${(360 / 37) * index}deg)`}}>
                         <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${getNumberColorClass(color)}`} style={{transformOrigin: 'bottom center'}}>
@@ -115,18 +122,11 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                     </div>
                 ))}
             </div>
-            <div className="absolute w-4 h-4 rounded-full bg-white z-10" />
-            <div 
-              className="absolute top-0 left-1/2 -ml-2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-16 border-t-white transform -translate-y-4"
-              style={{
-                  borderTopWidth: '16px',
-                  transition: 'transform 0.3s',
-                  transform: result && !spinning ? `translateY(-170px) rotate(${ (360/37) * numbers.findIndex(n => n.num === result.num) }deg)` : 'translateY(-4px)'
-              }}
-            />
+            <div className="absolute top-[-10px] left-1/2 -ml-3 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-white z-20"></div>
+            <div className="absolute w-12 h-12 rounded-full bg-gray-900 border-4 border-yellow-700 z-10" />
 
             {result && !spinning && (
-                <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80">
+                <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80 z-20">
                     <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-red-500' : result.color === 'black' ? 'text-white' : 'text-green-500'}`}>
                         {result.num}
                     </span>
@@ -153,11 +153,14 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
               <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
-                {numbers.map(({ num, color }) => (
+                {numbers.slice(1).map(({ num, color }) => (
                     <Button key={num} onClick={() => placeBet('straight', num)} variant="outline" className={`h-12 w-full p-0 text-xs ${getNumberColorClass(color)}`}>
                         {num}
                     </Button>
                 ))}
+                 <Button key={0} onClick={() => placeBet('straight', 0)} variant="outline" className={`h-12 w-full p-0 text-xs ${getNumberColorClass('green')} col-span-12 mt-1`}>
+                    0
+                </Button>
             </div>
             <div className="flex items-center gap-2 mt-4">
                 <span className="font-bold">Monto:</span>
