@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 type Suit = '♠' | '♥' | '♦' | '♣';
 type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
@@ -22,12 +23,13 @@ const shuffleDeck = (deck: CardType[]): CardType[] => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-const GameCard = ({ card, isSelected, onClick }: { card: CardType; isSelected?: boolean; onClick?: () => void }) => {
+const GameCard = ({ card, isSelected, onClick, style }: { card: CardType; isSelected?: boolean; onClick?: () => void, style?: React.CSSProperties }) => {
   const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-white';
   return (
     <div 
         onClick={onClick}
-        className={`w-24 h-36 rounded-lg bg-card border-2 shadow-lg flex flex-col justify-between p-2 ${cardColor} transition-all duration-200 ${onClick ? 'cursor-pointer' : ''} ${isSelected ? 'border-accent transform -translate-y-2' : 'border-border'}`}
+        style={style}
+        className={cn('w-24 h-36 rounded-lg bg-card border-2 shadow-lg flex flex-col justify-between p-2 transition-all duration-200', cardColor, onClick ? 'cursor-pointer' : '', isSelected ? 'border-accent transform -translate-y-2' : 'border-border')}
     >
       <div className="text-2xl font-bold">{card.rank}</div>
       <div className="text-4xl text-center">{card.suit}</div>
@@ -73,7 +75,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   const [playerHand, setPlayerHand] = useState<Hand>([]);
   const [held, setHeld] = useState<boolean[]>([false, false, false, false, false]);
   const [bet, setBet] = useState(5);
-  const [gameState, setGameState] = useState<'betting' | 'dealt' | 'finished'>('betting');
+  const [gameState, setGameState] = useState<'betting' | 'dealt' | 'drawing' | 'finished'>('betting');
   const [message, setMessage] = useState('');
   const [handResult, setHandResult] = useState<{name: string, payout: number} | null>(null);
 
@@ -88,11 +90,19 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     const initialHand = [newDeck.pop()!, newDeck.pop()!, newDeck.pop()!, newDeck.pop()!, newDeck.pop()!];
     
     setDeck(newDeck);
-    setPlayerHand(initialHand);
+    setPlayerHand([]);
     setHeld([false, false, false, false, false]);
     setGameState('dealt');
     setMessage('');
     setHandResult(null);
+
+    // Deal cards with animation
+    setTimeout(() => setPlayerHand([initialHand[0]]), 100);
+    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[1]]), 200);
+    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[2]]), 300);
+    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[3]]), 400);
+    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[4]]), 500);
+
   }, [balance, bet, onBalanceChange]);
 
   const handleHold = (index: number) => {
@@ -105,29 +115,41 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   const handleDraw = () => {
     if (gameState !== 'dealt') return;
     
+    setGameState('drawing');
     const newDeck = [...deck];
     const newHand = [...playerHand];
     
-    for (let i = 0; i < 5; i++) {
-        if (!held[i]) {
+    const drawPromises = newHand.map((card, i) => {
+      if (!held[i]) {
+        return new Promise(resolve => {
+          setTimeout(() => {
             newHand[i] = newDeck.pop()!;
-        }
-    }
-    
-    setPlayerHand(newHand);
-    setDeck(newDeck);
-    setGameState('finished');
-    
-    const result = evaluateHand(newHand);
-    setHandResult(result);
+            setPlayerHand([...newHand]);
+            resolve(true);
+          }, i * 150 + 100);
+        });
+      }
+      return Promise.resolve(false);
+    });
 
-    if (result.payout > 0) {
-        const winnings = bet * result.payout;
-        setMessage(`¡Conseguiste ${result.name}! Ganaste $${winnings}.`);
-        onBalanceChange(winnings);
-    } else {
-        setMessage(`${result.name}. No has ganado.`);
-    }
+    Promise.all(drawPromises).then(() => {
+        setTimeout(() => {
+            setPlayerHand(newHand);
+            setDeck(newDeck);
+            setGameState('finished');
+            
+            const result = evaluateHand(newHand);
+            setHandResult(result);
+
+            if (result.payout > 0) {
+                const winnings = bet * result.payout;
+                setMessage(`¡Conseguiste ${result.name}! Ganaste $${winnings}.`);
+                onBalanceChange(winnings);
+            } else {
+                setMessage(`${result.name}. No has ganado.`);
+            }
+        }, 500);
+    });
   };
 
   const handleBetChange = (amount: number) => {
@@ -160,24 +182,31 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         <div className="flex justify-center items-start gap-8 w-full">
             <div className="w-2/3 space-y-6">
                 {gameState !== 'betting' && (
-                  <div>
-                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge>{handResult.name}</Badge>}</h3>
+                  <div className="min-h-[220px]">
+                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge className="animate-win-pulse">{handResult.name}</Badge>}</h3>
                     <div className="flex justify-center gap-4">
                       {playerHand.map((card, index) => (
-                        <GameCard key={index} card={card} isSelected={held[index]} onClick={() => handleHold(index)} />
+                        <GameCard 
+                            key={index} 
+                            card={card} 
+                            isSelected={held[index]} 
+                            onClick={gameState === 'dealt' ? () => handleHold(index) : undefined} 
+                            style={{ animationDelay: `${index * 100}ms`}}
+                            className={cn(gameState === 'dealt' ? 'animate-deal-card' : '', gameState === 'drawing' && !held[index] ? 'animate-flip-card': '')}
+                        />
                       ))}
                     </div>
                   </div>
                 )}
 
                 {message && (
-                  <Alert className={handResult && handResult.payout > 0 ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
+                  <Alert className={cn('transition-opacity duration-300', handResult && handResult.payout > 0 ? 'border-accent text-accent' : 'border-destructive text-destructive')}>
                     <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
                   </Alert>
                 )}
 
                 {gameState === 'betting' && (
-                    <div className="flex flex-col items-center gap-4 pt-16">
+                    <div className="flex flex-col items-center gap-4 pt-16 min-h-[220px]">
                         <div className="text-2xl font-bold">Haz tu Apuesta</div>
                         <div className="flex items-center gap-4">
                             <Button onClick={() => handleBetChange(-5)} disabled={bet <= 5}>-</Button>

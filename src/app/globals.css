@@ -14,7 +14,7 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 270 30% 15%;
     --popover-foreground: 210 40% 98%;
-    --primary: 90 60% 55%;
+    --primary: 120 60% 55%;
     --primary-foreground: 270 30% 10%;
     --secondary: 270 30% 25%;
     --secondary-foreground: 210 40% 98%;
@@ -26,7 +26,7 @@ body {
     --destructive-foreground: 210 40% 98%;
     --border: 270 30% 30%;
     --input: 270 30% 25%;
-    --ring: 90 60% 55%;
+    --ring: 120 60% 55%;
     --radius: 0.75rem;
   }
 
@@ -37,7 +37,7 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 270 30% 15%;
     --popover-foreground: 210 40% 98%;
-    --primary: 90 60% 55%;
+    --primary: 120 60% 55%;
     --primary-foreground: 270 30% 10%;
     --secondary: 270 30% 25%;
     --secondary-foreground: 210 40% 98%;
@@ -49,7 +49,7 @@ body {
     --destructive-foreground: 210 40% 98%;
     --border: 270 30% 30%;
     --input: 270 30% 25%;
-    --ring: 90 60% 55%;
+    --ring: 120 60% 55%;
   }
 }
 
@@ -63,8 +63,59 @@ body {
 }
 
 @layer utilities {
-    @keyframes spin {
+    @keyframes spin-roulette {
         from { transform: rotate(0deg); }
-        to { transform: rotate(1440deg); }
+        to { transform: rotate(2160deg); }
+    }
+
+    @keyframes deal-card {
+        from { opacity: 0; transform: translateY(-30px) scale(0.8); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes flip-card {
+        from { transform: rotateY(90deg); }
+        to { transform: rotateY(0deg); }
+    }
+
+    @keyframes bust-shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+    }
+
+    @keyframes win-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--accent)); }
+        50% { transform: scale(1.05); box-shadow: 0 0 15px 5px hsl(var(--accent) / 0.7); }
+    }
+
+    .animate-spin-roulette {
+        animation: spin-roulette 4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    
+    .animate-deal-card {
+        animation: deal-card 0.5s ease-out forwards;
+    }
+
+    .animate-flip-card {
+        animation: flip-card 0.5s ease-out forwards;
+    }
+    
+    .animate-bust-shake {
+        animation: bust-shake 0.4s ease-in-out;
+    }
+
+    .animate-win-pulse {
+        animation: win-pulse 1.5s infinite;
+    }
+
+    @keyframes spin-reel {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(0); }
+    }
+
+    .reel-spinning-blur {
+      filter: blur(4px);
     }
 }

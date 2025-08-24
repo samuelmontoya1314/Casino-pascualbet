@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const numbers = [
   { num: 0, color: 'green' },
@@ -28,6 +29,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<{ num: number; color: string } | null>(null);
   const [message, setMessage] = useState('');
+  const [finalAngle, setFinalAngle] = useState(0);
 
   const placeBet = (type: BetType, value?: number) => {
     if (spinning) return;
@@ -53,9 +55,15 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
     setMessage('');
     setResult(null);
 
+    const winningIndex = Math.floor(Math.random() * numbers.length);
+    const winningNumber = numbers[winningIndex];
+    const anglePerSegment = 360 / 37;
+    const winningAngle = 360 * 6 - (anglePerSegment * winningIndex); // 6 full spins + final position
+    setFinalAngle(winningAngle);
+    
     setTimeout(() => {
-      const winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
       setResult(winningNumber);
+      setSpinning(false);
 
       let winnings = 0;
       bets.forEach(bet => {
@@ -83,7 +91,6 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
       }
 
-      setSpinning(false);
     }, 4000); // 4 second spin
   };
 
@@ -108,10 +115,9 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       <CardContent className="flex flex-col items-center gap-6">
         <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl overflow-hidden">
             <div 
-              className={`absolute w-full h-full transition-transform duration-[4000ms] ease-out ${spinning ? 'animate-spin-slow' : ''}`}
+              className={`absolute w-full h-full transition-transform duration-[4000ms] ease-out`}
               style={{
-                  transform: result && !spinning ? `rotate(${ (360/37) * numbers.findIndex(n => n.num === result.num) * -1 }deg)`: 'none',
-                  animation: spinning ? 'spin 4s ease-out forwards' : 'none'
+                  transform: spinning ? `rotate(${finalAngle}deg)`: (result ? `rotate(${finalAngle % 360}deg)` : 'none'),
               }}
             >
                 {numbers.map(({num, color}, index) => (
@@ -126,7 +132,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
             <div className="absolute w-12 h-12 rounded-full bg-gray-900 border-4 border-yellow-700 z-10" />
 
             {result && !spinning && (
-                <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80 z-20">
+                <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80 z-20 animate-in zoom-in-50 duration-500">
                     <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-red-500' : result.color === 'black' ? 'text-white' : 'text-green-500'}`}>
                         {result.num}
                     </span>
@@ -135,7 +141,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert className={message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive text-destructive'}>
+          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive text-destructive')}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
