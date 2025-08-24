@@ -58,7 +58,9 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
     const winningIndex = Math.floor(Math.random() * numbers.length);
     const winningNumber = numbers[winningIndex];
     const anglePerSegment = 360 / 37;
-    const winningAngle = 360 * 6 - (anglePerSegment * winningIndex); // 6 full spins + final position
+    // Add randomness to the final angle for a more natural stop
+    const randomOffset = (Math.random() - 0.5) * anglePerSegment * 0.8;
+    const winningAngle = 360 * 6 - (anglePerSegment * winningIndex) + randomOffset; // 6 full spins + final position
     setFinalAngle(winningAngle);
     
     setTimeout(() => {
@@ -95,6 +97,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   };
 
   const clearBets = () => {
+    if(spinning) return;
     setBets([]);
     setMessage('');
     setResult(null);
@@ -115,9 +118,10 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       <CardContent className="flex flex-col items-center gap-6">
         <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl overflow-hidden">
             <div 
-              className={`absolute w-full h-full transition-transform duration-[4000ms] ease-out`}
+              className={cn(`absolute w-full h-full`, spinning && 'animate-spin-roulette')}
               style={{
-                  transform: spinning ? `rotate(${finalAngle}deg)`: (result ? `rotate(${finalAngle % 360}deg)` : 'none'),
+                  transform: `rotate(${finalAngle}deg)`,
+                  transition: spinning ? 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
               }}
             >
                 {numbers.map(({num, color}, index) => (

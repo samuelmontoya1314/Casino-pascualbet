@@ -110,9 +110,24 @@ body {
         animation: win-pulse 1.5s infinite;
     }
 
-    @keyframes spin-reel {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(0); }
+    @keyframes spin-reel-blur {
+      0% {
+        transform: translateY(-100%);
+        filter: blur(4px);
+      }
+      100% {
+        transform: translateY(0);
+        filter: blur(0px);
+      }
+    }
+
+    .animate-spin-reel-blur {
+      animation: spin-reel-blur 0.1s linear infinite;
+    }
+
+    .reel-stop-blur {
+      filter: blur(0px);
+      transition: filter 0.3s ease-out;
     }
 
     .reel-spinning-blur {

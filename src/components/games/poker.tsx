@@ -97,11 +97,13 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     setHandResult(null);
 
     // Deal cards with animation
-    setTimeout(() => setPlayerHand([initialHand[0]]), 100);
-    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[1]]), 200);
-    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[2]]), 300);
-    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[3]]), 400);
-    setTimeout(() => setPlayerHand(prev => [...prev, initialHand[4]]), 500);
+    let tempHand: Hand = [];
+    initialHand.forEach((card, index) => {
+        setTimeout(() => {
+            tempHand.push(card);
+            setPlayerHand([...tempHand]);
+        }, index * 100);
+    });
 
   }, [balance, bet, onBalanceChange]);
 
@@ -183,7 +185,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
             <div className="w-2/3 space-y-6">
                 {gameState !== 'betting' && (
                   <div className="min-h-[220px]">
-                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge className="animate-win-pulse">{handResult.name}</Badge>}</h3>
+                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge className={cn(handResult && handResult.payout > 0 && 'animate-win-pulse')}>{handResult.name}</Badge>}</h3>
                     <div className="flex justify-center gap-4">
                       {playerHand.map((card, index) => (
                         <GameCard 
@@ -192,7 +194,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                             isSelected={held[index]} 
                             onClick={gameState === 'dealt' ? () => handleHold(index) : undefined} 
                             style={{ animationDelay: `${index * 100}ms`}}
-                            className={cn(gameState === 'dealt' ? 'animate-deal-card' : '', gameState === 'drawing' && !held[index] ? 'animate-flip-card': '')}
+                            className={cn(gameState === 'dealt' || gameState === 'betting' ? 'animate-deal-card' : '', gameState === 'drawing' && !held[index] ? 'animate-flip-card': '')}
                         />
                       ))}
                     </div>

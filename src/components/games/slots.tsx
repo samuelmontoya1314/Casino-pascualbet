@@ -22,8 +22,8 @@ interface SlotsGameProps {
 
 const Reel = ({ symbol, isSpinning }: { symbol: typeof symbols[0], isSpinning: boolean }) => {
     return (
-        <div className={cn("w-28 h-28 bg-background rounded-lg flex items-center justify-center shadow-inner overflow-hidden transition-all duration-300", isSpinning ? 'reel-spinning-blur' : '')}>
-            <div className={cn("transition-transform duration-100 ease-linear", isSpinning ? 'animate-[spin-reel_0.1s_linear_infinite]' : '')}>
+        <div className={cn("w-28 h-28 bg-background rounded-lg flex items-center justify-center shadow-inner overflow-hidden transition-all duration-300", isSpinning ? 'reel-spinning-blur' : 'reel-stop-blur')}>
+            <div className={cn("transition-transform duration-100 ease-linear", isSpinning ? 'animate-spin-reel-blur' : '')}>
                 {isSpinning ? getRandomSymbol().icon : symbol.icon}
             </div>
         </div>
@@ -48,40 +48,62 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
     setMessage('');
     setWinningLine([false, false, false]);
 
-    const spinInterval = setInterval(() => {
-      setReels([getRandomSymbol(), getRandomSymbol(), getRandomSymbol()]);
-    }, 100);
+    let spinIntervals = reels.map((_, index) => {
+        return setInterval(() => {
+            setReels(prevReels => {
+                const newReels = [...prevReels];
+                newReels[index] = getRandomSymbol();
+                return newReels;
+            });
+        }, 100);
+    });
 
+    const stopReel = (index: number) => {
+        clearInterval(spinIntervals[index]);
+        setReels(prevReels => {
+            const finalReels = [...prevReels];
+            finalReels[index] = getRandomSymbol();
+            return finalReels;
+        });
+    };
+
+    setTimeout(() => stopReel(0), 1000);
+    setTimeout(() => stopReel(1), 1500);
     setTimeout(() => {
-      clearInterval(spinInterval);
-      const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-      setReels(finalReels);
-      setSpinning(false);
-      
-      const isJackpot = finalReels[0].value === finalReels[1].value && finalReels[1].value === finalReels[2].value;
-      const isTwoInLine = finalReels[0].value === finalReels[1].value || finalReels[1].value === finalReels[2].value;
+        stopReel(2);
+        
+        setTimeout(() => {
+            setSpinning(false);
+            
+            // We need to get the final state of the reels after all intervals are cleared.
+            setReels(currentReels => {
+                const isJackpot = currentReels[0].value === currentReels[1].value && currentReels[1].value === currentReels[2].value;
+                const isTwoInLine = currentReels[0].value === currentReels[1].value || currentReels[1].value === currentReels[2].value;
 
-      if (isJackpot) {
-        const winnings = betAmount * finalReels[0].multiplier;
-        setMessage(`¡Jackpot! ¡Ganaste $${winnings}!`);
-        onBalanceChange(winnings);
-        setWinningLine([true, true, true]);
-      } else if (isTwoInLine) {
-        const winSymbol = finalReels[0].value === finalReels[1].value ? finalReels[0] : finalReels[1];
-        const winnings = betAmount * (winSymbol.multiplier / 2);
-        setMessage(`¡Dos en línea! ¡Ganaste $${winnings}!`);
-        onBalanceChange(winnings);
-        if (finalReels[0].value === finalReels[1].value) {
-            setWinningLine([true, true, false]);
-        } else {
-            setWinningLine([false, true, true]);
-        }
-      } else {
-        setMessage('Sin suerte esta vez. ¡Intenta de nuevo!');
-      }
+                if (isJackpot) {
+                    const winnings = betAmount * currentReels[0].multiplier;
+                    setMessage(`¡Jackpot! ¡Ganaste $${winnings}!`);
+                    onBalanceChange(winnings);
+                    setWinningLine([true, true, true]);
+                } else if (isTwoInLine) {
+                    const winSymbol = currentReels[0].value === currentReels[1].value ? currentReels[0] : currentReels[1];
+                    const winnings = betAmount * (winSymbol.multiplier / 2);
+                    setMessage(`¡Dos en línea! ¡Ganaste $${winnings}!`);
+                    onBalanceChange(winnings);
+                    if (currentReels[0].value === currentReels[1].value) {
+                        setWinningLine([true, true, false]);
+                    } else {
+                        setWinningLine([false, true, true]);
+                    }
+                } else {
+                    setMessage('Sin suerte esta vez. ¡Intenta de nuevo!');
+                }
+                return currentReels;
+            });
+        }, 200);
 
     }, 2000);
-  }, [balance, betAmount, onBalanceChange]);
+  }, [balance, betAmount, onBalanceChange, reels]);
 
   return (
     <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">

@@ -58,7 +58,7 @@ const GameCard = ({ card, hidden, revealed, style }: { card: CardType; hidden?: 
     }
 
     return (
-        <div style={style} className={cn(`w-24 h-36 rounded-lg bg-card border-2 border-border shadow-lg flex flex-col justify-between p-2 ${cardColor}`, revealed ? 'animate-flip-card' : '')}>
+        <div style={style} className={cn('w-24 h-36 rounded-lg bg-card border-2 border-border shadow-lg flex flex-col justify-between p-2', cardColor, revealed && 'animate-flip-card')}>
             <div className="text-2xl font-bold">{card.rank}</div>
             <div className="text-4xl text-center">{card.suit}</div>
             <div className="text-2xl font-bold self-end transform rotate-180">{card.rank}</div>
@@ -81,6 +81,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
   const [gameState, setGameState] = useState<'betting' | 'playing' | 'dealer' | 'finished'>('betting');
   const [message, setMessage] = useState('');
   const [isBusted, setIsBusted] = useState(false);
+  const [playerWon, setPlayerWon] = useState(false);
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
@@ -98,6 +99,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     setGameState('playing');
     setMessage('');
     setIsBusted(false);
+    setPlayerWon(false);
 
     // Deal cards with animation
     setTimeout(() => setPlayerHand([initialPlayerHand[0]]), 100);
@@ -111,6 +113,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
           setGameState('finished');
           setMessage('¡Blackjack! ¡Has ganado!');
           onBalanceChange(bet * 1.5);
+          setPlayerWon(true);
       }
     }, 800)
 
@@ -159,6 +162,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
             if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
               setMessage('¡Has ganado!');
               onBalanceChange(bet);
+              setPlayerWon(true);
             } else if (finalPlayerScore < finalDealerScore) {
               setMessage('El crupier gana.');
               onBalanceChange(-bet);
@@ -203,7 +207,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
             </div>
             <div>
               <h3 className="text-xl font-semibold text-center mb-2">Tu Mano <Badge>{playerScore}</Badge></h3>
-              <div className={cn("flex justify-center gap-4 h-36 items-center", isBusted && 'animate-bust-shake')}>
+              <div className={cn("flex justify-center gap-4 h-36 items-center", isBusted && 'animate-bust-shake', playerWon && 'animate-win-pulse')}>
                 {playerHand.map((card, index) => (
                   <GameCard 
                     key={index} 
