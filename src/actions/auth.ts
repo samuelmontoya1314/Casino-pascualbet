@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
-import { users, addUser } from '@/lib/users';
+import { findUserById, addUser } from '@/lib/users';
 import { createSession, deleteSession } from '@/lib/auth';
 
 const loginSchema = z.object({
@@ -25,10 +25,8 @@ export async function handleLogin(prevState: any, formData: FormData) {
   }
 
   const { userId, password } = validatedFields.data;
-  const user = users.find(u => u.id === userId);
+  const user = findUserById(userId);
 
-  // In a real application, you would use bcrypt.compare() to verify the password.
-  // We are comparing the placeholder "hashed" password directly for this demo.
   if (user && user.password === password) {
     await createSession(user.id);
     redirect('/');
@@ -47,18 +45,17 @@ export async function handleRegister(prevState: any, formData: FormData) {
 
   const { userId, password, name } = validatedFields.data;
   
-  const existingUser = users.find(u => u.id === userId);
+  const existingUser = findUserById(userId);
   if (existingUser) {
     return { error: 'El ID de usuario ya existe. Por favor, elige otro.' };
   }
 
   const newUser = {
     id: userId,
-    // In a real app, hash this password!
     password: password,
     name: name,
     role: 'user' as const,
-    balance: 1000, // Starting balance for new users
+    balance: 1000,
   };
 
   addUser(newUser);

@@ -1,17 +1,14 @@
 
-// In a real application, this data would come from a database.
-// Passwords would be properly hashed using a library like bcrypt.
-
 export type User = {
   id: string;
-  password: string; // This is a placeholder for a real, salted hash
+  password: string; 
   name: string;
   role: 'admin' | 'user';
   balance: number;
 };
 
-// This is our "database" for the demo.
-export let users: User[] = [
+
+let users: User[] = [
   {
     id: 'admin',
     password: 'password_admin_hashed',
@@ -28,7 +25,21 @@ export let users: User[] = [
   },
 ];
 
-// This function simulates adding a user to a persistent store.
-export function addUser(user: User) {
+
+export function getAllUsers(): User[] {
+    return users;
+}
+
+
+export function findUserById(id: string): User | undefined {
+    return users.find(u => u.id === id);
+}
+
+
+export function addUser(user: User): void {
+    if (findUserById(user.id)) {
+        console.warn(`User with id ${user.id} already exists.`);
+        return;
+    }
     users.push(user);
 }
