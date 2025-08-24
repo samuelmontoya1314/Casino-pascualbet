@@ -98,14 +98,14 @@ export default function Dashboard({ user }: { user: User }) {
                           </DropdownMenuItem>
                         </DialogTrigger>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <form action={handleLogout} className="w-full">
-                              <button type="submit" className="w-full text-left flex items-center">
-                                  <LogOut className="mr-2 h-4 w-4" />
-                                  Cerrar Sesión
-                              </button>
-                          </form>
-                        </DropdownMenuItem>
+                        <form action={handleLogout} className="w-full">
+                            <DropdownMenuItem asChild>
+                                <button type="submit" className="w-full text-left flex items-center">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Cerrar Sesión
+                                </button>
+                            </DropdownMenuItem>
+                        </form>
                     </DropdownMenuContent>
                 </DropdownMenu>
                  <DialogContent>
