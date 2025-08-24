@@ -98,14 +98,14 @@ export default function Dashboard({ user }: { user: User }) {
                           </DropdownMenuItem>
                         </DialogTrigger>
                         <DropdownMenuSeparator />
-                        <form action={handleLogout} className="w-full">
-                            <DropdownMenuItem asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <form action={handleLogout} className="w-full">
                                 <button type="submit" className="w-full text-left flex items-center">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     Cerrar Sesión
                                 </button>
-                            </DropdownMenuItem>
-                        </form>
+                            </form>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                  <DialogContent>
