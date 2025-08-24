@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -19,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, User as UserIcon, Wallet, Star, Coins } from 'lucide-react';
 import type { User } from '@/lib/users';
@@ -52,6 +52,7 @@ export default function Dashboard({ user }: { user: User }) {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
+      <TooltipProvider>
         <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
                 <LuigiLogo />
@@ -62,6 +63,16 @@ export default function Dashboard({ user }: { user: User }) {
                     <Wallet className="h-6 w-6 text-accent"/>
                     <span className="text-xl font-bold text-white">{formatCurrency(balance)}</span>
                 </div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-accent/20 border-accent/50 text-accent hover:bg-accent hover:text-accent-foreground">
+                            <Coins className="h-5 w-5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Agregar 100 COP</p>
+                    </TooltipContent>
+                </Tooltip>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{user.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
@@ -122,16 +133,11 @@ export default function Dashboard({ user }: { user: User }) {
                         <span className="col-span-3">{formatCurrency(balance)}</span>
                       </div>
                     </div>
-                     <DialogFooter>
-                        <Button onClick={() => handleBalanceChange(100)} className="bg-accent hover:bg-accent/90">
-                            <Coins className="mr-2 h-4 w-4" />
-                            Agregar 100 COP
-                        </Button>
-                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
             </div>
         </header>
+        </TooltipProvider>
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
             <Tabs defaultValue="slots" className="w-full max-w-7xl mt-6">
                 <TabsList className="grid w-full grid-cols-4">
