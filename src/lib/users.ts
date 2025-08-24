@@ -9,7 +9,12 @@ export type User = {
 
 // This is a temporary in-memory "database".
 // In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
-let USERS_DB: User[] = [
+// We use a global variable to prevent the DB from being reset during hot-reloads in development.
+declare global {
+  var USERS_DB: User[];
+}
+
+const initialUsers: User[] = [
     {
       id: 'admin',
       password: 'password_admin_hashed',
@@ -26,14 +31,22 @@ let USERS_DB: User[] = [
     },
 ];
 
+if (process.env.NODE_ENV === 'production') {
+  global.USERS_DB = initialUsers;
+} else {
+  if (!global.USERS_DB) {
+    global.USERS_DB = initialUsers;
+  }
+}
+
 
 export function getAllUsers(): User[] {
-    return USERS_DB;
+    return global.USERS_DB;
 }
 
 
 export function findUserById(id: string): User | undefined {
-    return USERS_DB.find(u => u.id === id);
+    return global.USERS_DB.find(u => u.id === id);
 }
 
 
@@ -42,5 +55,5 @@ export function addUser(user: User): void {
         console.warn(`User with id ${user.id} already exists.`);
         return;
     }
-    USERS_DB.push(user);
+    global.USERS_DB.push(user);
 }
