@@ -1,5 +1,6 @@
 'use client';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleRegister } from '@/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,17 +18,17 @@ function SubmitButton() {
 }
 
 export function RegisterForm() {
-    const [state, formAction] = useFormState(handleRegister, undefined);
+    const [state, formAction] = useActionState(handleRegister, undefined);
 
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
                 <Label htmlFor="name">Nombre Completo</Label>
-                <Input id="name" name="name" placeholder="ej. John Doe" required />
+                <Input id="name" name="name" placeholder="ej. Juan Pérez" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="ej. johndoe" required />
+                <Input id="userId" name="userId" placeholder="ej. juanperez" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
