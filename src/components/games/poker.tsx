@@ -79,13 +79,18 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   const [message, setMessage] = useState('');
   const [handResult, setHandResult] = useState<{name: string, payout: number} | null>(null);
 
+   useEffect(() => {
+    if (gameState === 'dealt') {
+      onBalanceChange(-bet);
+    }
+  }, [gameState, bet, onBalanceChange]);
+
   const startNewRound = useCallback(() => {
     if (balance < bet) {
       setMessage("Saldo insuficiente.");
       return;
     }
     
-    onBalanceChange(-bet);
     const newDeck = shuffleDeck(createDeck());
     const initialHand = [newDeck.pop()!, newDeck.pop()!, newDeck.pop()!, newDeck.pop()!, newDeck.pop()!];
     
@@ -105,7 +110,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         }, index * 100);
     });
 
-  }, [balance, bet, onBalanceChange]);
+  }, [balance, bet]);
 
   const handleHold = (index: number) => {
     if (gameState !== 'dealt') return;
