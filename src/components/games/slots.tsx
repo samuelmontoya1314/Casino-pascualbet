@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 const symbols = [
     { icon: <Cherry className="w-16 h-16 text-red-500" />, value: 'cherry', multiplier: 2, key: 'cherry' },
     { icon: <Bell className="w-16 h-16 text-yellow-500" />, value: 'bell', multiplier: 5, key: 'bell' },
-    { icon: <Star className="w-16 h-16 text-accent" />, value: 'star', multiplier: 10, key: 'star' },
+    { icon: <Star className="w-16 h-16 text-blue-400" />, value: 'star', multiplier: 10, key: 'star' },
     { icon: <Gem className="w-16 h-16 text-purple-500" />, value: 'gem', multiplier: 20, key: 'gem' },
 ];
 
@@ -106,7 +106,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
   }, [balance, betAmount, onBalanceChange, reels]);
 
   return (
-    <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
+    <Card className="w-full bg-card/70 border-primary/20 shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Tragamonedas</CardTitle>
         <CardDescription>¡Alinea tres símbolos para ganar el premio gordo!</CardDescription>
@@ -121,7 +121,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
         </div>
 
         {message && (
-          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive')}>
+          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-primary/50 text-primary' : 'border-destructive')}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}

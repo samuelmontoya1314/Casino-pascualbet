@@ -104,19 +104,19 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   };
   
   const getNumberColorClass = (color: string) => {
-    if (color === 'red') return 'bg-red-600 hover:bg-red-500';
-    if (color === 'black') return 'bg-gray-800 hover:bg-gray-700';
-    return 'bg-green-600 hover:bg-green-500';
+    if (color === 'red') return 'bg-red-600 hover:bg-red-500 text-white';
+    if (color === 'black') return 'bg-gray-800 hover:bg-gray-700 text-white';
+    return 'bg-green-600 hover:bg-green-500 text-white';
   }
 
   return (
-    <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
+    <Card className="w-full bg-card/70 border-primary/20 shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Ruleta</CardTitle>
         <CardDescription>¡Haz tus apuestas y gira la ruleta!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
-        <div className="relative w-96 h-96 rounded-full border-8 border-yellow-600 bg-gray-800 flex items-center justify-center shadow-2xl overflow-hidden">
+        <div className="relative w-96 h-96 rounded-full border-8 border-primary/50 bg-secondary flex items-center justify-center shadow-2xl overflow-hidden">
             <div 
               className={cn(`absolute w-full h-full`, spinning && 'animate-spin-roulette')}
               style={{
@@ -126,18 +126,18 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
             >
                 {numbers.map(({num, color}, index) => (
                     <div key={num} className="absolute w-full h-full" style={{transform: `rotate(${(360 / 37) * index}deg)`}}>
-                        <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${getNumberColorClass(color)}`} style={{transformOrigin: 'bottom center'}}>
+                        <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${color === 'red' ? 'bg-red-500' : color === 'black' ? 'bg-gray-900' : 'bg-green-600' }`} style={{transformOrigin: 'bottom center'}}>
                             {num}
                         </div>
                     </div>
                 ))}
             </div>
             <div className="absolute top-[-10px] left-1/2 -ml-3 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-white z-20"></div>
-            <div className="absolute w-12 h-12 rounded-full bg-gray-900 border-4 border-yellow-700 z-10" />
+            <div className="absolute w-12 h-12 rounded-full bg-secondary border-4 border-primary/60 z-10" />
 
             {result && !spinning && (
                 <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80 z-20 animate-in zoom-in-50 duration-500">
-                    <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-red-500' : result.color === 'black' ? 'text-white' : 'text-green-500'}`}>
+                    <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-red-500' : result.color === 'black' ? 'text-foreground' : 'text-green-500'}`}>
                         {result.num}
                     </span>
                 </div>
@@ -145,7 +145,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-accent text-accent' : 'border-destructive text-destructive')}>
+          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-primary/50 text-primary' : 'border-destructive text-destructive')}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
@@ -155,12 +155,12 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 <Badge variant="secondary" className="text-lg">Apuesta Total: ${totalBet}</Badge>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
-              <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600">1-18</Button>
-              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600">Par</Button>
-              <Button onClick={() => placeBet('red')} className="bg-red-600 hover:bg-red-500">Rojo</Button>
-              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700">Negro</Button>
-              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600">Impar</Button>
-              <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600">19-36</Button>
+              <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600 text-white">1-18</Button>
+              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600 text-white">Par</Button>
+              <Button onClick={() => placeBet('red')} className="bg-red-600 hover:bg-red-500 text-white">Rojo</Button>
+              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700 text-white">Negro</Button>
+              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600 text-white">Impar</Button>
+              <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600 text-white">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
                 {numbers.slice(1).map(({ num, color }) => (

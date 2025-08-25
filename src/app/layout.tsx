@@ -6,8 +6,8 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Casino de Luigi',
-  description: 'Un casino online amigable y divertido',
+  title: 'PascualBet',
+  description: 'Tu casino online de confianza',
 };
 
 export default function RootLayout({

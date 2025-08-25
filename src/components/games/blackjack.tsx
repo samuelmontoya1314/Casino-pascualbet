@@ -47,11 +47,11 @@ const calculateScore = (hand: Hand): number => {
 };
 
 const GameCard = ({ card, hidden, revealed, style }: { card: CardType; hidden?: boolean, revealed?: boolean, style?: React.CSSProperties }) => {
-    const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-white';
+    const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-foreground';
     
     if (hidden) {
       return (
-        <div style={style} className="w-24 h-36 rounded-lg bg-blue-500 border-2 border-blue-700 flex items-center justify-center">
+        <div style={style} className="w-24 h-36 rounded-lg bg-primary border-2 border-blue-700 flex items-center justify-center">
           <div className="w-20 h-32 rounded-md bg-blue-600" />
         </div>
       );
@@ -182,7 +182,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
   }
 
   return (
-    <Card className="w-full bg-card/70 border-primary shadow-2xl shadow-primary/20">
+    <Card className="w-full bg-card/70 border-primary/20 shadow-2xl shadow-primary/20">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Blackjack</CardTitle>
         <CardDescription>Acércate a 21 más que el crupier sin pasarte.</CardDescription>
@@ -222,7 +222,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
         )}
 
         {message && (
-          <Alert className={cn('transition-opacity duration-300', message.includes('ganado') ? 'border-accent text-accent' : 'border-destructive text-destructive')}>
+          <Alert className={cn('transition-opacity duration-300', message.includes('ganado') ? 'border-primary/50 text-primary' : 'border-destructive text-destructive')}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
@@ -232,7 +232,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
                 <div className="text-2xl font-bold">Haz tu Apuesta</div>
                 <div className="flex items-center gap-4">
                     <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
-                    <div className="text-3xl font-bold text-accent">${bet}</div>
+                    <div className="text-3xl font-bold text-primary">${bet}</div>
                     <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
                 </div>
                 <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Repartir Cartas</Button>
@@ -241,8 +241,8 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
 
         {gameState === 'playing' && (
           <div className="flex gap-4">
-            <Button size="lg" onClick={handleHit} className="bg-accent hover:bg-accent/90">Pedir</Button>
-            <Button size="lg" onClick={handleStand} variant="secondary">Plantarse</Button>
+            <Button size="lg" onClick={handleHit} className="bg-secondary hover:bg-secondary/80">Pedir</Button>
+            <Button size="lg" onClick={handleStand} variant="outline">Plantarse</Button>
           </div>
         )}
 
