@@ -54,23 +54,21 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       setMessage("¡Haz una apuesta antes de girar!");
       return;
     }
+    if (balance < totalBet) {
+      setMessage("No tienes saldo suficiente para apostar.");
+      return;
+    }
 
-    onBalanceChange(-totalBet);
     setSpinning(true);
     setMessage('');
     setResult(null);
 
-    const winningNumberIndex = Math.floor(Math.random() * numbers.length);
-    const winningNumber = numbers[winningNumberIndex];
-    
-    // Find the position of the winning number in the visual wheel order
+    const winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
     const visualIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
 
     const anglePerSegment = 360 / 37;
-    // Add randomness to the final angle for a more natural stop, but keep it within the segment
     const randomOffset = (Math.random() - 0.5) * anglePerSegment * 0.8;
-    // 6 full spins for animation + angle to the winning number's segment
-    const winningAngle = (360 * 6) - (anglePerSegment * visualIndex) + randomOffset;
+    const winningAngle = 360 * 6 - (anglePerSegment * visualIndex) + randomOffset;
     
     setFinalAngle(winningAngle);
     
@@ -99,13 +97,20 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       
       if (winnings > 0) {
         onBalanceChange(winnings);
-        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
+        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings - totalBet}!`);
       } else {
         setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
       }
-
+      setBets([]);
     }, 4000); // 4 second spin
   };
+  
+  useEffect(() => {
+    if(spinning) {
+        onBalanceChange(-totalBet);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinning]);
 
   const clearBets = () => {
     if(spinning) return;
