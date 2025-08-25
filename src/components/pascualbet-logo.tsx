@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export const PascualBetLogo = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 280 60" 
+        viewBox="0 0 280 50" 
         className={cn("w-48 h-auto", className)} {...props}>
         <defs>
             <linearGradient id="pascual-grad-logo" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -25,17 +25,6 @@ export const PascualBetLogo = ({ className, ...props }: React.SVGProps<SVGSVGEle
         >
             Pascual
             <tspan fill="url(#bet-grad-logo)">Bet</tspan>
-        </text>
-        <text
-            x="0"
-            y="58"
-            fontFamily="'Poppins', sans-serif"
-            fontSize="10"
-            fontWeight="600"
-            fill="hsl(var(--muted-foreground))"
-            letterSpacing="0.1em"
-        >
-            YOUR WINNING DESTINATION
         </text>
     </svg>
 );
