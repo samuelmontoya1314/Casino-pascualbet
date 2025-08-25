@@ -27,7 +27,7 @@ import SlotsGame from '@/components/games/slots';
 import BlackjackGame from '@/components/games/blackjack';
 import RouletteGame from '@/components/games/roulette';
 import PokerGame from '@/components/games/poker';
-import { PascualBetLogo } from '@/components/pascualbet-logo';
+import { PascualBetIcon } from '@/components/pascualbet-icon';
 
 
 export default function Dashboard({ user }: { user: User }) {
@@ -50,7 +50,8 @@ export default function Dashboard({ user }: { user: User }) {
       <TooltipProvider>
         <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
-                <PascualBetLogo className="w-32 h-auto" />
+                <PascualBetIcon className="w-12 h-auto" />
+                 <p className="font-bold text-xl tracking-tighter">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
                 <div className="flex items-center gap-3 rounded-full bg-secondary px-4 py-2">
@@ -92,13 +93,13 @@ export default function Dashboard({ user }: { user: User }) {
                           </DropdownMenuItem>
                         </DialogTrigger>
                         <DropdownMenuSeparator />
-                        <form action={handleLogout} className="w-full">
-                            <DropdownMenuItem asChild>
-                                <button type="submit" className="w-full text-left flex items-center">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    Cerrar Sesión
-                                </button>
-                            </DropdownMenuItem>
+                        <form action={handleLogout}>
+                          <DropdownMenuItem asChild>
+                              <button type="submit" className="w-full text-left flex items-center">
+                                  <LogOut className="mr-2 h-4 w-4" />
+                                  Cerrar Sesión
+                              </button>
+                          </DropdownMenuItem>
                         </form>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -125,6 +126,14 @@ export default function Dashboard({ user }: { user: User }) {
                       <div className="grid grid-cols-4 items-center gap-4">
                         <span className="text-right font-semibold">Saldo:</span>
                         <span className="col-span-3">{formatCurrency(balance)}</span>
+                      </div>
+                       <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Fondos:</span>
+                          <div className="col-span-3">
+                            <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground">
+                                <Coins className="mr-2 h-4 w-4" /> Agregar 100 COP
+                            </Button>
+                          </div>
                       </div>
                     </div>
                   </DialogContent>
