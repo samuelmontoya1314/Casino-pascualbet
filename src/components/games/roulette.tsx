@@ -15,6 +15,11 @@ const numbers = [
   })),
 ];
 
+// Reorder numbers to match a standard roulette wheel layout for visual accuracy
+const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+const orderedNumbers = wheelOrder.map(num => numbers.find(n => n.num === num)!);
+
+
 type BetType = 'straight' | 'red' | 'black' | 'even' | 'odd' | 'low' | 'high';
 type Bet = { type: BetType, value?: number, amount: number };
 
@@ -55,12 +60,18 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
     setMessage('');
     setResult(null);
 
-    const winningIndex = Math.floor(Math.random() * numbers.length);
-    const winningNumber = numbers[winningIndex];
+    const winningNumberIndex = Math.floor(Math.random() * numbers.length);
+    const winningNumber = numbers[winningNumberIndex];
+    
+    // Find the position of the winning number in the visual wheel order
+    const visualIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
+
     const anglePerSegment = 360 / 37;
-    // Add randomness to the final angle for a more natural stop
+    // Add randomness to the final angle for a more natural stop, but keep it within the segment
     const randomOffset = (Math.random() - 0.5) * anglePerSegment * 0.8;
-    const winningAngle = 360 * 6 - (anglePerSegment * winningIndex) + randomOffset; // 6 full spins + final position
+    // 6 full spins for animation + angle to the winning number's segment
+    const winningAngle = (360 * 6) - (anglePerSegment * visualIndex) + randomOffset;
+    
     setFinalAngle(winningAngle);
     
     setTimeout(() => {
@@ -88,7 +99,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       
       if (winnings > 0) {
         onBalanceChange(winnings);
-        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings - totalBet}!`);
+        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
       } else {
         setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
       }
@@ -118,13 +129,13 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       <CardContent className="flex flex-col items-center gap-6">
         <div className="relative w-96 h-96 rounded-full border-8 border-primary/50 bg-secondary flex items-center justify-center shadow-2xl overflow-hidden">
             <div 
-              className={cn(`absolute w-full h-full`, spinning && 'animate-spin-roulette')}
+              className={cn(`absolute w-full h-full`)}
               style={{
                   transform: `rotate(${finalAngle}deg)`,
-                  transition: spinning ? 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+                  transition: spinning ? 'transform 4s cubic-bezier(0.2, 0.8, 0.7, 1)' : 'none',
               }}
             >
-                {numbers.map(({num, color}, index) => (
+                {orderedNumbers.map(({num, color}, index) => (
                     <div key={num} className="absolute w-full h-full" style={{transform: `rotate(${(360 / 37) * index}deg)`}}>
                         <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${color === 'red' ? 'bg-red-500' : color === 'black' ? 'bg-gray-900' : 'bg-green-600' }`} style={{transformOrigin: 'bottom center'}}>
                             {num}
@@ -145,7 +156,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-primary/50 text-primary' : 'border-destructive text-destructive')}>
+          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-primary/50 text-primary' : message.includes('Perdiste') ? 'border-destructive text-destructive' : 'border-border')}>
             <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
           </Alert>
         )}
@@ -163,7 +174,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
               <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600 text-white">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
-                {numbers.slice(1).map(({ num, color }) => (
+                {numbers.slice(1).sort((a,b) => a.num - b.num).map(({ num, color }) => (
                     <Button key={num} onClick={() => placeBet('straight', num)} variant="outline" className={`h-12 w-full p-0 text-xs ${getNumberColorClass(color)}`}>
                         {num}
                     </Button>
