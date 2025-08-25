@@ -15,7 +15,6 @@ const numbers = [
   })),
 ];
 
-// Reorder numbers to match a standard roulette wheel layout for visual accuracy
 const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
 const orderedNumbers = wheelOrder.map(num => numbers.find(n => n.num === num)!);
 
@@ -59,6 +58,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       return;
     }
 
+    onBalanceChange(-totalBet);
     setSpinning(true);
     setMessage('');
     setResult(null);
@@ -68,7 +68,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
     const anglePerSegment = 360 / 37;
     const randomOffset = (Math.random() - 0.5) * anglePerSegment * 0.8;
-    const winningAngle = 360 * 6 - (anglePerSegment * visualIndex) + randomOffset;
+    const winningAngle = (360 * 6) - (anglePerSegment * visualIndex) + randomOffset;
     
     setFinalAngle(winningAngle);
     
@@ -79,7 +79,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
       let winnings = 0;
       bets.forEach(bet => {
         if (bet.type === 'straight' && bet.value === winningNumber.num) {
-          winnings += bet.amount * 35;
+          winnings += bet.amount * 36;
         } else if (bet.type === 'red' && winningNumber.color === 'red') {
           winnings += bet.amount * 2;
         } else if (bet.type === 'black' && winningNumber.color === 'black') {
@@ -95,23 +95,18 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         }
       });
       
+      const netWin = winnings - totalBet;
+
       if (winnings > 0) {
         onBalanceChange(winnings);
-        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings - totalBet}!`);
+        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${netWin}!`);
       } else {
         setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
       }
       setBets([]);
-    }, 4000); // 4 second spin
+    }, 4000); 
   };
   
-  useEffect(() => {
-    if(spinning) {
-        onBalanceChange(-totalBet);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spinning]);
-
   const clearBets = () => {
     if(spinning) return;
     setBets([]);
