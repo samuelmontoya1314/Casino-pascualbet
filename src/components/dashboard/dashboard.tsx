@@ -20,17 +20,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Star, Coins, Diamond } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins } from 'lucide-react';
 import type { User } from '@/lib/users';
 import { useState } from 'react';
 import SlotsGame from '@/components/games/slots';
 import BlackjackGame from '@/components/games/blackjack';
 import RouletteGame from '@/components/games/roulette';
 import PokerGame from '@/components/games/poker';
+import { PascualBetLogo } from '@/components/pascualbet-logo';
 
-const PascualBetLogo = () => (
-    <Diamond className="text-primary" size={28} />
-)
 
 export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
@@ -52,8 +50,7 @@ export default function Dashboard({ user }: { user: User }) {
       <TooltipProvider>
         <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
-                <PascualBetLogo />
-                <h1 className="text-3xl font-bold text-primary" style={{fontFamily: "'Poppins', sans-serif"}}>PascualBet</h1>
+                <PascualBetLogo className="w-32 h-auto" />
             </div>
             <div className="ml-auto flex items-center gap-4">
                 <div className="flex items-center gap-3 rounded-full bg-secondary px-4 py-2">
@@ -62,7 +59,7 @@ export default function Dashboard({ user }: { user: User }) {
                 </div>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-primary/20 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground">
                             <Coins className="h-5 w-5" />
                         </Button>
                     </TooltipTrigger>

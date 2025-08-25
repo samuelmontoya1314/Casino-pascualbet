@@ -2,21 +2,14 @@ import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Diamond } from 'lucide-react';
-
-const PascualBetLogo = () => (
-    <Diamond className="text-primary-foreground" size={32} />
-)
+import { PascualBetLogo } from '@/components/pascualbet-logo';
 
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <div className="text-center mb-8">
-        <div className="mx-auto bg-primary text-primary-foreground rounded-full p-3 w-fit mb-4 inline-block shadow-lg">
-            <PascualBetLogo />
-        </div>
-        <h1 className="text-5xl font-bold text-primary" style={{fontFamily: "'Poppins', sans-serif"}}>PascualBet</h1>
-        <p className="text-muted-foreground mt-2">Tu Destino de Juego y Suerte</p>
+      <div className="flex flex-col items-center justify-center text-center mb-8">
+        <PascualBetLogo className="w-48 h-auto mb-4" />
+        <p className="text-muted-foreground mt-2 font-semibold tracking-wider uppercase">Your Winning Destination</p>
       </div>
 
       <Tabs defaultValue="login" className="w-full max-w-md">
