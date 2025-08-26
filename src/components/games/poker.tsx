@@ -24,12 +24,12 @@ const shuffleDeck = (deck: CardType[]): CardType[] => {
 };
 
 const GameCard = ({ card, isSelected, onClick, style }: { card: CardType; isSelected?: boolean; onClick?: () => void, style?: React.CSSProperties }) => {
-  const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-foreground';
+  const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-accent' : 'text-foreground';
   return (
     <div 
         onClick={onClick}
         style={style}
-        className={cn('w-24 h-36 rounded-lg bg-card border-2 shadow-lg flex flex-col justify-between p-2 transition-all duration-200', cardColor, onClick ? 'cursor-pointer' : '', isSelected ? 'border-primary transform -translate-y-2' : 'border-border')}
+        className={cn('w-24 h-36 rounded-none bg-card border-2 flex flex-col justify-between p-2 transition-all duration-200 font-mono', cardColor, onClick ? 'cursor-pointer' : '', isSelected ? 'border-primary transform -translate-y-2' : 'border-border')}
     >
       <div className="text-2xl font-bold">{card.rank}</div>
       <div className="text-4xl text-center">{card.suit}</div>
@@ -151,7 +151,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
             if (result.payout > 0) {
                 const winnings = bet * result.payout;
-                setMessage(`¡Conseguiste ${result.name}! Ganaste $${winnings}.`);
+                setMessage(`¡${result.name}! Ganas $${winnings}.`);
                 onBalanceChange(winnings);
             } else {
                 setMessage(`${result.name}. No has ganado.`);
@@ -180,9 +180,9 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   ];
 
   return (
-    <Card className="w-full bg-card/70 border-primary/20 shadow-2xl shadow-primary/20">
+    <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary">Video Póker</CardTitle>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">Video Póker</CardTitle>
         <CardDescription>Jotas o Mejor - 5 Cartas</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
@@ -191,7 +191,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
             <div className="w-2/3 space-y-6">
                 {gameState !== 'betting' && (
                   <div className="min-h-[220px]">
-                    <h3 className="text-xl font-semibold text-center mb-4">Tu Mano {handResult && <Badge className={cn(handResult && handResult.payout > 0 && 'animate-win-pulse bg-primary/80')}>{handResult.name}</Badge>}</h3>
+                    <h3 className="text-xl font-semibold text-center mb-4 uppercase">Tu Mano {handResult && <Badge variant="secondary" className={cn(handResult && handResult.payout > 0 && 'animate-win-pulse bg-primary/80')}>{handResult.name}</Badge>}</h3>
                     <div className="flex justify-center gap-4">
                       {playerHand.map((card, index) => (
                         <GameCard 
@@ -208,28 +208,28 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                 )}
 
                 {message && (
-                  <Alert className={cn('transition-opacity duration-300', handResult && handResult.payout > 0 ? 'border-primary/50 text-primary' : 'border-destructive text-destructive')}>
-                    <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
+                  <Alert variant={handResult && handResult.payout > 0 ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', handResult && handResult.payout > 0 ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
+                    <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
                   </Alert>
                 )}
 
                 {gameState === 'betting' && (
                     <div className="flex flex-col items-center gap-4 pt-16 min-h-[220px]">
-                        <div className="text-2xl font-bold">Haz tu Apuesta</div>
+                        <div className="text-2xl font-bold uppercase">Haz tu Apuesta</div>
                         <div className="flex items-center gap-4">
                             <Button onClick={() => handleBetChange(-5)} disabled={bet <= 5}>-</Button>
                             <div className="text-3xl font-bold text-primary">${bet}</div>
                             <Button onClick={() => handleBetChange(5)} disabled={bet >= balance}>+</Button>
                         </div>
-                        <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Repartir</Button>
+                        <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Repartir</Button>
                     </div>
                 )}
             </div>
 
             <Card className="w-1/3">
-                <CardHeader><CardTitle>Tabla de Pagos</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg uppercase">Pagos</CardTitle></CardHeader>
                 <CardContent>
-                    <ul className="space-y-1 text-sm">
+                    <ul className="space-y-1 text-xs uppercase">
                         {PAYOUT_TABLE.map(p => (
                             <li key={p.name} className="flex justify-between">
                                 <span>{p.name}</span>
@@ -244,12 +244,12 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
         {gameState === 'dealt' && (
           <div className="flex gap-4">
-            <Button size="lg" onClick={handleDraw} className="bg-secondary hover:bg-secondary/80">Cambiar</Button>
+            <Button size="lg" onClick={handleDraw} className="bg-secondary hover:bg-secondary/80 uppercase">Cambiar</Button>
           </div>
         )}
 
         {gameState === 'finished' && (
-            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Jugar de Nuevo</Button>
+            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Jugar de Nuevo</Button>
         )}
       </CardContent>
     </Card>

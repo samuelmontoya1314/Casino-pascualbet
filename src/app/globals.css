@@ -3,53 +3,54 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Press Start 2P', system-ui;
+  image-rendering: pixelated;
 }
 
 @layer base {
   :root {
-    --background: 220 20% 98%; /* Light Cool Gray */
-    --foreground: 224 70% 15%; /* Dark Imperial Blue */
-    --card: 0 0% 100%;
-    --card-foreground: 224 70% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 70% 15%;
-    --primary: 221 83% 45%; /* Royal Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 94%; /* Lighter Cool Gray */
-    --secondary-foreground: 224 70% 15%;
-    --muted: 220 20% 94%;
-    --muted-foreground: 220 10% 45%;
-    --accent: 0 84.2% 60.2%; /* Bright Red */
-    --accent-foreground: 0 0% 100%;
+    --background: 220 13% 18%; /* Dark Slate Gray */
+    --foreground: 0 0% 98%; /* Almost White */
+    --card: 220 13% 22%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 13% 18%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 207 90% 54%; /* Bright Blue */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 13% 30%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 13% 30%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 326 91% 59%; /* Bright Pink */
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 90%;
-    --input: 220 20% 90%;
-    --ring: 221 83% 45%;
-    --radius: 0.5rem;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 35%;
+    --input: 220 13% 30%;
+    --ring: 207 90% 54%;
+    --radius: 0rem;
   }
 
   .dark {
-    --background: 224 70% 10%; /* Very Dark Blue */
-    --foreground: 220 20% 95%;
-    --card: 224 70% 13%; /* Slightly Lighter Dark Blue */
-    --card-foreground: 220 20% 95%;
-    --popover: 224 70% 10%;
-    --popover-foreground: 220 20% 95%;
-    --primary: 221 83% 55%; /* Brighter Royal Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 224 70% 18%;
-    --secondary-foreground: 220 20% 95%;
-    --muted: 224 70% 18%;
+    --background: 220 13% 10%; /* Darker Slate Gray */
+    --foreground: 0 0% 98%;
+    --card: 220 13% 14%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 13% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 13% 18%;
     --muted-foreground: 220 10% 65%;
-    --accent: 0 84.2% 60.2%; /* Bright Red */
-    --accent-foreground: 0 0% 100%;
+    --accent: 326 91% 59%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 224 70% 20%;
-    --input: 224 70% 20%;
-    --ring: 221 83% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 25%;
+    --input: 220 13% 25%;
+    --ring: 207 90% 54%;
   }
 }
 
@@ -69,15 +70,15 @@ body {
     }
 
     @keyframes deal-card {
-        from { opacity: 0; transform: translateY(-30px) scale(0.8); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes flip-card {
         from { transform: rotateY(90deg); }
         to { transform: rotateY(0deg); }
     }
-
+    
     @keyframes bust-shake {
         0%, 100% { transform: translateX(0); }
         25% { transform: translateX(-5px); }
@@ -87,7 +88,7 @@ body {
 
     @keyframes win-pulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary)); }
-        50% { transform: scale(1.05); box-shadow: 0 0 15px 5px hsl(var(--primary) / 0.7); }
+        50% { transform: scale(1.05); box-shadow: 0 0 10px 3px hsl(var(--primary) / 0.7); }
     }
 
     .animate-spin-roulette {
@@ -95,11 +96,11 @@ body {
     }
     
     .animate-deal-card {
-        animation: deal-card 0.5s ease-out forwards;
+        animation: deal-card 0.3s ease-out forwards;
     }
 
     .animate-flip-card {
-        animation: flip-card 0.5s ease-out forwards;
+        animation: flip-card 0.4s ease-out forwards;
     }
     
     .animate-bust-shake {
@@ -107,13 +108,13 @@ body {
     }
 
     .animate-win-pulse {
-        animation: win-pulse 1.5s infinite;
+        animation: win-pulse 1s infinite;
     }
 
     @keyframes spin-reel-blur {
       0% {
         transform: translateY(-100%);
-        filter: blur(4px);
+        filter: blur(2px);
       }
       100% {
         transform: translateY(0);
@@ -122,7 +123,7 @@ body {
     }
 
     .animate-spin-reel-blur {
-      animation: spin-reel-blur 0.1s linear infinite;
+      animation: spin-reel-blur 0.08s linear infinite;
     }
 
     .reel-stop-blur {
@@ -131,6 +132,19 @@ body {
     }
 
     .reel-spinning-blur {
-      filter: blur(4px);
+      filter: blur(2px);
+    }
+
+    .pixel-border {
+      border-style: solid;
+      border-image-slice: 2;
+      border-image-width: 2;
+      border-image-repeat: stretch;
+      border-image-source: url('data:image/svg+xml;utf8,<svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 2V0H2M4 0H6V2M0 4V6H2M4 6H6V4" stroke="hsl(var(--border))" stroke-width="2" /></svg>');
+      border-width: 4px;
+    }
+
+    .pixel-border-primary {
+       border-image-source: url('data:image/svg+xml;utf8,<svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 2V0H2M4 0H6V2M0 4V6H2M4 6H6V4" stroke="hsl(var(--primary))" stroke-width="2" /></svg>');
     }
 }

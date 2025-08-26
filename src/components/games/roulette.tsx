@@ -18,7 +18,6 @@ const numbers = [
 const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
 const orderedNumbers = wheelOrder.map(num => numbers.find(n => n.num === num)!);
 
-
 type BetType = 'straight' | 'red' | 'black' | 'even' | 'odd' | 'low' | 'high';
 type Bet = { type: BetType, value?: number, amount: number };
 
@@ -49,64 +48,68 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   const totalBet = bets.reduce((acc, b) => acc + b.amount, 0);
 
   const spinWheel = () => {
-    if (bets.length === 0) {
-      setMessage("¡Haz una apuesta antes de girar!");
-      return;
-    }
-    if (balance < totalBet) {
-      setMessage("No tienes saldo suficiente para apostar.");
-      return;
+    if (spinning || bets.length === 0) return;
+    if (totalBet > balance) {
+        setMessage('Saldo insuficiente para esta apuesta.');
+        return;
     }
 
-    onBalanceChange(-totalBet);
     setSpinning(true);
     setMessage('');
     setResult(null);
 
     const winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
-    const visualIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
+    const winningIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
 
-    const anglePerSegment = 360 / 37;
-    const randomOffset = (Math.random() - 0.5) * anglePerSegment * 0.8;
-    const winningAngle = (360 * 6) - (anglePerSegment * visualIndex) + randomOffset;
-    
+    const baseRotations = 360 * 5;
+    const anglePerSegment = 360 / orderedNumbers.length;
+    const winningAngle = baseRotations - (winningIndex * anglePerSegment);
+
     setFinalAngle(winningAngle);
     
     setTimeout(() => {
-      setResult(winningNumber);
-      setSpinning(false);
-
       let winnings = 0;
       bets.forEach(bet => {
-        if (bet.type === 'straight' && bet.value === winningNumber.num) {
-          winnings += bet.amount * 36;
-        } else if (bet.type === 'red' && winningNumber.color === 'red') {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'black' && winningNumber.color === 'black') {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'even' && winningNumber.num !== 0 && winningNumber.num % 2 === 0) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'odd' && winningNumber.num % 2 !== 0) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'low' && winningNumber.num >= 1 && winningNumber.num <= 18) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'high' && winningNumber.num >= 19 && winningNumber.num <= 36) {
-          winnings += bet.amount * 2;
+        const { num, color } = winningNumber;
+        if (bet.type === 'straight' && bet.value === num) {
+          winnings += bet.amount * 35;
+        } else if (bet.type === 'red' && color === 'red') {
+          winnings += bet.amount;
+        } else if (bet.type === 'black' && color === 'black') {
+          winnings += bet.amount;
+        } else if (bet.type === 'even' && num !== 0 && num % 2 === 0) {
+          winnings += bet.amount;
+        } else if (bet.type === 'odd' && num % 2 !== 0) {
+          winnings += bet.amount;
+        } else if (bet.type === 'low' && num >= 1 && num <= 18) {
+          winnings += bet.amount;
+        } else if (bet.type === 'high' && num >= 19 && num <= 36) {
+          winnings += bet.amount;
         }
       });
       
       const netWin = winnings - totalBet;
+      onBalanceChange(netWin);
 
       if (winnings > 0) {
-        onBalanceChange(winnings);
-        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${netWin}!`);
+        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
       } else {
-        setMessage(`El número es ${winningNumber.num}. Perdiste $${totalBet}.`);
+        setMessage(`El número es ${winningNumber.num}. Suerte la próxima.`);
       }
+
+      setResult(winningNumber);
+      setSpinning(false);
       setBets([]);
-    }, 4000); 
+    }, 4500); 
   };
   
+  useEffect(() => {
+    if (spinning) {
+        onBalanceChange(-totalBet);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinning]);
+
   const clearBets = () => {
     if(spinning) return;
     setBets([]);
@@ -115,40 +118,40 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   };
   
   const getNumberColorClass = (color: string) => {
-    if (color === 'red') return 'bg-red-600 hover:bg-red-500 text-white';
+    if (color === 'red') return 'bg-accent hover:bg-accent/80 text-white';
     if (color === 'black') return 'bg-gray-800 hover:bg-gray-700 text-white';
     return 'bg-green-600 hover:bg-green-500 text-white';
   }
 
   return (
-    <Card className="w-full bg-card/70 border-primary/20 shadow-2xl shadow-primary/20">
+    <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary">Ruleta</CardTitle>
-        <CardDescription>¡Haz tus apuestas y gira la ruleta!</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">Ruleta</CardTitle>
+        <CardDescription>¡Haz tus apuestas y gira!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
-        <div className="relative w-96 h-96 rounded-full border-8 border-primary/50 bg-secondary flex items-center justify-center shadow-2xl overflow-hidden">
+        <div className={cn("relative w-96 h-96 rounded-full border-8 bg-secondary flex items-center justify-center shadow-inner overflow-hidden", spinning ? 'border-primary' : 'border-border')}>
             <div 
               className={cn(`absolute w-full h-full`)}
               style={{
                   transform: `rotate(${finalAngle}deg)`,
-                  transition: spinning ? 'transform 4s cubic-bezier(0.2, 0.8, 0.7, 1)' : 'none',
+                  transition: spinning ? 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
               }}
             >
                 {orderedNumbers.map(({num, color}, index) => (
                     <div key={num} className="absolute w-full h-full" style={{transform: `rotate(${(360 / 37) * index}deg)`}}>
-                        <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${color === 'red' ? 'bg-red-500' : color === 'black' ? 'bg-gray-900' : 'bg-green-600' }`} style={{transformOrigin: 'bottom center'}}>
+                        <div className={`absolute top-0 left-1/2 -ml-4 w-8 h-1/2 pt-2 text-center font-bold text-white ${color === 'red' ? 'bg-accent' : color === 'black' ? 'bg-gray-900' : 'bg-green-600' }`} style={{transformOrigin: 'bottom center'}}>
                             {num}
                         </div>
                     </div>
                 ))}
             </div>
             <div className="absolute top-[-10px] left-1/2 -ml-3 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-white z-20"></div>
-            <div className="absolute w-12 h-12 rounded-full bg-secondary border-4 border-primary/60 z-10" />
+            <div className="absolute w-12 h-12 rounded-full bg-secondary border-4 border-border z-10" />
 
             {result && !spinning && (
                 <div className="absolute flex items-center justify-center w-24 h-24 rounded-full bg-background/80 z-20 animate-in zoom-in-50 duration-500">
-                    <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-red-500' : result.color === 'black' ? 'text-foreground' : 'text-green-500'}`}>
+                    <span className={`text-4xl font-bold ${result.color === 'red' ? 'text-accent' : result.color === 'black' ? 'text-foreground' : 'text-green-500'}`}>
                         {result.num}
                     </span>
                 </div>
@@ -156,8 +159,8 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'border-primary/50 text-primary' : message.includes('Perdiste') ? 'border-destructive text-destructive' : 'border-border')}>
-            <AlertTitle className="font-bold text-lg">{message}</AlertTitle>
+          <Alert variant={message.includes('Ganaste') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
+            <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
           </Alert>
         )}
 
@@ -166,12 +169,12 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 <Badge variant="secondary" className="text-lg">Apuesta Total: ${totalBet}</Badge>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
-              <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600 text-white">1-18</Button>
-              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600 text-white">Par</Button>
-              <Button onClick={() => placeBet('red')} className="bg-red-600 hover:bg-red-500 text-white">Rojo</Button>
-              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700 text-white">Negro</Button>
-              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600 text-white">Impar</Button>
-              <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600 text-white">19-36</Button>
+              <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">1-18</Button>
+              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">Par</Button>
+              <Button onClick={() => placeBet('red')} className="bg-accent hover:bg-accent/80 text-white uppercase">Rojo</Button>
+              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700 text-white uppercase">Negro</Button>
+              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">Impar</Button>
+              <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
                 {numbers.slice(1).sort((a,b) => a.num - b.num).map(({ num, color }) => (
@@ -184,16 +187,16 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 </Button>
             </div>
             <div className="flex items-center gap-2 mt-4">
-                <span className="font-bold">Monto:</span>
+                <span className="font-bold uppercase">Monto:</span>
                 <Input type="number" value={betAmount} onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 1))} className="w-24" />
             </div>
         </div>
 
         <div className="flex gap-4">
-          <Button size="lg" onClick={spinWheel} disabled={spinning || bets.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+          <Button size="lg" onClick={spinWheel} disabled={spinning || bets.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">
             {spinning ? 'Girando...' : 'Girar'}
           </Button>
-          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning}>Limpiar Apuestas</Button>
+          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning} className="uppercase">Limpiar</Button>
         </div>
         
       </CardContent>

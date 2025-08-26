@@ -8,20 +8,19 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="flex flex-col items-center justify-center text-center mb-8">
-        <PascualBetLogo className="w-48 h-auto mb-4" />
-        <p className="text-muted-foreground mt-2 font-semibold tracking-wider uppercase">Your Winning Destination</p>
+        <PascualBetLogo className="w-64 h-auto mb-4" />
       </div>
 
       <Tabs defaultValue="login" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-          <TabsTrigger value="register">Registrarse</TabsTrigger>
+          <TabsTrigger value="login" className="uppercase">Entrar</TabsTrigger>
+          <TabsTrigger value="register" className="uppercase">Registrarse</TabsTrigger>
         </TabsList>
         <TabsContent value="login">
-          <Card>
+          <Card className="border-0">
             <CardHeader>
-              <CardTitle className="text-2xl">¡Bienvenido de Nuevo!</CardTitle>
-              <CardDescription>Ingresa tus credenciales para empezar a jugar.</CardDescription>
+              <CardTitle className="text-2xl uppercase">¡Bienvenido!</CardTitle>
+              <CardDescription>Ingresa para empezar a jugar.</CardDescription>
             </CardHeader>
             <CardContent>
               <LoginForm />
@@ -29,10 +28,10 @@ export default function LoginPage() {
           </Card>
         </TabsContent>
         <TabsContent value="register">
-           <Card>
+           <Card className="border-0">
             <CardHeader>
-              <CardTitle className="text-2xl">Crear una Cuenta</CardTitle>
-              <CardDescription>¡Regístrate para obtener tu bono de bienvenida!</CardDescription>
+              <CardTitle className="text-2xl uppercase">Crear Cuenta</CardTitle>
+              <CardDescription>¡Bono de bienvenida al registrarte!</CardDescription>
             </CardHeader>
             <CardContent>
               <RegisterForm />
@@ -40,8 +39,8 @@ export default function LoginPage() {
           </Card>
         </TabsContent>
       </Tabs>
-      <p className="text-center text-sm text-muted-foreground mt-4">
-        Pista: Usa `admin` / `password_admin_hashed` o `user123` / `password_user_hashed` para iniciar sesión.
+      <p className="text-center text-xs text-muted-foreground mt-4">
+        Pista: Usa `admin` / `password_admin_hashed`
       </p>
     </main>
   );

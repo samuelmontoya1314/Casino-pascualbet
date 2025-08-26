@@ -48,13 +48,13 @@ export default function Dashboard({ user }: { user: User }) {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <TooltipProvider>
-        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 px-4 sm:px-6">
+        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
                 <PascualBetIcon className="w-12 h-auto" />
-                 <p className="font-bold text-xl tracking-tighter">PascualBet</p>
+                 <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
-                <div className="flex items-center gap-3 rounded-full bg-secondary px-4 py-2">
+                <div className="flex items-center gap-3 rounded-none bg-secondary px-4 py-2 border">
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>
                 </div>
@@ -75,9 +75,9 @@ export default function Dashboard({ user }: { user: User }) {
                 <Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="overflow-hidden rounded-full h-12 w-12">
-                            <Avatar className="h-12 w-12">
-                                <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                        <Button variant="secondary" size="icon" className="overflow-hidden rounded-none h-12 w-12 border">
+                            <Avatar className="h-12 w-12 rounded-none">
+                                <AvatarFallback className="bg-primary/20 text-primary font-bold rounded-none">
                                     {user.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                             </Avatar>
