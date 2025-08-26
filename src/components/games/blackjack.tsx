@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 
 type Suit = '♠' | '♥' | '♦' | '♣';
@@ -19,12 +19,12 @@ const createDeck = (): CardType[] => {
 };
 
 const shuffleDeck = (deck: CardType[]): CardType[] => {
-  return deck.sort(() => Math.random() - 0.5);
+  return [...deck].sort(() => Math.random() - 0.5);
 };
 
-const getCardValue = (card: CardType, currentScore: number): number => {
+const getCardValue = (card: CardType): number => {
   if (['J', 'Q', 'K'].includes(card.rank)) return 10;
-  if (card.rank === 'A') return currentScore + 11 > 21 ? 1 : 11;
+  if (card.rank === 'A') return 11;
   return parseInt(card.rank);
 };
 
@@ -34,10 +34,8 @@ const calculateScore = (hand: Hand): number => {
   hand.forEach(card => {
     if (card.rank === 'A') {
       aceCount++;
-      score += 11;
-    } else {
-      score += getCardValue(card, score);
     }
+    score += getCardValue(card);
   });
   while (score > 21 && aceCount > 0) {
     score -= 10;
@@ -80,8 +78,6 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
   const [bet, setBet] = useState(10);
   const [gameState, setGameState] = useState<'betting' | 'playing' | 'dealer' | 'finished'>('betting');
   const [message, setMessage] = useState('');
-  const [isBusted, setIsBusted] = useState(false);
-  const [playerWon, setPlayerWon] = useState(false);
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
@@ -89,34 +85,29 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
       return;
     }
     
+    onBalanceChange(-bet);
     const newDeck = shuffleDeck(createDeck());
-    const initialPlayerHand = [newDeck.pop()!, newDeck.pop()!];
-    const initialDealerHand = [newDeck.pop()!, newDeck.pop()!];
-    
+
+    const initialPlayerHand: Hand = [];
+    const initialDealerHand: Hand = [];
+
+    initialPlayerHand.push(newDeck.pop()!);
+    initialDealerHand.push(newDeck.pop()!);
+    initialPlayerHand.push(newDeck.pop()!);
+    initialDealerHand.push(newDeck.pop()!);
+
     setDeck(newDeck);
-    setPlayerHand([]);
-    setDealerHand([]);
+    setPlayerHand(initialPlayerHand);
+    setDealerHand(initialDealerHand);
     setGameState('playing');
     setMessage('');
-    setIsBusted(false);
-    setPlayerWon(false);
 
-    // Deal cards with animation
-    setTimeout(() => setPlayerHand([initialPlayerHand[0]]), 100);
-    setTimeout(() => setDealerHand([initialDealerHand[0]]), 300);
-    setTimeout(() => setPlayerHand(prev => [...prev, initialPlayerHand[1]]), 500);
-    setTimeout(() => setDealerHand(prev => [...prev, initialDealerHand[1]]), 700);
-
-    setTimeout(() => {
-      const initialPlayerScore = calculateScore(initialPlayerHand);
-      if (initialPlayerScore === 21) {
-          setGameState('finished');
-          setMessage('¡Blackjack! ¡Has ganado!');
-          onBalanceChange(bet * 1.5);
-          setPlayerWon(true);
-      }
-    }, 800)
-
+    const initialPlayerScore = calculateScore(initialPlayerHand);
+    if (initialPlayerScore === 21) {
+        setGameState('finished');
+        setMessage('¡Blackjack! ¡Has ganado!');
+        onBalanceChange(bet * 2.5); // Blackjack pays 3:2
+    }
   }, [balance, bet, onBalanceChange]);
   
   useEffect(() => {
@@ -125,25 +116,21 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
   }, [playerHand, dealerHand]);
 
   useEffect(() => {
-    if (gameState === 'playing' && playerHand.length === 0) { // On round start
-        onBalanceChange(-bet);
+    if (gameState !== 'playing') return;
+
+    if (playerScore > 21) {
+        setMessage('¡Te pasaste! Pierdes.');
+        setGameState('finished');
     }
-  }, [gameState, playerHand, onBalanceChange, bet]);
+  }, [playerScore, gameState]);
 
 
   const handleHit = () => {
     if (gameState !== 'playing') return;
     const newDeck = [...deck];
     const newCard = newDeck.pop()!;
-    const newHand = [...playerHand, newCard];
     setDeck(newDeck);
-    setPlayerHand(newHand);
-    const newScore = calculateScore(newHand);
-    if (newScore > 21) {
-      setGameState('finished');
-      setMessage('¡Te pasaste! Pierdes.');
-      setIsBusted(true);
-    }
+    setPlayerHand(prevHand => [...prevHand, newCard]);
   };
 
   const handleStand = useCallback(() => {
@@ -151,33 +138,29 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     setGameState('dealer');
 
     let currentDealerHand = [...dealerHand];
-    let newDeck = [...deck];
-
-    const dealerTurn = () => {
-        if (calculateScore(currentDealerHand) < 17) {
-            const newCard = newDeck.pop()!;
-            currentDealerHand.push(newCard);
-            setDealerHand([...currentDealerHand]);
-            setDeck(newDeck);
-            setTimeout(dealerTurn, 500);
-        } else {
-            setGameState('finished');
-            const finalPlayerScore = calculateScore(playerHand);
-            const finalDealerScore = calculateScore(currentDealerHand);
-            
-            if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
-              setMessage('¡Ganas!');
-              onBalanceChange(bet * 2);
-              setPlayerWon(true);
-            } else if (finalPlayerScore < finalDealerScore) {
-              setMessage('El crupier gana.');
-            } else {
-              setMessage("Empate. Se devuelve la apuesta.");
-              onBalanceChange(bet);
-            }
-        }
+    let currentDeck = [...deck];
+    
+    while (calculateScore(currentDealerHand) < 17) {
+        currentDealerHand.push(currentDeck.pop()!);
     }
-    setTimeout(dealerTurn, 500);
+
+    setDealerHand(currentDealerHand);
+    setDeck(currentDeck);
+
+    const finalPlayerScore = calculateScore(playerHand);
+    const finalDealerScore = calculateScore(currentDealerHand);
+
+    setGameState('finished');
+
+    if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
+      setMessage('¡Ganas!');
+      onBalanceChange(bet * 2);
+    } else if (finalPlayerScore < finalDealerScore) {
+      setMessage('El crupier gana.');
+    } else {
+      setMessage("Empate. Se devuelve la apuesta.");
+      onBalanceChange(bet);
+    }
   }, [gameState, dealerHand, deck, playerHand, onBalanceChange, bet]);
   
   const handleBetChange = (amount: number) => {
@@ -186,6 +169,9 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
         setBet(newBet);
     }
   }
+
+  const isBusted = playerScore > 21;
+  const playerWon = gameState === 'finished' && message.includes('Ganas');
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
@@ -204,9 +190,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
                     key={index}
                     card={card} 
                     hidden={gameState === 'playing' && index === 1}
-                    revealed={gameState !== 'playing' && index === 1}
-                    style={{ animationDelay: `${index * 150}ms`}}
-                    className={cn('animate-deal-card')}
+                    revealed={gameState !== 'playing'}
                     />
                 ))}
               </div>
@@ -218,8 +202,6 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
                   <GameCard 
                     key={index} 
                     card={card} 
-                    style={{ animationDelay: `${index * 150}ms`}}
-                    className={cn('animate-deal-card')}
                   />
                 ))}
               </div>
@@ -228,7 +210,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
         )}
 
         {message && (
-          <Alert variant={message.includes('Ganas') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', message.includes('Ganas') ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
+          <Alert variant={playerWon ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', playerWon ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
             <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
           </Alert>
         )}
