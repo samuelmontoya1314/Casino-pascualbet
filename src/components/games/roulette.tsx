@@ -205,16 +205,47 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                         <span>Cómo Jugar</span>
                     </div>
                 </AccordionTrigger>
-                <AccordionContent className="text-xs space-y-2">
-                    <p><strong>Objetivo:</strong> Adivina en qué número, color o sección caerá la bola.</p>
-                    <p><strong>Reglas:</strong></p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>Establece el monto de tu ficha.</li>
-                        <li>Haz clic en los números o zonas del tapete para hacer tus apuestas.</li>
-                        <li>Puedes hacer varias apuestas en una misma ronda.</li>
-                        <li>Pulsa "Girar" para que la bola comience a rodar.</li>
-                        <li>Los premios varían según el tipo de apuesta (Número individual paga más, Rojo/Negro paga menos).</li>
-                    </ul>
+                <AccordionContent className="text-xs space-y-4">
+                    <div>
+                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo del Juego</h4>
+                        <p>Adivina en qué número, color o grupo caerá la bola para ganar.</p>
+                    </div>
+
+                     <div>
+                        <h4 className="font-bold uppercase text-primary mb-2">Tipos de Apuesta</h4>
+                        <ul className="space-y-3">
+                           <li className="flex items-center gap-4">
+                               <div className="flex gap-1">
+                                    <Button disabled size="sm" variant="outline" className="h-8 w-8 p-0 bg-accent text-white">18</Button>
+                               </div>
+                               <span><strong>Número Individual (Straight):</strong> Apuesta a un solo número. ¡El que más paga! (35 a 1)</span>
+                           </li>
+                           <li className="flex items-center gap-4">
+                               <div className="flex gap-1">
+                                    <Button disabled size="sm" className="h-8 px-3 bg-accent hover:bg-accent/80 text-white uppercase">Rojo</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-800 hover:bg-gray-700 text-white uppercase">Negro</Button>
+                               </div>
+                               <span><strong>Rojo o Negro:</strong> Apuesta al color del número ganador. (1 a 1)</span>
+                           </li>
+                           <li className="flex items-center gap-4">
+                                <div className="flex gap-1">
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">Par</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">Impar</Button>
+                               </div>
+                               <span><strong>Par o Impar:</strong> Apuesta a si el número será par o impar. (1 a 1)</span>
+                           </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold uppercase text-primary mb-2">Cómo Jugar</h4>
+                        <ul className="list-disc list-inside space-y-2">
+                            <li><strong>1. Fija tu Monto:</strong> Usa el campo <Input value={betAmount} disabled className="w-16 h-6 inline-block ml-1 mr-1" /> para decidir cuánto vale cada clic.</li>
+                            <li><strong>2. Haz tus Apuestas:</strong> Haz clic en los números o en las zonas del tablero para colocar tus fichas.</li>
+                            <li><strong>3. Inicia el Juego:</strong> Cuando estés listo, pulsa <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">Girar</Button>.</li>
+                            <li><strong>4. Limpiar Apuestas:</strong> Si te equivocas, pulsa <Button size="sm" disabled variant="secondary" className="uppercase text-xs h-6 px-2">Limpiar</Button> para retirar todas tus apuestas antes de girar.</li>
+                        </ul>
+                    </div>
                 </AccordionContent>
             </AccordionItem>
         </Accordion>
