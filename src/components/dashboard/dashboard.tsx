@@ -93,21 +93,21 @@ export default function Dashboard({ user }: { user: User }) {
                               Perfil
                           </DropdownMenuItem>
                         </DialogTrigger>
-                         <Link href="/manual">
+                        <Link href="/manual">
                            <DropdownMenuItem>
                                 <HelpCircle className="mr-2 h-4 w-4"/>
                                 Ayuda
                            </DropdownMenuItem>
                         </Link>
                         <DropdownMenuSeparator />
-                        <form action={handleLogout} className="w-full">
-                            <DropdownMenuItem asChild>
+                        <DropdownMenuItem asChild>
+                            <form action={handleLogout} className="w-full">
                                 <button type="submit" className="w-full text-left flex items-center">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Cerrar Sesión</span>
                                 </button>
-                            </DropdownMenuItem>
-                        </form>
+                            </form>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                  <DialogContent>
@@ -173,7 +173,7 @@ export default function Dashboard({ user }: { user: User }) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link href="/manual" passHref>
+              <Link href="/manual">
                 <Button size="icon" variant="outline" className="fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full shadow-lg bg-primary/20 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground animate-pulse">
                     <HelpCircle className="h-6 w-6" />
                 </Button>
