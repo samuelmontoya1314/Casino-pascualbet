@@ -53,44 +53,52 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
   const spinReels = useCallback(() => {
     if (balance < betAmount || spinning) {
-        setMessage("Saldo insuficiente o ya girando.");
-        return;
+      setMessage("Saldo insuficiente o ya girando.");
+      return;
     }
-    
+
     setSpinning(true);
     onBalanceChange(-betAmount);
     setMessage('');
     setWinningLine([false, false, false]);
 
-    // Create promises for each reel to resolve with a final symbol
-    const spinPromises = Array(3).fill(null).map((_, index) => {
-        return new Promise<typeof symbols[0]>(resolve => {
-            setTimeout(() => {
-                resolve(getRandomSymbol());
-            }, 1000 + index * 300); // Stagger the stops
-        });
-    });
+    const finalReels: (typeof symbols[0])[] = [];
 
-    Promise.all(spinPromises).then(finalReels => {
-        setReels(finalReels);
-        setSpinning(false);
+    const spinPromises = Array(3).fill(null).map((_, index) =>
+      new Promise<void>(resolve => {
+        setTimeout(() => {
+          const finalSymbol = getRandomSymbol();
+          finalReels[index] = finalSymbol;
+          
+          setReels(prevReels => {
+            const newReels = [...prevReels];
+            newReels[index] = finalSymbol;
+            return newReels;
+          });
+          resolve();
+        }, 1000 + index * 300);
+      })
+    );
 
-        const isJackpot = finalReels[0].value === finalReels[1].value && finalReels[1].value === finalReels[2].value;
-        const isTwoInLine = finalReels[0].value === finalReels[1].value;
+    Promise.all(spinPromises).then(() => {
+      setSpinning(false);
 
-        if (isJackpot) {
-            const winnings = betAmount * finalReels[0].multiplier;
-            setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
-            onBalanceChange(winnings);
-            setWinningLine([true, true, true]);
-        } else if (isTwoInLine) {
-            const winnings = betAmount * finalReels[0].multiplier * 0.5; // 2-in-a-row pays half
-            setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
-            onBalanceChange(winnings);
-            setWinningLine([true, true, false]);
-        } else {
-            setMessage('¡Suerte la próxima vez!');
-        }
+      const isJackpot = finalReels[0].value === finalReels[1].value && finalReels[1].value === finalReels[2].value;
+      const isTwoInLine = finalReels[0].value === finalReels[1].value;
+
+      if (isJackpot) {
+        const winnings = betAmount * finalReels[0].multiplier;
+        setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
+        onBalanceChange(winnings);
+        setWinningLine([true, true, true]);
+      } else if (isTwoInLine) {
+        const winnings = betAmount * finalReels[0].multiplier * 0.5;
+        setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
+        onBalanceChange(winnings);
+        setWinningLine([true, true, false]);
+      } else {
+        setMessage('¡Suerte la próxima vez!');
+      }
     });
   }, [balance, betAmount, onBalanceChange, spinning]);
 

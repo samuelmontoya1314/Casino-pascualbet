@@ -23,13 +23,13 @@ const shuffleDeck = (deck: CardType[]): CardType[] => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-const GameCard = ({ card, isSelected, onClick, style }: { card: CardType; isSelected?: boolean; onClick?: () => void, style?: React.CSSProperties }) => {
+const GameCard = ({ card, isSelected, onClick, style, className }: { card: CardType; isSelected?: boolean; onClick?: () => void, style?: React.CSSProperties, className?: string }) => {
   const cardColor = card.suit === '♥' || card.suit === '♦' ? 'text-accent' : 'text-foreground';
   return (
     <div 
         onClick={onClick}
         style={style}
-        className={cn('w-24 h-36 rounded-none bg-card border-2 flex flex-col justify-between p-2 transition-all duration-200 font-mono', cardColor, onClick ? 'cursor-pointer' : '', isSelected ? 'border-primary transform -translate-y-2' : 'border-border')}
+        className={cn('w-24 h-36 rounded-none bg-card border-2 flex flex-col justify-between p-2 transition-all duration-200 font-mono', cardColor, onClick ? 'cursor-pointer' : '', isSelected ? 'border-primary transform -translate-y-2' : 'border-border', className)}
     >
       <div className="text-2xl font-bold">{card.rank}</div>
       <div className="text-4xl text-center">{card.suit}</div>

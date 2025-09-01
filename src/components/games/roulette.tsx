@@ -54,6 +54,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         return;
     }
 
+    onBalanceChange(-totalBet);
     setSpinning(true);
     setMessage('');
     setResult(null);
@@ -74,22 +75,21 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         if (bet.type === 'straight' && bet.value === num) {
           winnings += bet.amount * 35;
         } else if (bet.type === 'red' && color === 'red') {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         } else if (bet.type === 'black' && color === 'black') {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         } else if (bet.type === 'even' && num !== 0 && num % 2 === 0) {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         } else if (bet.type === 'odd' && num % 2 !== 0) {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         } else if (bet.type === 'low' && num >= 1 && num <= 18) {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         } else if (bet.type === 'high' && num >= 19 && num <= 36) {
-          winnings += bet.amount;
+          winnings += bet.amount * 2;
         }
       });
       
-      const netWin = winnings - totalBet;
-      onBalanceChange(netWin);
+      onBalanceChange(winnings);
 
       if (winnings > 0) {
         setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
@@ -103,13 +103,6 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
     }, 4500); 
   };
   
-  useEffect(() => {
-    if (spinning) {
-        onBalanceChange(-totalBet);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spinning]);
-
   const clearBets = () => {
     if(spinning) return;
     setBets([]);
