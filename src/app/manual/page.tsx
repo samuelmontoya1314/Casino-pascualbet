@@ -116,12 +116,12 @@ export default function ManualPage() {
                 </div>
 
                  <div>
-                  <h3 className="font-bold text-primary uppercase">Video Póker (Jacks or Better)</h3>
-                  <p>**Objetivo:** Conseguir la mejor mano de póker de 5 cartas. Ganas con un par de Jotas o superior.</p>
-                  <p>1. **Ajusta tu Apuesta:** Usa los botones `+` y `-`.</p>
-                  <p>2. Haz clic en **"REPARTIR"**.</p>
-                  <p>3. **Selecciona tus Cartas:** Haz clic en las cartas que quieres conservar.</p>
-                  <p>4. Presiona **"CAMBIAR"** para recibir nuevas cartas.</p>
+                  <h3 className="font-bold text-primary uppercase">Póker (Texas Hold'em)</h3>
+                   <p>**Objetivo:** Conseguir la mejor mano de póker de 5 cartas combinando tus 2 cartas con las 5 de la mesa.</p>
+                  <p>1. **Apuesta Inicial (Ante):** Define tu apuesta inicial para la ronda.</p>
+                  <p>2. **Decide tu Jugada:** Tras ver tus cartas, puedes **Apostar** (igualar el ante), **Pasar** (continuar sin apostar más) o **No Ir** (retirarte).</p>
+                  <p>3. **Cartas Comunitarias:** Se revelan el Flop (3), Turn (1) y River (1).</p>
+                  <p>4. **Showdown:** Al final, se comparan las manos y el jugador con la mejor combinación gana el bote.</p>
                 </div>
                 
               </AccordionContent>
