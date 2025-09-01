@@ -1,3 +1,4 @@
+
 export type Suit = '♠' | '♥' | '♦' | '♣';
 export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
 
@@ -42,7 +43,8 @@ const compareHandRanks = (a: HandRank, b: HandRank): number => {
     const handA = a.handCards.slice().sort((c1, c2) => getRankValue(c2.rank) - getRankValue(c1.rank));
     const handB = b.handCards.slice().sort((c1, c2) => getRankValue(c2.rank) - getRankValue(c1.rank));
     
-    for (let i = 0; i < handA.length; i++) {
+    const len = Math.min(handA.length, handB.length);
+    for (let i = 0; i < len; i++) {
         const diff = getRankValue(handA[i].rank) - getRankValue(handB[i].rank);
         if (diff !== 0) return diff;
     }
@@ -58,7 +60,10 @@ export const compareHands = (player: HandRank, dealer: HandRank): 'player' | 'de
      const dealerHandCards = dealer.handCards.sort((a, b) => getRankValue(b.rank) - getRankValue(a.rank));
 
      for(let i = 0; i < playerHandCards.length; i++) {
-         const diff = getRankValue(playerHandCards[i].rank) - getRankValue(dealerHandCards[i].rank);
+         const pCard = playerHandCards[i];
+         const dCard = dealerHandCards[i];
+         if (!pCard || !dCard) break; // Should not happen with correct logic but safe guard.
+         const diff = getRankValue(pCard.rank) - getRankValue(dCard.rank);
          if (diff !== 0) return diff > 0 ? 'player' : 'dealer';
      }
 
@@ -67,7 +72,10 @@ export const compareHands = (player: HandRank, dealer: HandRank): 'player' | 'de
      const dealerKickers = dealer.kickers.sort((a, b) => getRankValue(b.rank) - getRankValue(a.rank));
 
      for(let i = 0; i < playerKickers.length; i++) {
-         const diff = getRankValue(playerKickers[i].rank) - getRankValue(dealerKickers[i].rank);
+        const pKicker = playerKickers[i];
+        const dKicker = dealerKickers[i];
+        if (!pKicker || !dKicker) break;
+         const diff = getRankValue(pKicker.rank) - getRankValue(dKicker.rank);
          if (diff !== 0) return diff > 0 ? 'player' : 'dealer';
      }
 
@@ -143,5 +151,6 @@ export const evaluateHand = (hand: Card[]): HandRank => {
         return { name: 'One Pair', value: 1, handCards, kickers: getKickers(handCards) };
     }
 
-    return { name: 'High Card', value: 0, handCards: hand.slice(0, 1), kickers: hand.slice(1) };
+    const highCardKickers = hand.sort((a, b) => getRankValue(b.rank) - getRankValue(a.rank));
+    return { name: 'High Card', value: 0, handCards: highCardKickers.slice(0,1) , kickers: highCardKickers.slice(1) };
 };
