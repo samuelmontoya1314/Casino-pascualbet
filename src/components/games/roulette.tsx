@@ -1,11 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { BookOpen } from 'lucide-react';
 
 const numbers = [
   { num: 0, color: 'green' },
@@ -36,6 +38,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
   const placeBet = (type: BetType, value?: number) => {
     if (spinning) return;
+    const totalBet = bets.reduce((acc, b) => acc + b.amount, 0);
     if (betAmount > balance - totalBet) {
       setMessage("No tienes saldo suficiente para esta apuesta.");
       return;
@@ -47,61 +50,63 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
   const totalBet = bets.reduce((acc, b) => acc + b.amount, 0);
 
-  const spinWheel = () => {
+  const spinWheel = useCallback(() => {
     if (spinning || bets.length === 0) return;
     if (totalBet > balance) {
         setMessage('Saldo insuficiente para esta apuesta.');
         return;
     }
 
+    setResult(null);
+    setMessage('');
     onBalanceChange(-totalBet);
     setSpinning(true);
-    setMessage('');
-    setResult(null);
 
-    const winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
-    const winningIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
-
-    const baseRotations = 360 * 5;
-    const anglePerSegment = 360 / orderedNumbers.length;
-    const winningAngle = baseRotations - (winningIndex * anglePerSegment);
-
-    setFinalAngle(winningAngle);
-    
     setTimeout(() => {
-      let winnings = 0;
-      bets.forEach(bet => {
-        const { num, color } = winningNumber;
-        if (bet.type === 'straight' && bet.value === num) {
-          winnings += bet.amount * 35;
-        } else if (bet.type === 'red' && color === 'red') {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'black' && color === 'black') {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'even' && num !== 0 && num % 2 === 0) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'odd' && num % 2 !== 0) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'low' && num >= 1 && num <= 18) {
-          winnings += bet.amount * 2;
-        } else if (bet.type === 'high' && num >= 19 && num <= 36) {
-          winnings += bet.amount * 2;
-        }
-      });
-      
-      onBalanceChange(winnings);
+        const winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
+        const winningIndex = orderedNumbers.findIndex(n => n.num === winningNumber.num);
 
-      if (winnings > 0) {
-        setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
-      } else {
-        setMessage(`El número es ${winningNumber.num}. Suerte la próxima.`);
-      }
+        const baseRotations = 360 * 5;
+        const anglePerSegment = 360 / orderedNumbers.length;
+        const winningAngle = baseRotations - (winningIndex * anglePerSegment) + (anglePerSegment/2);
 
-      setResult(winningNumber);
-      setSpinning(false);
-      setBets([]);
-    }, 4500); 
-  };
+        setFinalAngle(winningAngle);
+        
+        setTimeout(() => {
+          let winnings = 0;
+          bets.forEach(bet => {
+            const { num, color } = winningNumber;
+            if (bet.type === 'straight' && bet.value === num) {
+              winnings += bet.amount * 35;
+            } else if (bet.type === 'red' && color === 'red') {
+              winnings += bet.amount * 2;
+            } else if (bet.type === 'black' && color === 'black') {
+              winnings += bet.amount * 2;
+            } else if (bet.type === 'even' && num !== 0 && num % 2 === 0) {
+              winnings += bet.amount * 2;
+            } else if (bet.type === 'odd' && num % 2 !== 0) {
+              winnings += bet.amount * 2;
+            } else if (bet.type === 'low' && num >= 1 && num <= 18) {
+              winnings += bet.amount * 2;
+            } else if (bet.type === 'high' && num >= 19 && num <= 36) {
+              winnings += bet.amount * 2;
+            }
+          });
+          
+          if (winnings > 0) {
+            onBalanceChange(winnings);
+            setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
+          } else {
+            setMessage(`El número es ${winningNumber.num}. Suerte la próxima.`);
+          }
+          
+          setResult(winningNumber);
+          setSpinning(false);
+          setBets([]);
+        }, 4000); 
+    }, 100);
+
+  }, [spinning, bets, totalBet, balance, onBalanceChange]);
   
   const clearBets = () => {
     if(spinning) return;
@@ -152,8 +157,8 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert variant={message.includes('Ganaste') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', message.includes('Ganaste') ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
-            <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
+          <Alert variant={message.includes('Ganaste') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', message.includes('Ganaste') ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
+            <AlertTitle className="font-bold text-lg uppercase text-center">{message}</AlertTitle>
           </Alert>
         )}
 
@@ -185,12 +190,34 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
             </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 min-h-[52px]">
           <Button size="lg" onClick={spinWheel} disabled={spinning || bets.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">
             {spinning ? 'Girando...' : 'Girar'}
           </Button>
           <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning} className="uppercase">Limpiar</Button>
         </div>
+
+        <Accordion type="single" collapsible className="w-full max-w-md">
+            <AccordionItem value="how-to-play">
+                <AccordionTrigger className='text-sm uppercase'>
+                    <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        <span>Cómo Jugar</span>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-xs space-y-2">
+                    <p><strong>Objetivo:</strong> Adivina en qué número, color o sección caerá la bola.</p>
+                    <p><strong>Reglas:</strong></p>
+                    <ul className="list-disc list-inside space-y-1">
+                        <li>Establece el monto de tu ficha.</li>
+                        <li>Haz clic en los números o zonas del tapete para hacer tus apuestas.</li>
+                        <li>Puedes hacer varias apuestas en una misma ronda.</li>
+                        <li>Pulsa "Girar" para que la bola comience a rodar.</li>
+                        <li>Los premios varían según el tipo de apuesta (Número individual paga más, Rojo/Negro paga menos).</li>
+                    </ul>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
         
       </CardContent>
     </Card>

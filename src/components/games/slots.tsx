@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Star, Cherry, Gem, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { BookOpen } from 'lucide-react';
 
 const symbols = [
     { icon: <Cherry className="w-16 h-16 text-red-500" />, value: 'cherry', multiplier: 2, key: 'cherry' },
@@ -52,9 +54,9 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
   const [winningLine, setWinningLine] = useState<boolean[]>([false, false, false]);
 
   const spinReels = useCallback(() => {
-    if (balance < betAmount || spinning) {
-      setMessage("Saldo insuficiente o ya girando.");
-      return;
+    if (spinning || balance < betAmount) {
+        if (balance < betAmount) setMessage("Saldo insuficiente.");
+        return;
     }
 
     setSpinning(true);
@@ -62,46 +64,42 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
     setMessage('');
     setWinningLine([false, false, false]);
 
-    const finalReels: (typeof symbols[0])[] = [];
-
-    const spinPromises = Array(3).fill(null).map((_, index) =>
-      new Promise<void>(resolve => {
-        setTimeout(() => {
-          const finalSymbol = getRandomSymbol();
-          finalReels[index] = finalSymbol;
-          
-          setReels(prevReels => {
-            const newReels = [...prevReels];
-            newReels[index] = finalSymbol;
-            return newReels;
-          });
-          resolve();
-        }, 1000 + index * 300);
-      })
-    );
-
-    Promise.all(spinPromises).then(() => {
-      setSpinning(false);
-
-      const isJackpot = finalReels[0].value === finalReels[1].value && finalReels[1].value === finalReels[2].value;
-      const isTwoInLine = finalReels[0].value === finalReels[1].value;
-
-      if (isJackpot) {
-        const winnings = betAmount * finalReels[0].multiplier;
-        setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
-        onBalanceChange(winnings);
-        setWinningLine([true, true, true]);
-      } else if (isTwoInLine) {
-        const winnings = betAmount * finalReels[0].multiplier * 0.5;
-        setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
-        onBalanceChange(winnings);
-        setWinningLine([true, true, false]);
-      } else {
-        setMessage('¡Suerte la próxima vez!');
-      }
+    let finalReels: typeof symbols[0][] = [];
+    const spinPromises = reels.map((_, index) => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const newSymbol = getRandomSymbol();
+                finalReels[index] = newSymbol;
+                resolve(newSymbol);
+            }, 1000 + index * 300);
+        });
     });
-  }, [balance, betAmount, onBalanceChange, spinning]);
 
+    Promise.all(spinPromises).then(resolvedReels => {
+        setReels(resolvedReels as typeof symbols[0][]);
+        setSpinning(false);
+        
+        const isJackpot = resolvedReels[0].value === resolvedReels[1].value && resolvedReels[1].value === resolvedReels[2].value;
+        const isTwoInLine = resolvedReels[0].value === resolvedReels[1].value;
+
+        if (isJackpot) {
+            const winnings = betAmount * resolvedReels[0].multiplier;
+            setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
+            onBalanceChange(winnings);
+            setWinningLine([true, true, true]);
+        } else if (isTwoInLine) {
+            const winnings = betAmount * resolvedReels[0].multiplier * 0.5;
+            setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
+            onBalanceChange(winnings);
+            setWinningLine([true, true, false]);
+        } else {
+            setMessage('¡Suerte la próxima vez!');
+        }
+    });
+}, [spinning, balance, betAmount, onBalanceChange, reels]);
+
+
+  const playerWon = message.includes('Ganas');
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
@@ -119,8 +117,8 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
         </div>
 
         {message && (
-          <Alert variant={message.includes('Ganas') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', message.includes('Ganas') ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
-            <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
+          <Alert variant={playerWon ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', playerWon ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
+            <AlertTitle className="font-bold text-lg uppercase text-center">{message}</AlertTitle>
           </Alert>
         )}
 
@@ -130,6 +128,28 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
             </Button>
             <p className="text-muted-foreground uppercase">Costo: ${betAmount}</p>
         </div>
+
+        <Accordion type="single" collapsible className="w-full max-w-md">
+            <AccordionItem value="how-to-play">
+                <AccordionTrigger className='text-sm uppercase'>
+                    <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        <span>Cómo Jugar</span>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-xs space-y-2">
+                    <p><strong>Objetivo:</strong> Alinear símbolos idénticos en la línea central para ganar.</p>
+                    <p><strong>Reglas:</strong></p>
+                    <ul className="list-disc list-inside space-y-1">
+                        <li>La apuesta es fija de 10 COP por giro.</li>
+                        <li>Pulsa "Girar" para que los carretes se muevan.</li>
+                        <li>Alinear 3 símbolos iguales (Jackpot) da el mayor premio.</li>
+                        <li>Alinear los primeros 2 símbolos da un premio menor.</li>
+                        <li>Los premios se basan en el símbolo alineado.</li>
+                    </ul>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   );

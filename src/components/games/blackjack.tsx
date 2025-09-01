@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { BookOpen } from 'lucide-react';
 
 type Suit = '♠' | '♥' | '♦' | '♣';
 type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K';
@@ -85,7 +87,6 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
       return;
     }
     
-    onBalanceChange(-bet);
     const newDeck = shuffleDeck(createDeck());
 
     const initialPlayerHand: Hand = [];
@@ -96,6 +97,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     initialPlayerHand.push(newDeck.pop()!);
     initialDealerHand.push(newDeck.pop()!);
 
+    onBalanceChange(-bet);
     setDeck(newDeck);
     setPlayerHand(initialPlayerHand);
     setDealerHand(initialDealerHand);
@@ -106,7 +108,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     if (initialPlayerScore === 21) {
         setGameState('finished');
         setMessage('¡Blackjack! ¡Has ganado!');
-        onBalanceChange(bet * 2.5); // Blackjack pays 3:2
+        onBalanceChange(bet * 2.5);
     }
   }, [balance, bet, onBalanceChange]);
   
@@ -115,22 +117,17 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     setDealerScore(calculateScore(dealerHand));
   }, [playerHand, dealerHand]);
 
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    if (playerScore > 21) {
-        setMessage('¡Te pasaste! Pierdes.');
-        setGameState('finished');
-    }
-  }, [playerScore, gameState]);
-
-
   const handleHit = () => {
     if (gameState !== 'playing') return;
     const newDeck = [...deck];
     const newCard = newDeck.pop()!;
+    const updatedHand = [...playerHand, newCard];
     setDeck(newDeck);
-    setPlayerHand(prevHand => [...prevHand, newCard]);
+    setPlayerHand(updatedHand);
+    if (calculateScore(updatedHand) > 21) {
+      setMessage('¡Te pasaste! Pierdes.');
+      setGameState('finished');
+    }
   };
 
   const handleStand = useCallback(() => {
@@ -140,27 +137,33 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     let currentDealerHand = [...dealerHand];
     let currentDeck = [...deck];
     
-    while (calculateScore(currentDealerHand) < 17) {
+    const dealerTurn = () => {
+      const score = calculateScore(currentDealerHand);
+      if (score < 17) {
         currentDealerHand.push(currentDeck.pop()!);
-    }
+        setDealerHand([...currentDealerHand]);
+        setTimeout(dealerTurn, 500); 
+      } else {
+        setDeck(currentDeck);
+        const finalPlayerScore = calculateScore(playerHand);
+        const finalDealerScore = score;
+        
+        setGameState('finished');
 
-    setDealerHand(currentDealerHand);
-    setDeck(currentDeck);
+        if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
+          setMessage('¡Ganas!');
+          onBalanceChange(bet * 2);
+        } else if (finalPlayerScore < finalDealerScore) {
+          setMessage('El crupier gana.');
+        } else {
+          setMessage("Empate. Se devuelve la apuesta.");
+          onBalanceChange(bet);
+        }
+      }
+    };
+    
+    setTimeout(dealerTurn, 500);
 
-    const finalPlayerScore = calculateScore(playerHand);
-    const finalDealerScore = calculateScore(currentDealerHand);
-
-    setGameState('finished');
-
-    if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
-      setMessage('¡Ganas!');
-      onBalanceChange(bet * 2);
-    } else if (finalPlayerScore < finalDealerScore) {
-      setMessage('El crupier gana.');
-    } else {
-      setMessage("Empate. Se devuelve la apuesta.");
-      onBalanceChange(bet);
-    }
   }, [gameState, dealerHand, deck, playerHand, onBalanceChange, bet]);
   
   const handleBetChange = (amount: number) => {
@@ -171,7 +174,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
   }
 
   const isBusted = playerScore > 21;
-  const playerWon = gameState === 'finished' && message.includes('Ganas');
+  const playerWon = gameState === 'finished' && (message.includes('Ganas') || message.includes('Blackjack'));
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
@@ -179,64 +182,92 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
         <CardTitle className="text-3xl font-bold text-primary uppercase">Blackjack</CardTitle>
         <CardDescription>Acércate a 21. El crupier se planta en 17.</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center gap-8 min-h-[450px]">
-        {gameState !== 'betting' && (
-          <div className="w-full space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-center mb-2 uppercase">Crupier <Badge variant="secondary">{gameState === 'playing' ? '?' : dealerScore}</Badge></h3>
-              <div className="flex justify-center gap-4 h-36 items-center">
-                {dealerHand.map((card, index) => (
-                  <GameCard 
-                    key={index}
-                    card={card} 
-                    hidden={gameState === 'playing' && index === 1}
-                    revealed={gameState !== 'playing'}
-                    />
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-center mb-2 uppercase">Tu Mano <Badge>{playerScore}</Badge></h3>
-              <div className={cn("flex justify-center gap-4 h-36 items-center", isBusted && 'animate-bust-shake', playerWon && 'animate-win-pulse')}>
-                {playerHand.map((card, index) => (
-                  <GameCard 
-                    key={index} 
-                    card={card} 
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
+      <CardContent className="flex flex-col items-center gap-8">
+        <div className="w-full space-y-6 min-h-[360px]">
+           {gameState !== 'betting' ? (
+             <>
+                <div>
+                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">Crupier <Badge variant="secondary">{gameState === 'playing' ? '?' : dealerScore}</Badge></h3>
+                  <div className="flex justify-center gap-4 h-36 items-center">
+                    {dealerHand.map((card, index) => (
+                      <GameCard 
+                        key={index}
+                        card={card} 
+                        hidden={gameState === 'playing' && index === 1}
+                        revealed={gameState !== 'playing' && gameState !== 'dealer'}
+                        />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">Tu Mano <Badge className={cn(isBusted && 'bg-destructive', playerWon && 'bg-primary')}>{playerScore}</Badge></h3>
+                  <div className={cn("flex justify-center gap-4 h-36 items-center", isBusted && 'animate-bust-shake', playerWon && 'animate-win-pulse')}>
+                    {playerHand.map((card, index) => (
+                      <GameCard 
+                        key={index} 
+                        card={card} 
+                        style={{animationDelay: `${index * 100}ms`}}
+                        className="animate-deal-card"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+                <div className="flex flex-col items-center justify-center gap-4 pt-16 h-full min-h-[360px]">
+                    <div className="text-2xl font-bold uppercase">Haz tu Apuesta</div>
+                    <div className="flex items-center gap-4">
+                        <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
+                        <div className="text-3xl font-bold text-primary">${bet}</div>
+                        <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
+                    </div>
+                    <Button size="lg" onClick={startNewRound} disabled={balance < bet} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Repartir</Button>
+                </div>
+            )
+        }
+        </div>
+        
         {message && (
-          <Alert variant={playerWon ? 'default' : 'destructive'} className={cn('transition-opacity duration-300', playerWon ? 'pixel-border pixel-border-primary text-primary' : 'border-destructive text-destructive')}>
-            <AlertTitle className="font-bold text-lg uppercase">{message}</AlertTitle>
+          <Alert variant={playerWon ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', playerWon ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
+            <AlertTitle className="font-bold text-lg uppercase text-center">{message}</AlertTitle>
           </Alert>
         )}
 
-        {gameState === 'betting' && (
-            <div className="flex flex-col items-center gap-4 pt-16">
-                <div className="text-2xl font-bold uppercase">Haz tu Apuesta</div>
-                <div className="flex items-center gap-4">
-                    <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
-                    <div className="text-3xl font-bold text-primary">${bet}</div>
-                    <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
-                </div>
-                <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Repartir</Button>
-            </div>
-        )}
+        <div className="flex gap-4 min-h-[52px]">
+            {gameState === 'playing' && (
+              <>
+                <Button size="lg" onClick={handleHit} className="uppercase bg-secondary hover:bg-secondary/80">Pedir</Button>
+                <Button size="lg" onClick={handleStand} variant="outline" className="uppercase">Plantarse</Button>
+              </>
+            )}
 
-        {gameState === 'playing' && (
-          <div className="flex gap-4">
-            <Button size="lg" onClick={handleHit} className="uppercase bg-secondary hover:bg-secondary/80">Pedir</Button>
-            <Button size="lg" onClick={handleStand} variant="outline" className="uppercase">Plantarse</Button>
-          </div>
-        )}
+            {gameState === 'finished' && (
+                <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Jugar de Nuevo</Button>
+            )}
+        </div>
 
-        {gameState === 'finished' && (
-            <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Jugar de Nuevo</Button>
-        )}
+        <Accordion type="single" collapsible className="w-full max-w-md">
+            <AccordionItem value="how-to-play">
+                <AccordionTrigger className='text-sm uppercase'>
+                    <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        <span>Cómo Jugar</span>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-xs space-y-2">
+                    <p><strong>Objetivo:</strong> Tu mano debe sumar un valor más cercano a 21 que la del crupier, sin pasarte.</p>
+                    <p><strong>Reglas:</strong></p>
+                    <ul className="list-disc list-inside space-y-1">
+                        <li>Elige tu apuesta y pulsa "Repartir".</li>
+                        <li>Recibes 2 cartas. El crupier recibe 2, una de ellas boca abajo.</li>
+                        <li>Pulsa "Pedir" para recibir otra carta, o "Plantarse" para quedarte con tu mano.</li>
+                        <li>Si te pasas de 21, pierdes automáticamente.</li>
+                        <li>El crupier debe pedir carta hasta sumar 17 o más.</li>
+                        <li>Blackjack (un As y una carta de valor 10) paga 3 a 2.</li>
+                    </ul>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   );
