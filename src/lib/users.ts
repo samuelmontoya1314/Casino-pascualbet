@@ -28,8 +28,8 @@ export async function findUserById(id: string): Promise<User | undefined> {
   // Simulate async database call
   await new Promise(resolve => setTimeout(resolve, 50)); 
   const user = users.get(id);
+  // For server-side validation, we return the full user object including password
   if (user) {
-    // Return a plain object to ensure it's serializable for client components
     return { ...user };
   }
   return undefined;

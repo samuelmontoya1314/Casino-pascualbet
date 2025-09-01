@@ -11,15 +11,9 @@ export async function getSession(): Promise<User | null> {
   const user = await findUserById(sessionId);
   if (!user) return null;
 
-  // Create a plain object to ensure it's serializable
-  const sessionData: User = {
-    id: user.id,
-    name: user.name,
-    role: user.role,
-    balance: user.balance,
-  };
-  
-  // The password is not included here, so it's not sent to the client.
+  // Create a plain object to ensure it's serializable for the client
+  // Crucially, we omit the password here for security.
+  const { password, ...sessionData } = user;
 
   return sessionData;
 }
