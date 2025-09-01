@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Accordion,
   AccordionContent,
@@ -6,7 +8,7 @@ import {
 } from "@/components/ui/accordion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, BookUser, CircleDollarSign, Gamepad2, LogIn, UserCircle, Wallet, Coins, UserPlus } from "lucide-react"
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +16,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 
 export default function ManualPage() {
+  const router = useRouter();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
       <Card className="w-full max-w-4xl pixel-border">
@@ -155,9 +159,7 @@ export default function ManualPage() {
             </AccordionItem>
           </Accordion>
           <div className="text-center mt-8">
-            <Link href="/" passHref>
-                <Button variant="outline" className="uppercase">Volver al Juego</Button>
-            </Link>
+            <Button onClick={() => router.back()} variant="outline" className="uppercase">Volver al Juego</Button>
           </div>
         </CardContent>
       </Card>
