@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { findUserById, addUser } from '@/lib/users';
 import { createSession, deleteSession } from '@/lib/auth';
+import type { User } from '@/lib/users';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido'),
@@ -54,7 +55,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     id: userId,
     password: password, // In a real app, hash this password
     name: name,
-    role: 'user' as const,
+    role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };
 
