@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
 import { useState } from 'react';
 import SlotsGame from '@/components/games/slots';
@@ -28,6 +28,7 @@ import BlackjackGame from '@/components/games/blackjack';
 import RouletteGame from '@/components/games/roulette';
 import PokerGame from '@/components/games/poker';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
+import Link from 'next/link';
 
 
 export default function Dashboard({ user }: { user: User }) {
@@ -92,6 +93,12 @@ export default function Dashboard({ user }: { user: User }) {
                               Perfil
                           </DropdownMenuItem>
                         </DialogTrigger>
+                         <Link href="/manual" passHref>
+                          <DropdownMenuItem>
+                                <HelpCircle className="mr-2 h-4 w-4"/>
+                                Ayuda
+                          </DropdownMenuItem>
+                        </Link>
                         <DropdownMenuSeparator />
                         <form action={handleLogout}>
                           <DropdownMenuItem asChild>
