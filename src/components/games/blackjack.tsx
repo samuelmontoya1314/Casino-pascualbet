@@ -316,10 +316,20 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
                     </div>
                     <div>
                         <h4 className="font-bold uppercase text-primary mb-2">Reglas Principales</h4>
-                        <ul className="list-disc list-inside space-y-1">
-                            <li>Elige tu apuesta y pulsa <strong>"Repartir"</strong>.</li>
+                        <ul className="list-disc list-inside space-y-2">
+                            <li className='flex items-center gap-2'>
+                                <span>Elige tu apuesta y pulsa</span>
+                                <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">Repartir</Button>
+                            </li>
                             <li>Recibes 2 cartas. El crupier recibe 2, una de ellas boca abajo.</li>
-                            <li>Pulsa <strong>"Pedir"</strong> para recibir otra carta, o <strong>"Plantarse"</strong> para quedarte con tu mano.</li>
+                            <li className='space-y-2'>
+                                <div>
+                                    Pulsa <Button size="sm" disabled className="uppercase bg-secondary hover:bg-secondary/80 text-xs h-6 px-2">Pedir</Button> para recibir otra carta.
+                                </div>
+                                <div>
+                                    O pulsa <Button size="sm" disabled variant="outline" className="uppercase text-xs h-6 px-2">Plantarse</Button> para quedarte con tu mano.
+                                </div>
+                            </li>
                             <li>Si tu puntuación supera 21, pierdes automáticamente (Bust).</li>
                             <li>El crupier está obligado a pedir carta hasta que su mano sume 17 o más.</li>
                             <li>Un <strong>Blackjack</strong> (un As y una carta de valor 10 en la mano inicial) paga 3 a 2 (1.5x tu apuesta).</li>
