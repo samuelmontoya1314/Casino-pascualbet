@@ -10,6 +10,8 @@ export type User = {
 };
 
 // Start with a default admin user for convenience.
+// By defining the Map at the module level, it persists across function calls
+// and hot-reloads during development, acting as a simple in-memory store.
 const users: Map<string, User> = new Map([
   [
     "admin",
