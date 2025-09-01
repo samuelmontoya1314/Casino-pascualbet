@@ -1,7 +1,7 @@
 'use server';
 
 import { getSession } from '@/lib/auth';
-import { findUserById } from '@/lib/users';
+import { findUserById, updateUserBalance } from '@/lib/users';
 
 export async function updateBalance(amount: number) {
   const session = await getSession();
@@ -10,7 +10,7 @@ export async function updateBalance(amount: number) {
     return { error: 'Not authenticated' };
   }
 
-  const user = findUserById(session.id);
+  const user = await findUserById(session.id);
 
   if (!user) {
     return { error: 'User not found' };
@@ -19,12 +19,10 @@ export async function updateBalance(amount: number) {
   const newBalance = user.balance + amount;
 
   if (newBalance < 0) {
-    // This could happen in race conditions, though unlikely in this app.
-    // The games should prevent betting more than the balance.
     return { error: 'Insufficient funds' };
   }
 
-  user.balance = newBalance;
+  await updateUserBalance(user.id, newBalance);
 
-  return { success: true, newBalance: user.balance };
+  return { success: true, newBalance };
 }

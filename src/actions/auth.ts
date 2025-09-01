@@ -25,7 +25,7 @@ export async function handleLogin(prevState: any, formData: FormData) {
   }
 
   const { userId, password } = validatedFields.data;
-  const user = findUserById(userId);
+  const user = await findUserById(userId);
 
   if (user && user.password === password) {
     await createSession(user.id);
@@ -45,20 +45,20 @@ export async function handleRegister(prevState: any, formData: FormData) {
 
   const { userId, password, name } = validatedFields.data;
   
-  const existingUser = findUserById(userId);
+  const existingUser = await findUserById(userId);
   if (existingUser) {
     return { error: 'El ID de usuario ya existe. Por favor, elige otro.' };
   }
 
-  const newUser = {
+  const newUser: User = {
     id: userId,
-    password: password,
+    password: password, // In a real app, hash this password
     name: name,
     role: 'user' as const,
     balance: 1000,
   };
 
-  addUser(newUser);
+  await addUser(newUser);
 
   await createSession(newUser.id);
   redirect('/');
