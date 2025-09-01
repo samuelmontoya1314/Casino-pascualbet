@@ -51,7 +51,6 @@ export default function ManualPage() {
                   <h3 className="font-bold text-primary uppercase">Iniciar Sesión</h3>
                   <div>1. Si ya tienes una cuenta, ve a la pestaña <Badge className="uppercase">Entrar</Badge>.</div>
                   <p>2. Introduce tu ID de usuario y contraseña.</p>
-                   <p className="text-xs text-muted-foreground mt-2">Pista: Puedes usar `admin` / `password_admin_hashed` para probar.</p>
                 </div>
               </AccordionContent>
             </AccordionItem>

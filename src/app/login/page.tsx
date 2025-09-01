@@ -39,9 +39,6 @@ export default function LoginPage() {
           </Card>
         </TabsContent>
       </Tabs>
-      <p className="text-center text-xs text-muted-foreground mt-4">
-        Pista: Usa `admin` / `password_admin_hashed`
-      </p>
     </main>
   );
 }
