@@ -90,29 +90,12 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     
     setDeck(newDeck);
     setGameState('pre-flop');
-    setMessage('Ronda de apuestas inicial. ¿Subes la apuesta o te retiras?');
+    setMessage('Ronda de apuestas. ¿Apuestas, Pasas o te Retiras?');
     setPlayerHandRank(null);
     setDealerHandRank(null);
   }, [balance, bet, onBalanceChange]);
 
-  const handleAction = (action: 'raise' | 'fold') => {
-    if (gameState !== 'pre-flop') return;
-
-    if (action === 'fold') {
-      setMessage('Te has retirado. El crupier gana el bote.');
-      setGameState('finished');
-      return;
-    }
-
-    if (action === 'raise') {
-      const raiseAmount = bet * 2;
-      if (balance < raiseAmount) {
-        setMessage('No tienes suficiente saldo para subir la apuesta.');
-        return;
-      }
-      onBalanceChange(-raiseAmount);
-      setPot(pot + raiseAmount);
-      
+  const proceedWithCommunityCards = () => {
       // Burn a card and deal the flop
       let currentDeck = [...deck];
       currentDeck.pop(); // Burn
@@ -148,7 +131,29 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
               }, 1500)
           }, 1500);
       }, 1500);
+  }
+
+  const handleAction = (action: 'bet' | 'check' | 'fold') => {
+    if (gameState !== 'pre-flop') return;
+
+    if (action === 'fold') {
+      setMessage('Te has retirado. El crupier gana el bote.');
+      setGameState('finished');
+      return;
     }
+
+    if (action === 'bet') {
+      const raiseAmount = bet;
+      if (balance < raiseAmount) {
+        setMessage('No tienes suficiente saldo para apostar.');
+        return;
+      }
+      onBalanceChange(-raiseAmount);
+      setPot(pot + raiseAmount);
+    }
+    
+    // Both 'bet' and 'check' proceed to the next stages
+    proceedWithCommunityCards();
   };
 
   useEffect(() => {
@@ -159,15 +164,16 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         setDealerHandRank(dHand);
         
         const winner = compareHands(pHand, dHand);
+        const finalPot = pot * 2; // Ante + Bet
 
         if (winner === 'player') {
             setMessage(`¡Ganas con ${pHand.name}!`);
-            onBalanceChange(pot * 2); // Player gets the pot + their bet back
+            onBalanceChange(finalPot);
         } else if (winner === 'dealer') {
             setMessage(`El crupier gana con ${dHand.name}.`);
         } else {
             setMessage('¡Empate! Se divide el bote.');
-            onBalanceChange(pot); // Bets are returned
+            onBalanceChange(pot); // Bets are returned (ante + bet / 2 per player)
         }
         setGameState('finished');
     }
@@ -181,6 +187,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
   }
 
   const playerWon = gameState === 'finished' && message.includes('Ganas');
+  const finalPot = pot + (gameState === 'pre-flop' ? bet : 0);
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
@@ -211,7 +218,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                         <GameCard key={index} card={communityCards[index]} revealed={true} />
                     ))}
                 </div>
-                 <div className="text-2xl font-bold uppercase">Bote: <span className="text-primary">${pot * 2}</span></div>
+                 <div className="text-2xl font-bold uppercase">Bote: <span className="text-primary">${finalPot}</span></div>
             </div>
 
             {/* Player Area */}
@@ -247,8 +254,9 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                 </div>
             )}
             {gameState === 'pre-flop' && (
-                <div className="flex gap-4">
-                     <Button size="lg" onClick={() => handleAction('raise')} className="bg-green-600 hover:bg-green-700 uppercase">Subir (x2)</Button>
+                <div className="flex flex-wrap justify-center gap-4">
+                     <Button size="lg" onClick={() => handleAction('bet')} className="bg-green-600 hover:bg-green-700 uppercase">Apostar (${bet})</Button>
+                     <Button size="lg" onClick={() => handleAction('check')} variant="outline" className="uppercase">Pasar</Button>
                      <Button size="lg" onClick={() => handleAction('fold')} className="bg-red-600 hover:bg-red-700 uppercase">No Ir</Button>
                 </div>
             )}
@@ -278,16 +286,21 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                                 Se te reparten 2 cartas boca arriba. El crupier recibe 2 boca abajo.
                             </li>
                             <li>
-                                <strong>Decisión Post-Reparto:</strong> Tienes dos opciones:
-                                <div className="flex gap-2 items-center my-1">
-                                    <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-green-600">Subir (x2)</Button> para doblar tu apuesta y continuar.
-                                </div>
-                                <div className="flex gap-2 items-center my-1">
-                                    <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-red-600">No Ir</Button> para rendirte y perder tu apuesta inicial.
+                                <strong>Decisión Post-Reparto:</strong> Tienes tres opciones:
+                                <div className="flex flex-col gap-2 my-2 pl-4">
+                                  <div className="flex gap-2 items-center">
+                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-green-600">Apostar</Button> <span>- Pones una apuesta adicional igual a tu Ante para continuar.</span>
+                                  </div>
+                                  <div className="flex gap-2 items-center">
+                                      <Button size="sm" disabled variant="outline" className="h-6 px-2 text-xs uppercase">Pasar</Button> <span>- No apuestas más, pero sigues en la mano.</span>
+                                  </div>
+                                  <div className="flex gap-2 items-center">
+                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-red-600">No Ir</Button> <span>- Te retiras y pierdes tu apuesta inicial.</span>
+                                  </div>
                                 </div>
                             </li>
                             <li>
-                                <strong>El Flop, Turn y River:</strong> Si decides subir, se revelarán las 5 cartas comunitarias en tres etapas (3, luego 1 y finalmente 1).
+                                <strong>El Flop, Turn y River:</strong> Si continúas, se revelarán las 5 cartas comunitarias en tres etapas (3, luego 1 y finalmente 1).
                                 <div className="flex items-center justify-center gap-2 my-2 p-2 bg-background/50 rounded">
                                    <MiniCard rank="A" suit="♥" /><MiniCard rank="K" suit="♥" /><MiniCard rank="Q" suit="♥" />
                                    <MiniCard rank="J" suit="♥" />
