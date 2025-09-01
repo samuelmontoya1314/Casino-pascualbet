@@ -93,21 +93,21 @@ export default function Dashboard({ user }: { user: User }) {
                               Perfil
                           </DropdownMenuItem>
                         </DialogTrigger>
-                        <DropdownMenuItem asChild>
-                           <Link href="/manual" className="flex items-center w-full">
+                         <Link href="/manual" passHref legacyBehavior>
+                           <DropdownMenuItem>
                                 <HelpCircle className="mr-2 h-4 w-4"/>
                                 Ayuda
-                           </Link>
-                        </DropdownMenuItem>
+                           </DropdownMenuItem>
+                        </Link>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <form action={handleLogout} className="w-full">
-                            <button type="submit" className="w-full text-left flex items-center">
-                              <LogOut className="mr-2 h-4 w-4" />
-                              <span>Cerrar Sesión</span>
-                            </button>
-                          </form>
-                        </DropdownMenuItem>
+                        <form action={handleLogout} className="w-full">
+                            <DropdownMenuItem asChild>
+                                <button type="submit" className="w-full text-left flex items-center">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Cerrar Sesión</span>
+                                </button>
+                            </DropdownMenuItem>
+                        </form>
                     </DropdownMenuContent>
                 </DropdownMenu>
                  <DialogContent>
