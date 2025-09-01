@@ -1,16 +1,28 @@
 import { cookies } from 'next/headers';
 import { findUserById } from './users';
+import type { User } from './users';
 
 const SESSION_COOKIE_NAME = 'secure-access-session';
 
-export async function getSession() {
+export async function getSession(): Promise<User | null> {
   const sessionId = cookies().get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return null;
 
-  const user = findUserById(sessionId);
+  const user = await findUserById(sessionId);
   if (!user) return null;
 
-  const { password, ...sessionData } = user;
+  // Create a plain object to ensure it's serializable
+  const sessionData: User = {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    balance: user.balance,
+  };
+  
+  // We don't need to remove the password because findUserById already doesn't return it
+  // if it's properly typed and handled in the users.ts file.
+  // But explicitly creating a new object is the key.
+
   return sessionData;
 }
 
