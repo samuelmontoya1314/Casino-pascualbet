@@ -102,10 +102,10 @@ export default function Dashboard({ user }: { user: User }) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <form action={handleLogout} className="w-full">
-                              <button type="submit" className="w-full text-left flex items-center">
-                                  <LogOut className="mr-2 h-4 w-4" />
-                                  Cerrar Sesión
-                              </button>
+                            <button type="submit" className="w-full text-left flex items-center">
+                              <LogOut className="mr-2 h-4 w-4" />
+                              <span>Cerrar Sesión</span>
+                            </button>
                           </form>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
