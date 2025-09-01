@@ -71,6 +71,17 @@ const GameCard = ({ card, hidden, revealed, style, className }: { card: CardType
     );
 };
 
+// Mini-card for guide
+const MiniCard = ({rank, suit}: {rank: Rank | string; suit: Suit}) => {
+    const color = suit === '♥' || suit === '♦' ? 'text-accent' : 'text-foreground';
+    return (
+        <div className={cn("w-8 h-12 rounded-sm bg-card border flex flex-col justify-between items-center text-xs p-1 font-mono", color)}>
+            <span>{rank}</span>
+            <span>{suit}</span>
+        </div>
+    )
+}
+
 interface BlackjackGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
@@ -282,10 +293,25 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
                     </div>
                     <div>
                         <h4 className="font-bold uppercase text-primary mb-2">Valor de las Cartas</h4>
-                        <ul className="list-disc list-inside space-y-1">
-                            <li><strong>Cartas 2-10:</strong> Valen su número indicado.</li>
-                            <li><strong>Figuras (J, Q, K):</strong> Valen 10 puntos cada una.</li>
-                            <li><strong>As (A):</strong> Puede valer 1 u 11 puntos, lo que más te convenga para no pasarte de 21.</li>
+                        <ul className="space-y-3">
+                           <li className="flex items-center gap-4">
+                                <div className="flex gap-1">
+                                    <MiniCard rank="7" suit="♦" />
+                                </div>
+                                <span><strong>Cartas 2-10:</strong> Valen su número indicado.</span>
+                           </li>
+                           <li className="flex items-center gap-4">
+                                <div className="flex gap-1">
+                                    <MiniCard rank="K" suit="♠" />
+                                </div>
+                                <span><strong>Figuras (J, Q, K):</strong> Valen 10 puntos cada una.</span>
+                           </li>
+                           <li className="flex items-center gap-4">
+                                <div className="flex gap-1">
+                                    <MiniCard rank="A" suit="♥" />
+                                </div>
+                                <span><strong>As (A):</strong> Vale 1 u 11, lo que más te convenga.</span>
+                           </li>
                         </ul>
                     </div>
                     <div>
