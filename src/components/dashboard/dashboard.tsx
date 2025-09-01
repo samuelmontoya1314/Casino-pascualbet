@@ -22,20 +22,30 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition } from 'react';
-import SlotsGame from '@/components/games/slots';
-import BlackjackGame from '@/components/games/blackjack';
-import RouletteGame from '@/components/games/roulette';
-import PokerGame from '@/components/games/poker';
+import { useState, useTransition, useMemo } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
 import { updateBalance } from '@/actions/user';
 import { useToast } from '@/hooks/use-toast';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '../ui/skeleton';
+
+const LoadingComponent = () => (
+    <div className="p-8 flex items-center justify-center">
+        <Skeleton className="w-full h-96" />
+    </div>
+);
+
+const SlotsGame = dynamic(() => import('@/components/games/slots'), { loading: () => <LoadingComponent /> });
+const BlackjackGame = dynamic(() => import('@/components/games/blackjack'), { loading: () => <LoadingComponent /> });
+const RouletteGame = dynamic(() => import('@/components/games/roulette'), { loading: () => <LoadingComponent /> });
+const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
 
 
 export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
   const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState('slots');
   const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
@@ -64,6 +74,21 @@ export default function Dashboard({ user }: { user: User }) {
         }
     });
   }
+  
+  const ActiveGame = useMemo(() => {
+    switch (activeTab) {
+      case 'slots':
+        return <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} />;
+      case 'blackjack':
+        return <BlackjackGame balance={balance} onBalanceChange={handleBalanceChange} />;
+      case 'roulette':
+        return <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} />;
+      case 'poker':
+        return <PokerGame balance={balance} onBalanceChange={handleBalanceChange} />;
+      default:
+        return null;
+    }
+  }, [activeTab, balance]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -168,24 +193,15 @@ export default function Dashboard({ user }: { user: User }) {
         </header>
         </TooltipProvider>
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
-            <Tabs defaultValue="slots" className="w-full max-w-7xl mt-6">
+            <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
                     <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
                     <TabsTrigger value="roulette">Ruleta</TabsTrigger>
                     <TabsTrigger value="poker">Póker</TabsTrigger>
                 </TabsList>
-                <TabsContent value="slots">
-                    <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} />
-                </TabsContent>
-                <TabsContent value="blackjack">
-                    <BlackjackGame balance={balance} onBalanceChange={handleBalanceChange} />
-                </TabsContent>
-                <TabsContent value="roulette">
-                    <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} />
-                </TabsContent>
-                <TabsContent value="poker">
-                    <PokerGame balance={balance} onBalanceChange={handleBalanceChange} />
+                <TabsContent value={activeTab} forceMount>
+                   <div className="min-h-[600px]">{ActiveGame}</div>
                 </TabsContent>
             </Tabs>
         </main>
