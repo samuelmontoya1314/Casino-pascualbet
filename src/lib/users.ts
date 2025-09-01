@@ -1,8 +1,5 @@
-import { Firestore } from '@google-cloud/firestore';
-
-// In a hosted environment like Firebase App Hosting, the SDK will automatically
-// find the service account credentials via Application Default Credentials.
-const db = new Firestore();
+// This is a mock in-memory database.
+// In a real application, you would use a database like Firestore, PostgreSQL, etc.
 
 export type User = {
   id: string;
@@ -12,48 +9,49 @@ export type User = {
   balance: number;
 };
 
-const usersCollection = db.collection('users');
+// Start with a default admin user for convenience.
+const users: Map<string, User> = new Map([
+  [
+    "admin",
+    {
+      id: "admin",
+      password: "password",
+      name: "Admin User",
+      role: "admin",
+      balance: 10000,
+    },
+  ],
+]);
+
 
 export async function findUserById(id: string): Promise<User | undefined> {
-    try {
-        const userDocRef = usersCollection.doc(id);
-        const userDoc = await userDocRef.get();
-
-        if (userDoc.exists) {
-            const data = userDoc.data();
-            // Return a plain object to ensure it's serializable for client components
-            return {
-                id: userDoc.id,
-                name: data.name,
-                role: data.role,
-                balance: data.balance,
-                password: data.password,
-            } as User;
-        }
-    } catch (error) {
-        console.error("Error finding user by ID:", error);
-        // Propagate the error to be handled by the caller
-        throw new Error(`Failed to find user: ${error.message}`);
-    }
-    return undefined;
+  // Simulate async database call
+  await new Promise(resolve => setTimeout(resolve, 50)); 
+  const user = users.get(id);
+  if (user) {
+    // Return a plain object to ensure it's serializable for client components
+    return { ...user };
+  }
+  return undefined;
 }
 
 export async function addUser(user: User): Promise<void> {
-    try {
-        const userDocRef = usersCollection.doc(user.id);
-        await userDocRef.set(user);
-    } catch (error) {
-        console.error("Error adding user:", error);
-        throw new Error(`Failed to add user: ${error.message}`);
-    }
+  // Simulate async database call
+  await new Promise(resolve => setTimeout(resolve, 50));
+  if (users.has(user.id)) {
+    throw new Error('User already exists');
+  }
+  users.set(user.id, { ...user });
 }
 
 export async function updateUserBalance(id: string, newBalance: number): Promise<void> {
-    try {
-        const userDocRef = usersCollection.doc(id);
-        await userDocRef.update({ balance: newBalance });
-    } catch(error) {
-        console.error("Error updating user balance:", error);
-        throw new Error(`Failed to update balance: ${error.message}`);
-    }
+    // Simulate async database call
+  await new Promise(resolve => setTimeout(resolve, 50));
+  const user = users.get(id);
+  if (user) {
+    user.balance = newBalance;
+    users.set(id, user);
+  } else {
+    throw new Error('User not found');
+  }
 }
