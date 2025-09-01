@@ -1,7 +1,10 @@
 'use server';
 
-import { getSession } from '@/lib/auth';
-import { findUserById, updateUserBalance } from '@/lib/users';
+import { getSession, createSession } from '@/lib/auth';
+import type { User } from '@/lib/users';
+
+// In this mock setup, we don't have a persistent user store,
+// so balance updates will be reflected in the session cookie.
 
 export async function updateBalance(amount: number) {
   const session = await getSession();
@@ -10,19 +13,15 @@ export async function updateBalance(amount: number) {
     return { error: 'Not authenticated' };
   }
 
-  const user = await findUserById(session.id);
-
-  if (!user) {
-    return { error: 'User not found' };
-  }
-
-  const newBalance = user.balance + amount;
+  const newBalance = session.balance + amount;
 
   if (newBalance < 0) {
     return { error: 'Insufficient funds' };
   }
 
-  await updateUserBalance(user.id, newBalance);
+  // Update the user object and re-save it in the session
+  const updatedUser: User = { ...session, balance: newBalance };
+  await createSession(session.id, updatedUser);
 
   return { success: true, newBalance };
 }

@@ -1,25 +1,31 @@
 import { cookies } from 'next/headers';
-import { findUserById } from './users';
 import type { User } from './users';
 
 const SESSION_COOKIE_NAME = 'secure-access-session';
 
 export async function getSession(): Promise<User | null> {
-  const sessionId = cookies().get(SESSION_COOKIE_NAME)?.value;
-  if (!sessionId) return null;
+  const sessionValue = cookies().get(SESSION_COOKIE_NAME)?.value;
+  if (!sessionValue) return null;
 
-  const user = await findUserById(sessionId);
-  if (!user) return null;
-
-  // Create a plain object to ensure it's serializable for the client
-  // Crucially, we omit the password here for security.
-  const { password, ...sessionData } = user;
-
-  return sessionData;
+  try {
+    // The session value is a stringified User object
+    const user: User = JSON.parse(sessionValue);
+    return user;
+  } catch (error) {
+    // If parsing fails, the cookie is invalid
+    return null;
+  }
 }
 
-export async function createSession(userId: string) {
-  cookies().set(SESSION_COOKIE_NAME, userId, {
+export async function createSession(userId: string, user?: Omit<User, 'password'>) {
+  const userData: User = user || {
+    id: userId,
+    name: userId,
+    role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
+    balance: 1000,
+  };
+
+  cookies().set(SESSION_COOKIE_NAME, JSON.stringify(userData), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 1 day
