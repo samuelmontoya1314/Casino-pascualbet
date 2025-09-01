@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle } from '@/components/ui/alert';
@@ -137,16 +137,47 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
                         <span>Cómo Jugar</span>
                     </div>
                 </AccordionTrigger>
-                <AccordionContent className="text-xs space-y-2">
-                    <p><strong>Objetivo:</strong> Alinear símbolos idénticos en la línea central para ganar.</p>
-                    <p><strong>Reglas:</strong></p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>La apuesta es fija de 10 COP por giro.</li>
-                        <li>Pulsa "Girar" para que los carretes se muevan.</li>
-                        <li>Alinear 3 símbolos iguales (Jackpot) da el mayor premio.</li>
-                        <li>Alinear los primeros 2 símbolos da un premio menor.</li>
-                        <li>Los premios se basan en el símbolo alineado.</li>
-                    </ul>
+                <AccordionContent className="text-xs space-y-4">
+                    <div>
+                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo</h4>
+                        <p>Alinea los símbolos en la línea central para ganar premios. ¡La apuesta es siempre de 10 COP!</p>
+                    </div>
+                    <div>
+                        <h4 className="font-bold uppercase text-primary mb-2">Combinaciones Ganadoras</h4>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 p-1 bg-background rounded-md">
+                                    <Cherry className="w-6 h-6 text-red-500" />
+                                    <Cherry className="w-6 h-6 text-red-500" />
+                                    <Cherry className="w-6 h-6 text-red-500" />
+                                </div>
+                                <span className="font-semibold">- Jackpot: 3 iguales (Gran Premio)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 p-1 bg-background rounded-md">
+                                    <Star className="w-6 h-6 text-blue-400" />
+                                    <Star className="w-6 h-6 text-blue-400" />
+                                    <Gem className="w-6 h-6 text-purple-500" />
+                                </div>
+                                <span className="font-semibold">- Dos en línea (Premio Menor)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-bold uppercase text-primary mb-2">Tabla de Pagos (Apuesta x Multiplicador)</h4>
+                        <ul className="space-y-1 bg-background/50 p-2 rounded-md">
+                            {symbols.map(s => (
+                                <li key={s.value} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {React.cloneElement(s.icon, { className: "w-5 h-5" })}
+                                        <span className="capitalize">{s.value}</span>
+                                    </div>
+                                    <span className="font-mono text-primary font-bold">x{s.multiplier}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="text-muted-foreground mt-2 text-center">El premio por 2 en línea es la mitad del multiplicador.</p>
+                    </div>
                 </AccordionContent>
             </AccordionItem>
         </Accordion>
