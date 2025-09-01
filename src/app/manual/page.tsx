@@ -35,7 +35,7 @@ export default function ManualPage() {
               <AccordionContent className="space-y-6 px-2 text-base">
                 <div className="space-y-2">
                   <h3 className="font-bold text-primary uppercase">Registro de Nueva Cuenta</h3>
-                  <p>1. En la pantalla de inicio, selecciona la pestaña <Badge variant="secondary" className="uppercase">Registrarse</Badge>.</p>
+                  <div>1. En la pantalla de inicio, selecciona la pestaña <Badge variant="secondary" className="uppercase">Registrarse</Badge>.</div>
                   <p>2. Completa el formulario con tu nombre, un ID de usuario único y una contraseña.</p>
                   <div className="flex justify-center p-4">
                      <div className="space-y-4 w-64 p-4 rounded-md bg-secondary/30">
@@ -49,7 +49,7 @@ export default function ManualPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-bold text-primary uppercase">Iniciar Sesión</h3>
-                  <p>1. Si ya tienes una cuenta, ve a la pestaña <Badge className="uppercase">Entrar</Badge>.</p>
+                  <div>1. Si ya tienes una cuenta, ve a la pestaña <Badge className="uppercase">Entrar</Badge>.</div>
                   <p>2. Introduce tu ID de usuario y contraseña.</p>
                    <p className="text-xs text-muted-foreground mt-2">Pista: Puedes usar `admin` / `password_admin_hashed` para probar.</p>
                 </div>
