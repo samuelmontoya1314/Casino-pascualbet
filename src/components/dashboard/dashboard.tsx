@@ -93,7 +93,7 @@ export default function Dashboard({ user }: { user: User }) {
                               Perfil
                           </DropdownMenuItem>
                         </DialogTrigger>
-                         <Link href="/manual" passHref legacyBehavior>
+                         <Link href="/manual">
                            <DropdownMenuItem>
                                 <HelpCircle className="mr-2 h-4 w-4"/>
                                 Ayuda
