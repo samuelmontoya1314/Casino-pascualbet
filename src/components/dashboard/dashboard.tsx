@@ -61,14 +61,14 @@ export default function Dashboard({ user }: { user: User }) {
         const currentBalance = balance;
         setBalance(prev => prev + amount); // Optimistic update
         const result = await updateBalance(amount);
-        if (result.error) {
+        if (result && result.error) {
             setBalance(currentBalance); // Revert on error
             toast({
                 title: "Error de Sincronización",
-                description: "No se pudo actualizar tu saldo. Intenta de nuevo.",
+                description: result.error,
                 variant: "destructive"
             });
-        } else {
+        } else if (result && result.success) {
             // Update with the definitive balance from server
             setBalance(result.newBalance!);
         }
