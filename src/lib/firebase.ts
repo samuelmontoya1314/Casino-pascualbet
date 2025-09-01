@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-// Note: Firestore is not used directly from the client anymore in this file.
-// Server-side operations are handled by firebase-admin in 'src/lib/users.ts'.
+import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -12,9 +11,8 @@ const firebaseConfig = {
   messagingSenderId: "28193877161",
 };
 
-// Initialize Firebase for client-side usage
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db = getFirestore(app);
 
-// We don't export 'db' from here anymore as client-side direct DB access is removed.
-// All database operations are now routed through server actions.
-export { app };
+export { app, db };

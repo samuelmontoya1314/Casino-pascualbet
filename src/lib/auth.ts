@@ -19,9 +19,7 @@ export async function getSession(): Promise<User | null> {
     balance: user.balance,
   };
   
-  // We don't need to remove the password because findUserById already doesn't return it
-  // if it's properly typed and handled in the users.ts file.
-  // But explicitly creating a new object is the key.
+  // The password is not included here, so it's not sent to the client.
 
   return sessionData;
 }

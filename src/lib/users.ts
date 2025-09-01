@@ -1,5 +1,5 @@
-
-import admin from 'firebase-admin';
+import { doc, getDoc, setDoc, updateDoc, collection } from 'firebase/firestore';
+import { db } from './firebase'; // Use client-side db instance
 
 export type User = {
   id: string;
@@ -9,29 +9,22 @@ export type User = {
   balance: number;
 };
 
-// Initialize Firebase Admin SDK.
-// When deployed to a Google Cloud environment like App Hosting,
-// the SDK automatically detects the service account credentials.
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
-const db = admin.firestore();
-const usersCollection = db.collection('users');
+const usersCollection = collection(db, 'users');
 
 export async function findUserById(id: string): Promise<User | undefined> {
     try {
-        const userDocRef = usersCollection.doc(id);
-        const userDoc = await userDocRef.get();
+        const userDocRef = doc(usersCollection, id);
+        const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists) {
+        if (userDoc.exists()) {
+            const data = userDoc.data();
             // Return a plain object to ensure it's serializable for client components
-            const userData = userDoc.data();
             return {
                 id: userDoc.id,
-                name: userData.name,
-                role: userData.role,
-                balance: userData.balance,
+                name: data.name,
+                role: data.role,
+                balance: data.balance,
+                password: data.password, // Include password for login check
             } as User;
         }
     } catch (error) {
@@ -42,8 +35,8 @@ export async function findUserById(id: string): Promise<User | undefined> {
 
 export async function addUser(user: User): Promise<void> {
     try {
-        const userDocRef = usersCollection.doc(user.id);
-        await userDocRef.set(user);
+        const userDocRef = doc(usersCollection, user.id);
+        await setDoc(userDocRef, user);
     } catch (error) {
         console.error("Error adding user:", error);
     }
@@ -51,8 +44,8 @@ export async function addUser(user: User): Promise<void> {
 
 export async function updateUserBalance(id: string, newBalance: number): Promise<void> {
     try {
-        const userDocRef = usersCollection.doc(id);
-        await userDocRef.update({ balance: newBalance });
+        const userDocRef = doc(usersCollection, id);
+        await updateDoc(userDocRef, { balance: newBalance });
     } catch(error) {
         console.error("Error updating user balance:", error);
     }
