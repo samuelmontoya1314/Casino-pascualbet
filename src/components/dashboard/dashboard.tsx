@@ -22,17 +22,21 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import SlotsGame from '@/components/games/slots';
 import BlackjackGame from '@/components/games/blackjack';
 import RouletteGame from '@/components/games/roulette';
 import PokerGame from '@/components/games/poker';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
+import { updateBalance } from '@/actions/user';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -43,7 +47,22 @@ export default function Dashboard({ user }: { user: User }) {
   };
 
   const handleBalanceChange = (amount: number) => {
-    setBalance(prev => prev + amount);
+    startTransition(async () => {
+        const currentBalance = balance;
+        setBalance(prev => prev + amount); // Optimistic update
+        const result = await updateBalance(amount);
+        if (result.error) {
+            setBalance(currentBalance); // Revert on error
+            toast({
+                title: "Error de Sincronización",
+                description: "No se pudo actualizar tu saldo. Intenta de nuevo.",
+                variant: "destructive"
+            });
+        } else {
+            // Update with the definitive balance from server
+            setBalance(result.newBalance!);
+        }
+    });
   }
 
   return (
@@ -61,7 +80,7 @@ export default function Dashboard({ user }: { user: User }) {
                 </div>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground">
+                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
                             <Coins className="h-5 w-5" />
                         </Button>
                     </TooltipTrigger>
@@ -137,7 +156,7 @@ export default function Dashboard({ user }: { user: User }) {
                        <div className="grid grid-cols-4 items-center gap-4">
                           <span className="text-right font-semibold">Fondos:</span>
                           <div className="col-span-3">
-                            <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground">
+                            <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
                                 <Coins className="mr-2 h-4 w-4" /> Agregar 100 COP
                             </Button>
                           </div>
