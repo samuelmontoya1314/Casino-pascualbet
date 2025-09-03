@@ -191,25 +191,26 @@ export default function Dashboard({ user }: { user: User }) {
                     </DialogContent>
                   </Dialog>
                   <AlertDialogContent>
-                    <AlertDialogHeader>
+                    <AlertDialogHeader className="text-center">
                       <AlertDialogTitle>¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogDescription className="text-center">
                          ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
                         <Image
-                            src="https://storage.googleapis.com/static.invertironline.com/wp-content/uploads/2023/12/rendering_2_12_2023_10_51_29.gif"
+                            src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDI4cWtxNW50b3d6Z2Q2bWd2ZzA0aGo0ZDR3c3RldGg2eXhmemF3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/67ThRZlYBvibtdF9JH/giphy.gif"
                             alt="A punto de encontrar diamantes"
                             width={300}
                             height={180}
                             data-ai-hint="miner quitting diamonds"
                             className="rounded-md"
+                            unoptimized
                         />
                     </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
-                      <form action={handleLogout}>
+                      <form action={handleLogout} className="w-full sm:w-auto">
                         <AlertDialogAction type="submit" className="w-full">
                             Sí, abandonar
                         </AlertDialogAction>
