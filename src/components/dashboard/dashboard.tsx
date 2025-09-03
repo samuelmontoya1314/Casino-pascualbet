@@ -97,7 +97,7 @@ export default function Dashboard({ user }: { user: User }) {
       <TooltipProvider>
         <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b bg-background/95 px-4 sm:px-6">
             <div className="flex items-center gap-3">
-                <PascualBetIcon className="w-12 h-auto" />
+                <PascualBetIcon className="w-12 h-12" />
                  <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">

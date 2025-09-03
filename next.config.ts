@@ -27,7 +27,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'i.imgflip.com',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
     ],
   },
 };
