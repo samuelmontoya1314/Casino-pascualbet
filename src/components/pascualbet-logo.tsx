@@ -7,11 +7,11 @@ interface PascualBetLogoProps {
 
 export const PascualBetLogo = ({ className }: PascualBetLogoProps) => (
     <Image
-        src="https://picsum.photos/280/50"
+        src="https://picsum.photos/280/150"
         alt="PascualBet Logo"
         width={280}
-        height={50}
+        height={150}
         className={cn("w-48 h-auto", className)}
-        data-ai-hint="logo pascualbet"
+        data-ai-hint="lion logo"
     />
 );

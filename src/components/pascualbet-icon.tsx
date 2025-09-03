@@ -12,6 +12,6 @@ export const PascualBetIcon = ({ className }: PascualBetIconProps) => (
         width={48}
         height={48}
         className={cn("w-10 h-10", className)}
-        data-ai-hint="icon pascualbet"
+        data-ai-hint="lion crest"
     />
 );
