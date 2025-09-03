@@ -199,13 +199,12 @@ export default function Dashboard({ user }: { user: User }) {
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
                         <Image
-                            src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDI4cWtxNW50b3d6Z2Q2bWd2ZzA0aGo0ZDR3c3RldGg2eXhmemF3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/67ThRZlYBvibtdF9JH/giphy.gif"
+                            src="https://storage.googleapis.com/stedi-studio-files/pascual-bet/acres-of-diamonds.png"
                             alt="A punto de encontrar diamantes"
                             width={300}
-                            height={180}
+                            height={225}
                             data-ai-hint="miner quitting diamonds"
                             className="rounded-md"
-                            unoptimized
                         />
                     </div>
                     <AlertDialogFooter>
