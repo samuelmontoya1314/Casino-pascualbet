@@ -192,14 +192,14 @@ export default function Dashboard({ user }: { user: User }) {
                   </Dialog>
                   <AlertDialogContent>
                     <AlertDialogHeader className="text-center">
-                      <AlertDialogTitle>¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
+                      <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
                       <AlertDialogDescription className="text-center">
                          ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
                         <Image
-                            src="https://storage.googleapis.com/stedi-studio-files/pascual-bet/acres-of-diamonds.png"
+                            src="https://i.imgflip.com/392xtk.jpg"
                             alt="A punto de encontrar diamantes"
                             width={300}
                             height={225}
