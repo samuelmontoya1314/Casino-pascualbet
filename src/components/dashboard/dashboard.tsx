@@ -29,6 +29,8 @@ import { updateBalance } from '@/actions/user';
 import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import Image from 'next/image';
 
 const LoadingComponent = () => (
     <div className="p-8 flex items-center justify-center">
@@ -117,78 +119,104 @@ export default function Dashboard({ user }: { user: User }) {
                   <p className="font-semibold text-sm">{user.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
                 </div>
-                <Dialog>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="overflow-hidden rounded-none h-12 w-12 border">
-                            <Avatar className="h-12 w-12 rounded-none">
-                                <AvatarFallback className="bg-primary/20 text-primary font-bold rounded-none">
-                                    {user.name.split(' ').map(n => n[0]).join('')}
-                                </AvatarFallback>
-                            </Avatar>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DialogTrigger asChild>
-                          <DropdownMenuItem>
-                              <UserIcon className="mr-2 h-4 w-4"/>
-                              Perfil
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                        <Link href="/manual">
-                           <DropdownMenuItem>
-                                <HelpCircle className="mr-2 h-4 w-4"/>
-                                Ayuda
-                           </DropdownMenuItem>
-                        </Link>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <form action={handleLogout} className="w-full">
-                                <button type="submit" className="w-full text-left flex items-center">
+                <AlertDialog>
+                  <Dialog>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="secondary" size="icon" className="overflow-hidden rounded-none h-12 w-12 border">
+                              <Avatar className="h-12 w-12 rounded-none">
+                                  <AvatarFallback className="bg-primary/20 text-primary font-bold rounded-none">
+                                      {user.name.split(' ').map(n => n[0]).join('')}
+                                  </AvatarFallback>
+                              </Avatar>
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DialogTrigger asChild>
+                            <DropdownMenuItem>
+                                <UserIcon className="mr-2 h-4 w-4"/>
+                                Perfil
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <Link href="/manual">
+                             <DropdownMenuItem>
+                                  <HelpCircle className="mr-2 h-4 w-4"/>
+                                  Ayuda
+                             </DropdownMenuItem>
+                          </Link>
+                          <DropdownMenuSeparator />
+                          <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Cerrar Sesión</span>
-                                </button>
-                            </form>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                 <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Perfil de Usuario</DialogTitle>
-                      <DialogDescription>
-                        Esta es la información de tu cuenta.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-right font-semibold">Nombre:</span>
-                        <span className="col-span-3">{user.name}</span>
+                              </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                   <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Perfil de Usuario</DialogTitle>
+                        <DialogDescription>
+                          Esta es la información de tu cuenta.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Nombre:</span>
+                          <span className="col-span-3">{user.name}</span>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">ID de Usuario:</span>
+                          <span className="col-span-3">{user.id}</span>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Rol:</span>
+                          <span className="col-span-3 capitalize">{user.role}</span>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Saldo:</span>
+                          <span className="col-span-3">{formatCurrency(balance)}</span>
+                        </div>
+                         <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="text-right font-semibold">Fondos:</span>
+                            <div className="col-span-3">
+                              <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
+                                  <Coins className="mr-2 h-4 w-4" /> Agregar 100 COP
+                              </Button>
+                            </div>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-right font-semibold">ID de Usuario:</span>
-                        <span className="col-span-3">{user.id}</span>
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-right font-semibold">Rol:</span>
-                        <span className="col-span-3 capitalize">{user.role}</span>
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-right font-semibold">Saldo:</span>
-                        <span className="col-span-3">{formatCurrency(balance)}</span>
-                      </div>
-                       <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Fondos:</span>
-                          <div className="col-span-3">
-                            <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
-                                <Coins className="mr-2 h-4 w-4" /> Agregar 100 COP
-                            </Button>
-                          </div>
-                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                         ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="flex justify-center items-center my-4">
+                        <Image
+                            src="https://storage.googleapis.com/static.invertironline.com/wp-content/uploads/2023/12/rendering_2_12_2023_10_51_29.gif"
+                            alt="A punto de encontrar diamantes"
+                            width={300}
+                            height={180}
+                            data-ai-hint="miner quitting diamonds"
+                            className="rounded-md"
+                        />
                     </div>
-                  </DialogContent>
-                </Dialog>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
+                      <form action={handleLogout}>
+                        <AlertDialogAction type="submit" className="w-full">
+                            Sí, abandonar
+                        </AlertDialogAction>
+                      </form>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
         </header>
         </TooltipProvider>
