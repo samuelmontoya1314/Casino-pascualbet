@@ -1,3 +1,4 @@
+
 // This is a mock in-memory database.
 // In a real application, you would use a database like Firestore, PostgreSQL, etc.
 
@@ -26,10 +27,24 @@ const users: Map<string, User> = new Map([
       id: "admin",
       password: "password",
       name: "Admin User",
+      firstName: "Admin",
+      firstLastName: "User",
       role: "admin",
       balance: 10000,
     },
   ],
+  [
+    "pascual",
+    {
+      id: "pascual",
+      password: "password123",
+      name: "Pascual",
+      firstName: "Pascual",
+      firstLastName: "Bet",
+      role: "user",
+      balance: 500,
+    },
+  ]
 ]);
 
 

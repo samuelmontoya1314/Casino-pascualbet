@@ -1,8 +1,10 @@
+
 'use server';
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
+import { findUserById } from '@/lib/users';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido'),
@@ -38,8 +40,14 @@ export async function handleLogin(prevState: any, formData: FormData) {
 
   const { userId } = validatedFields.data;
   
+  const user = await findUserById(userId);
+
+  if (!user) {
+    return { error: 'Usuario no encontrado.' };
+  }
+  
   // In this mock implementation, we bypass password check and just create the session
-  await createSession(userId);
+  await createSession(userId, user);
   redirect('/');
 }
 
