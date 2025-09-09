@@ -19,10 +19,10 @@ export async function getSession(): Promise<User | null> {
 }
 
 export async function createSession(userId: string, user?: Omit<User, 'password'>) {
-  // If a full user object is provided (e.g., from registration), use it.
-  // Otherwise, try to find the user by ID (e.g., from login).
   const existingUser = await findUserById(userId);
   
+  // Use the provided user object (from registration), fall back to existing user (from login),
+  // or finally create a default object if neither exists (though this case is less likely now).
   const userData: User = user || existingUser || {
     id: userId,
     name: userId,
