@@ -52,6 +52,35 @@ const PEG_MARGIN_Y = 32;
 const BUCKET_WIDTH = 60; // as per style={{ maxWidth: '60px' }}
 const BUCKET_GAP = 4; // as per gap-1
 
+const BallComponent = React.memo(({ ball, onComplete, rows }: { ball: Ball, onComplete: (id: number) => void, rows: number }) => {
+    const animationDuration = (rows + 1) * 0.2;
+
+    return (
+      <motion.div
+        initial={{ x: ball.xKeyframes[0], y: ball.yKeyframes[0] }}
+        animate={{ 
+          x: ball.xKeyframes, 
+          y: ball.yKeyframes,
+          transition: {
+            duration: animationDuration,
+            ease: 'linear',
+          }
+        }}
+        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5 } }}
+        onAnimationComplete={() => onComplete(ball.id)}
+        className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
+        style={{
+          background: ball.color,
+          boxShadow: `0 0 10px ${ball.color}`,
+          left: `calc(50% - 8px)`,
+          top: 0
+        }}
+      />
+    );
+});
+BallComponent.displayName = 'BallComponent';
+
+
 const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => {
   const [betAmount, setBetAmount] = useState(10);
   const [risk, setRisk] = useState<'low' | 'medium' | 'high'>('medium');
@@ -77,7 +106,6 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         const nextX = offsetIndex * (PEG_MARGIN_X / 2);
         const nextY = row * PEG_MARGIN_Y + 30;
 
-        // Add intermediate point for bounce effect
         xKeyframes.push((currentX + nextX) / 2);
         yKeyframes.push(yKeyframes[yKeyframes.length - 1]! + PEG_MARGIN_Y / 2);
         
@@ -88,11 +116,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
     const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
     
-    // Total width of all buckets and gaps
     const totalBucketsWidth = multiplierCount * BUCKET_WIDTH + (multiplierCount - 1) * BUCKET_GAP;
-    // The starting x-position of the first bucket (relative to the center)
     const startX = -totalBucketsWidth / 2;
-    // The center x-position of the winning bucket
     const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP) + BUCKET_WIDTH / 2;
 
     xKeyframes.push(finalX);
@@ -106,6 +131,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
     setIsDropping(true);
     setWinningMultiplierIndex(null);
+    onBalanceChange(-betAmount);
 
     const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
@@ -121,12 +147,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     };
 
     setBalls(prev => [...prev, newBall]);
-    const profit = winnings - betAmount;
-    onBalanceChange(profit);
-
+    
     const animationDuration = (rows + 1) * 200 + 300; 
 
     setTimeout(() => {
+      const profit = winnings - betAmount;
+      onBalanceChange(winnings);
       setWinningMultiplierIndex(finalIndex);
       setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
       setIsDropping(false);
@@ -134,6 +160,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
   }, [balance, betAmount, rows, multipliers, calculatePath, onBalanceChange, isDropping]);
 
+  const handleBallAnimationComplete = useCallback((id: number) => {
+    setBalls(prev => prev.filter(b => b.id !== id));
+  }, []);
 
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -154,33 +183,6 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     return 'bg-muted text-muted-foreground';
   }
 
-
-  const BallComponent = ({ ball, onComplete }: { ball: Ball, onComplete: (id: number) => void }) => {
-    const animationDuration = (rows + 1) * 0.2;
-
-    return (
-      <motion.div
-        initial={{ x: ball.xKeyframes[0], y: ball.yKeyframes[0] }}
-        animate={{ 
-          x: ball.xKeyframes, 
-          y: ball.yKeyframes,
-          transition: {
-            duration: animationDuration,
-            ease: 'linear',
-          }
-        }}
-        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5 } }}
-        onAnimationComplete={() => onComplete(ball.id)}
-        className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
-        style={{
-          background: ball.color,
-          boxShadow: `0 0 10px ${ball.color}`,
-          left: `calc(50% - 8px)`,
-          top: 0
-        }}
-      />
-    );
-  };
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border overflow-hidden">
@@ -251,7 +253,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     <BallComponent 
                         key={ball.id} 
                         ball={ball}
-                        onComplete={() => setBalls(prev => prev.filter(b => b.id !== ball.id))} 
+                        onComplete={handleBallAnimationComplete} 
+                        rows={rows}
                     />
                 ))}
               </AnimatePresence>
