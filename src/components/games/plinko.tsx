@@ -87,7 +87,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
     setIsDropping(true);
     setWinningMultiplierIndex(null);
-    
+    onBalanceChange(-betAmount);
+
     const { path, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
     const winnings = betAmount * multiplier;
@@ -105,14 +106,11 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
     setTimeout(() => {
         setWinningMultiplierIndex(finalIndex);
-    }, animationDuration);
-
-    setTimeout(() => {
-      const profit = winnings - betAmount;
-      onBalanceChange(profit);
-      setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
-      setIsDropping(false);
-    }, animationDuration + 500); 
+        const profit = winnings - betAmount;
+        onBalanceChange(winnings); // Give back winnings
+        setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
+        setIsDropping(false);
+    }, animationDuration); 
 
   }, [isDropping, balance, betAmount, rows, onBalanceChange, multipliers, calculatePath]);
 
@@ -140,15 +138,16 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const BallComponent = ({ ball, onComplete }: { ball: Ball, onComplete: (id: number) => void }) => {
     const xKeyframes = ball.path.map(p => p.x);
     const yKeyframes = ball.path.map(p => p.y);
+    const animationDuration = (rows + 1) * 0.15;
 
     return (
       <motion.div
-        initial={{ x: xKeyframes[0], y: yKeyframes[0], opacity: 1 }}
-        animate={{ x: xKeyframes, y: yKeyframes, opacity: [1, 1, 0] }}
+        initial={{ x: xKeyframes[0], y: yKeyframes[0] }}
+        animate={{ x: xKeyframes, y: yKeyframes }}
+        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.3 } }}
         transition={{
-            duration: (rows + 1) * 0.15,
+            duration: animationDuration,
             ease: 'linear',
-            opacity: { duration: 0.2, delay: (rows + 1) * 0.15, times: [0, 0.99, 1] }
         }}
         onAnimationComplete={() => onComplete(ball.id)}
         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
@@ -207,32 +206,30 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-between p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
-            <div className="absolute w-full h-full" style={{
-                background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 60%)'
+        <div className="flex-1 flex flex-col items-center justify-end p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+            <div className="absolute inset-0 w-full h-full" style={{
+                background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
-            <div className="flex-grow w-full flex flex-col items-center justify-center">
-                <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50, width: rows * PEG_MARGIN_X }}>
-                  {Array.from({ length: rows }).map((_, rowIndex) => (
-                    <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
-                      {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
-                         const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
-                         return (
-                            <div
-                                key={pegIndex}
-                                className="absolute w-3 h-3 bg-border rounded-full shadow-md"
-                                style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
-                            />
-                         )
-                      })}
-                    </div>
-                  ))}
-                  <AnimatePresence>
-                    {balls.map(ball => (
-                        <BallComponent key={ball.id} ball={ball} onComplete={(id) => setBalls(prev => prev.filter(b => b.id !== id))} />
-                    ))}
-                  </AnimatePresence>
+            <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
+              {Array.from({ length: rows }).map((_, rowIndex) => (
+                <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
+                  {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
+                     const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
+                     return (
+                        <div
+                            key={pegIndex}
+                            className="absolute w-3 h-3 bg-border rounded-full shadow-md"
+                            style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
+                        />
+                     )
+                  })}
                 </div>
+              ))}
+              <AnimatePresence>
+                {balls.map(ball => (
+                    <BallComponent key={ball.id} ball={ball} onComplete={() => setBalls(prev => prev.filter(b => b.id !== ball.id))} />
+                ))}
+              </AnimatePresence>
             </div>
             <div className="w-full flex justify-center gap-1 p-2">
                 {multipliers.map((m, i) => {
