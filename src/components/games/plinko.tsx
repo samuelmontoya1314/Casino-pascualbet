@@ -181,50 +181,52 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-between p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
             <div className="absolute w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 60%)'
             }}></div>
-            <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
-              {Array.from({ length: rows }).map((_, rowIndex) => (
-                <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
-                  {Array.from({ length: rowIndex + 1 }).map((_, pegIndex) => {
-                     const leftOffset = (pegIndex - rowIndex / 2) * PEG_MARGIN_X;
-                     return (
-                        <div
-                            key={pegIndex}
-                            className="absolute w-3 h-3 bg-border rounded-full shadow-md"
-                            style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
-                        />
-                     )
-                  })}
+            <div className="flex-grow w-full flex items-center justify-center">
+                <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
+                  {Array.from({ length: rows }).map((_, rowIndex) => (
+                    <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
+                      {Array.from({ length: rowIndex + 1 }).map((_, pegIndex) => {
+                         const leftOffset = (pegIndex - rowIndex / 2) * PEG_MARGIN_X;
+                         return (
+                            <div
+                                key={pegIndex}
+                                className="absolute w-3 h-3 bg-border rounded-full shadow-md"
+                                style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
+                            />
+                         )
+                      })}
+                    </div>
+                  ))}
+                  <AnimatePresence>
+                    {balls.map(ball => <BallComponent key={ball.id} ball={ball} />)}
+                  </AnimatePresence>
                 </div>
-              ))}
-              <AnimatePresence>
-                {balls.map(ball => <BallComponent key={ball.id} ball={ball} />)}
-              </AnimatePresence>
+            </div>
+            <div className="w-full flex justify-center gap-1 p-2">
+                {multipliers.map((m, i) => {
+                    const isWinner = balls.length > 0 && !isDropping && balls[balls.length - 1].finalMultiplier === m;
+                    return (
+                       <div
+                          key={i}
+                          className={cn(
+                            'flex-1 text-center text-xs font-bold py-3 rounded-md transition-all duration-300',
+                            'transform-gpu',
+                            getMultiplierColor(m),
+                            isWinner && 'animate-plinko-win'
+                           )}
+                           style={{ maxWidth: '60px' }}
+                        >
+                        {m}x
+                      </div>
+                    )
+                })}
             </div>
         </div>
       </CardContent>
-       <div className="w-full flex justify-center gap-1 p-2 bg-secondary/20">
-        {multipliers.map((m, i) => {
-            const isWinner = balls.length > 0 && balls[balls.length - 1].finalMultiplier === m;
-            return (
-               <div
-                  key={i}
-                  className={cn(
-                    'flex-1 text-center text-xs font-bold py-3 rounded-md transition-all duration-300',
-                    'transform-gpu',
-                    getMultiplierColor(m),
-                    isWinner && !isDropping && 'animate-plinko-win'
-                   )}
-                   style={{ maxWidth: '60px' }}
-                >
-                {m}x
-              </div>
-            )
-        })}
-      </div>
     </Card>
   );
 };
