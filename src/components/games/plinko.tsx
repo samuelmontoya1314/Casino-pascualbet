@@ -46,8 +46,7 @@ const getSafeMultipliers = (risk: 'low' | 'medium' | 'high', rows: number): numb
   return base.slice(start, end);
 };
 
-const PEG_DIAMETER = 12;
-const PEG_MARGIN_X = 38;
+
 const PEG_MARGIN_Y = 32;
 const BUCKET_WIDTH = 60;
 const BUCKET_GAP = 4;
@@ -95,18 +94,24 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
 
+  const pegMarginX = useMemo(() => {
+    const bucketRowWidth = multipliers.length * BUCKET_WIDTH + (multipliers.length - 1) * BUCKET_GAP;
+    return bucketRowWidth / (multipliers.length);
+  }, [multipliers]);
+
+
   const calculatePath = useCallback((numRows: number, multiplierCount: number) => {
     const xKeyframes = [0];
     const yKeyframes = [-20];
     let offsetIndex = 0;
 
     for (let row = 0; row < numRows; row++) {
-        const currentX = offsetIndex * (PEG_MARGIN_X / 2);
+        const currentX = offsetIndex * (pegMarginX / 2);
         
         const direction = Math.random() < 0.5 ? -1 : 1;
         offsetIndex += direction;
         
-        const nextX = offsetIndex * (PEG_MARGIN_X / 2);
+        const nextX = offsetIndex * (pegMarginX / 2);
         const nextY = row * PEG_MARGIN_Y + 30;
 
         xKeyframes.push((currentX + nextX) / 2);
@@ -128,7 +133,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     yKeyframes.push(numRows * PEG_MARGIN_Y + 50);
     
     return { xKeyframes, yKeyframes, finalIndex: safeIndex };
-  }, []);
+  }, [pegMarginX]);
 
   const handleBallAnimationComplete = useCallback((id: number) => {
     setBalls(prev => prev.filter(b => b.id !== id));
@@ -182,13 +187,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     } else { // Auto mode
       setIsAutoBetting(true);
       for (let i = 0; i < autoBetCount; i++) {
-        // This check is inside the loop to allow stopping mid-way
-        if (balance < betAmount) {
-          setIsAutoBetting(false);
-          break;
+        if (!document.hidden && balance >= betAmount) {
+            await dropSingleBall();
+            await new Promise(resolve => setTimeout(resolve, 300));
+        } else {
+            break;
         }
-        await dropSingleBall();
-        await new Promise(resolve => setTimeout(resolve, 300)); // Delay between drops
       }
       setIsAutoBetting(false);
     }
@@ -287,16 +291,15 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
-            <div className="absolute inset-0 w-full h-full" style={{
+             <div className="absolute inset-0 w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
-
             <div className="flex flex-col items-center">
               <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
                 {Array.from({ length: rows }).map((_, rowIndex) => (
                   <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
                     {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
-                       const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
+                       const leftOffset = (pegIndex - (rowIndex + 1) / 2) * pegMarginX;
                        return (
                           <div
                               key={pegIndex}
@@ -347,3 +350,5 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
+
+    
