@@ -16,7 +16,8 @@ interface PlinkoGameProps {
 
 type Ball = {
   id: number;
-  path: { x: number; y: number }[];
+  xKeyframes: number[];
+  yKeyframes: number[];
   finalMultiplier: number;
   winnings: number;
   color: string;
@@ -61,58 +62,69 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
 
   const calculatePath = useCallback((numRows: number, multiplierCount: number) => {
-    let position = { x: 0, y: -20 };
-    const path = [position];
+    const xKeyframes = [0];
+    const yKeyframes = [-20];
     let offsetIndex = 0;
 
     for (let row = 0; row < numRows; row++) {
-      const direction = Math.random() < 0.5 ? -1 : 1;
-      offsetIndex += direction;
-      const x = offsetIndex * (PEG_MARGIN_X / 2);
-      const y = row * PEG_MARGIN_Y + 30;
-      path.push({ x, y });
+        const currentX = offsetIndex * (PEG_MARGIN_X / 2);
+        
+        const direction = Math.random() < 0.5 ? -1 : 1;
+        offsetIndex += direction;
+        
+        const nextX = offsetIndex * (PEG_MARGIN_X / 2);
+        const nextY = row * PEG_MARGIN_Y + 30;
+
+        // Add intermediate point for bounce effect
+        xKeyframes.push((currentX + nextX) / 2);
+        yKeyframes.push(yKeyframes[yKeyframes.length - 1]! + PEG_MARGIN_Y / 2);
+        
+        xKeyframes.push(nextX);
+        yKeyframes.push(nextY);
     }
 
     const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
     const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
     
     const finalX = (safeIndex - (multiplierCount - 1) / 2) * (PEG_MARGIN_X + 4);
-    path.push({ x: finalX, y: numRows * PEG_MARGIN_Y + 50 });
+    xKeyframes.push(finalX);
+    yKeyframes.push(numRows * PEG_MARGIN_Y + 50);
     
-    return { path, finalIndex: safeIndex };
+    return { xKeyframes, yKeyframes, finalIndex: safeIndex };
   }, []);
 
   const handleDropBall = useCallback(() => {
-    if (balance < betAmount) return;
+    if (balance < betAmount || isDropping) return;
 
-    setIsDropping(true); // Disable button immediately
+    setIsDropping(true);
     setWinningMultiplierIndex(null);
 
-    const { path, finalIndex } = calculatePath(rows, multipliers.length);
+    const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
     const winnings = betAmount * multiplier;
     
     const newBall: Ball = {
       id: Date.now() + Math.random(),
-      path,
+      xKeyframes,
+      yKeyframes,
       finalMultiplier: multiplier,
       winnings,
       color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
     };
 
     setBalls(prev => [...prev, newBall]);
-    const animationDuration = (rows + 1) * 150 + 300; 
+
+    const animationDuration = (rows + 1) * 200 + 300; 
 
     setTimeout(() => {
       setWinningMultiplierIndex(finalIndex);
       const profit = winnings - betAmount;
       onBalanceChange(profit);
       setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
-      // Re-enable button after animation and state updates are done
       setIsDropping(false);
     }, animationDuration);
 
-  }, [balance, betAmount, rows, multipliers, calculatePath, onBalanceChange]);
+  }, [balance, betAmount, rows, multipliers, calculatePath, onBalanceChange, isDropping]);
 
 
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,15 +147,15 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   }
 
 
-  const BallComponent = ({ ball, xKeyframes, yKeyframes, onComplete }: { ball: Ball, xKeyframes: number[], yKeyframes: number[], onComplete: (id: number) => void }) => {
-    const animationDuration = (rows + 1) * 0.15;
+  const BallComponent = ({ ball, onComplete }: { ball: Ball, onComplete: (id: number) => void }) => {
+    const animationDuration = (rows + 1) * 0.2;
 
     return (
       <motion.div
-        initial={{ x: xKeyframes[0], y: yKeyframes[0] }}
+        initial={{ x: ball.xKeyframes[0], y: ball.yKeyframes[0] }}
         animate={{ 
-          x: xKeyframes, 
-          y: yKeyframes,
+          x: ball.xKeyframes, 
+          y: ball.yKeyframes,
           transition: {
             duration: animationDuration,
             ease: 'linear',
@@ -231,8 +243,6 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     <BallComponent 
                         key={ball.id} 
                         ball={ball}
-                        xKeyframes={ball.path.map(p => p.x)}
-                        yKeyframes={ball.path.map(p => p.y)}
                         onComplete={() => setBalls(prev => prev.filter(b => b.id !== ball.id))} 
                     />
                 ))}
@@ -264,3 +274,5 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
+
+    
