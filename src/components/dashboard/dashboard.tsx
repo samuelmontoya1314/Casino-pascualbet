@@ -171,9 +171,17 @@ export default function Dashboard({ user }: { user: User }) {
                           <span className="text-right font-semibold">ID de Usuario:</span>
                           <span className="col-span-3">{user.id}</span>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Teléfono:</span>
-                          <span className="col-span-3">{user.phone}</span>
+                         <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Nacionalidad:</span>
+                          <span className="col-span-3">{user.nationality}</span>
+                        </div>
+                         <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Fecha de Nacimiento:</span>
+                          <span className="col-span-3">{user.birthDate}</span>
+                        </div>
+                         <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">No. Documento:</span>
+                          <span className="col-span-3">{user.documentNumber}</span>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                           <span className="text-right font-semibold">Rol:</span>

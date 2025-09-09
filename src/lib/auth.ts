@@ -21,7 +21,6 @@ export async function createSession(userId: string, user?: Omit<User, 'password'
   const userData: User = user || {
     id: userId,
     name: userId,
-    phone: '',
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };
