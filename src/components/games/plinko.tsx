@@ -49,8 +49,8 @@ const getSafeMultipliers = (risk: 'low' | 'medium' | 'high', rows: number): numb
 const PEG_DIAMETER = 12;
 const PEG_MARGIN_X = 38;
 const PEG_MARGIN_Y = 32;
-const BUCKET_WIDTH = 60; // as per style={{ maxWidth: '60px' }}
-const BUCKET_GAP = 4; // as per gap-1
+const BUCKET_WIDTH = 60;
+const BUCKET_GAP = 4;
 
 const BallComponent = React.memo(({ ball, onComplete, rows }: { ball: Ball, onComplete: (id: number) => void, rows: number }) => {
     const animationDuration = (rows + 1) * 0.2;
@@ -89,6 +89,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const [isDropping, setIsDropping] = useState(false);
   const [history, setHistory] = useState<{ multiplier: number; profit: number }[]>([]);
   const [winningMultiplierIndex, setWinningMultiplierIndex] = useState<number | null>(null);
+  
+  const [mode, setMode] = useState<'manual' | 'auto'>('manual');
+  const [autoBetCount, setAutoBetCount] = useState(10);
+  const [isAutoBetting, setIsAutoBetting] = useState(false);
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
 
@@ -126,12 +130,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     return { xKeyframes, yKeyframes, finalIndex: safeIndex };
   }, []);
 
-  const handleDropBall = useCallback(() => {
-    if (balance < betAmount || isDropping) return;
-
+  const dropSingleBall = useCallback(() => {
     setIsDropping(true);
     setWinningMultiplierIndex(null);
-    onBalanceChange(-betAmount);
 
     const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
@@ -149,16 +150,43 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     setBalls(prev => [...prev, newBall]);
     
     const animationDuration = (rows + 1) * 200 + 300; 
+    
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        const profit = winnings - betAmount;
+        onBalanceChange(profit);
+        setWinningMultiplierIndex(finalIndex);
+        setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
+        setIsDropping(false);
+        resolve();
+      }, animationDuration);
+    })
 
-    setTimeout(() => {
-      const profit = winnings - betAmount;
-      onBalanceChange(winnings);
-      setWinningMultiplierIndex(finalIndex);
-      setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
-      setIsDropping(false);
-    }, animationDuration);
+  }, [betAmount, rows, multipliers, calculatePath, onBalanceChange]);
+  
+  const handleBet = async () => {
+    if (isAutoBetting) return;
 
-  }, [balance, betAmount, rows, multipliers, calculatePath, onBalanceChange, isDropping]);
+    if(mode === 'manual') {
+      if (balance < betAmount || isDropping) return;
+      onBalanceChange(-betAmount);
+      await dropSingleBall();
+    } else { // Auto mode
+      const totalCost = betAmount * autoBetCount;
+      if (balance < totalCost) return;
+      
+      setIsAutoBetting(true);
+      onBalanceChange(-totalCost);
+
+      for (let i = 0; i < autoBetCount; i++) {
+        if (!isAutoBetting) break; // Allow stopping
+        await dropSingleBall();
+        await new Promise(resolve => setTimeout(resolve, 250)); // Delay between drops
+      }
+      setIsAutoBetting(false);
+    }
+  }
+
 
   const handleBallAnimationComplete = useCallback((id: number) => {
     setBalls(prev => prev.filter(b => b.id !== id));
@@ -182,25 +210,46 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     if (multiplier > 1) return 'bg-primary/30 text-primary';
     return 'bg-muted text-muted-foreground';
   }
-
+  
+  const isBettingDisabled = isDropping || isAutoBetting;
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border overflow-hidden">
       <CardContent className="flex flex-col-reverse md:flex-row p-0">
         <div className="w-full md:w-[280px] bg-secondary/30 p-4 space-y-4 border-r border-border flex flex-col">
           <div className='flex-grow space-y-4'>
+             <div>
+                <ToggleGroup type="single" value={mode} onValueChange={(value: 'manual' | 'auto') => value && setMode(value)} className="grid grid-cols-2" disabled={isBettingDisabled}>
+                    <ToggleGroupItem value="manual" className="h-12 text-base">Manual</ToggleGroupItem>
+                    <ToggleGroupItem value="auto" className="h-12 text-base">Auto</ToggleGroupItem>
+                </ToggleGroup>
+            </div>
+            
             <div>
               <label className="text-xs font-bold uppercase text-muted-foreground">Monto de Apuesta</label>
               <div className="flex gap-1 mt-1">
-                 <Input type="number" value={betAmount} onChange={handleBetChange} className="bg-input h-12 text-lg font-bold flex-grow" disabled={isDropping} />
-                 <Button onClick={() => setBetAmount(betAmount / 2)} variant="secondary" className="h-12" disabled={isDropping}>½</Button>
-                 <Button onClick={() => setBetAmount(betAmount * 2)} variant="secondary" className="h-12" disabled={isDropping}>2x</Button>
+                 <Input type="number" value={betAmount} onChange={handleBetChange} className="bg-input h-12 text-lg font-bold flex-grow" disabled={isBettingDisabled} />
+                 <Button onClick={() => setBetAmount(betAmount / 2)} variant="secondary" className="h-12" disabled={isBettingDisabled || betAmount <= 1}>½</Button>
+                 <Button onClick={() => setBetAmount(betAmount * 2)} variant="secondary" className="h-12" disabled={isBettingDisabled}>2x</Button>
               </div>
             </div>
+            
+            {mode === 'auto' && (
+               <div>
+                <label className="text-xs font-bold uppercase text-muted-foreground">Número de Apuestas</label>
+                <Input 
+                  type="number" 
+                  value={autoBetCount} 
+                  onChange={(e) => setAutoBetCount(Math.max(1, parseInt(e.target.value) || 1))} 
+                  className="bg-input h-12 text-lg font-bold w-full mt-1" 
+                  disabled={isBettingDisabled} 
+                />
+               </div>
+            )}
 
             <div>
               <label className="text-xs font-bold uppercase text-muted-foreground">Riesgo</label>
-              <ToggleGroup type="single" value={risk} onValueChange={(value: 'low' | 'medium' | 'high') => value && setRisk(value)} className="grid grid-cols-3 mt-1" disabled={isDropping}>
+              <ToggleGroup type="single" value={risk} onValueChange={(value: 'low' | 'medium' | 'high') => value && setRisk(value)} className="grid grid-cols-3 mt-1" disabled={isBettingDisabled}>
                 <ToggleGroupItem value="low" className="h-12 text-base">Bajo</ToggleGroupItem>
                 <ToggleGroupItem value="medium" className="h-12 text-base">Medio</ToggleGroupItem>
                 <ToggleGroupItem value="high" className="h-12 text-base">Alto</ToggleGroupItem>
@@ -209,15 +258,15 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
             <div>
               <label className="text-xs font-bold uppercase text-muted-foreground">Filas</label>
-              <ToggleGroup type="single" value={String(rows)} onValueChange={(value) => value && setRows(Number(value))} className="grid grid-cols-5 gap-1 mt-1" disabled={isDropping}>
+              <ToggleGroup type="single" value={String(rows)} onValueChange={(value) => value && setRows(Number(value))} className="grid grid-cols-5 gap-1 mt-1" disabled={isBettingDisabled}>
                 {[8, 10, 12, 14, 16].map(num => <ToggleGroupItem key={num} value={String(num)} className="h-10 w-full">{num}</ToggleGroupItem>)}
               </ToggleGroup>
             </div>
           </div>
           
           <div className="space-y-2">
-            <Button onClick={handleDropBall} disabled={isDropping || balance < betAmount} size="lg" className="w-full h-16 text-xl uppercase font-bold bg-primary hover:bg-primary/90 text-primary-foreground">
-              {isDropping ? 'Apostando...' : 'Apostar'}
+            <Button onClick={handleBet} disabled={isBettingDisabled || balance < betAmount} size="lg" className="w-full h-16 text-xl uppercase font-bold bg-primary hover:bg-primary/90 text-primary-foreground">
+              {isAutoBetting ? 'Apostando...' : 'Apostar'}
             </Button>
              <div className="flex gap-2 overflow-x-auto pb-2">
                 {history.map((item, i) => (
@@ -266,7 +315,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                        <div
                           key={i}
                           className={cn(
-                            'flex-1 text-center text-xs font-bold py-3 rounded-md transition-all duration-300',
+                            'flex-1 flex items-center justify-center text-xs font-bold py-3 rounded-md transition-all duration-300',
                             'transform-gpu',
                             getMultiplierColor(m),
                             isWinner && 'animate-plinko-win'
@@ -285,3 +334,5 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
+
+    
