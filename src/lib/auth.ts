@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import type { User } from './users';
+import { findUserById } from './users';
 
 const SESSION_COOKIE_NAME = 'secure-access-session';
 
@@ -18,9 +19,14 @@ export async function getSession(): Promise<User | null> {
 }
 
 export async function createSession(userId: string, user?: Omit<User, 'password'>) {
-  const userData: User = user || {
+  // If a full user object is provided (e.g., from registration), use it.
+  // Otherwise, try to find the user by ID (e.g., from login).
+  const existingUser = await findUserById(userId);
+  
+  const userData: User = user || existingUser || {
     id: userId,
     name: userId,
+    firstName: userId,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };
