@@ -1,6 +1,5 @@
 // This is a mock in-memory database.
 // In a real application, you would use a database like Firestore, PostgreSQL, etc.
-import type { Locale } from './i18n';
 
 export type User = {
   id: string;
@@ -8,7 +7,6 @@ export type User = {
   name: string;
   role: 'admin' | 'user';
   balance: number;
-  locale: Locale;
 };
 
 // This map acts as a simple, volatile in-memory store.
@@ -22,7 +20,6 @@ const users: Map<string, User> = new Map([
       name: "Admin User",
       role: "admin",
       balance: 10000,
-      locale: 'es',
     },
   ],
 ]);

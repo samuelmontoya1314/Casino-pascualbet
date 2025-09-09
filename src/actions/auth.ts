@@ -3,8 +3,6 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
-import type { User } from '@/lib/users';
-import { getLocaleFromPhone } from '@/lib/i18n';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido'),
@@ -14,7 +12,6 @@ const loginSchema = z.object({
 const registerSchema = z.object({
     name: z.string().min(2, 'El nombre es requerido'),
     userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
-    phone: z.string().min(10, 'El número de teléfono debe tener al menos 10 dígitos'),
     password: z.string(), // No validation needed for mock
 });
 
@@ -41,18 +38,15 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, name, phone } = validatedFields.data;
-  
-  const locale = getLocaleFromPhone(phone);
+  const { userId, name } = validatedFields.data;
   
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.
-  const newUser: User = {
+  const newUser = {
     id: userId,
     name: name,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
-    locale: locale,
   };
 
   await createSession(newUser.id, newUser);

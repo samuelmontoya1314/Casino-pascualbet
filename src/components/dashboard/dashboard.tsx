@@ -31,7 +31,6 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
-import type { Awaited } from '@/lib/i18n';
 
 const LoadingComponent = () => (
     <div className="p-8 flex items-center justify-center">
@@ -45,16 +44,16 @@ const RouletteGame = dynamic(() => import('@/components/games/roulette'), { load
 const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
 
 
-export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof import('@/lib/i18n').getTranslator> }) {
+export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('slots');
   const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(user.locale === 'en' ? 'en-US' : 'es-CO', {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: user.locale === 'en' ? 'USD' : 'COP',
+      currency: 'COP',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -67,7 +66,7 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
         if (result && result.error) {
             setBalance(currentBalance); // Revert on error
             toast({
-                title: t('dashboard.syncError'),
+                title: "Error de Sincronización",
                 description: result.error,
                 variant: "destructive"
             });
@@ -81,17 +80,17 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
   const ActiveGame = useMemo(() => {
     switch (activeTab) {
       case 'slots':
-        return <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} t={t}/>;
+        return <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} />;
       case 'blackjack':
-        return <BlackjackGame balance={balance} onBalanceChange={handleBalanceChange} t={t}/>;
+        return <BlackjackGame balance={balance} onBalanceChange={handleBalanceChange} />;
       case 'roulette':
-        return <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} t={t}/>;
+        return <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} />;
       case 'poker':
-        return <PokerGame balance={balance} onBalanceChange={handleBalanceChange} t={t}/>;
+        return <PokerGame balance={balance} onBalanceChange={handleBalanceChange} />;
       default:
         return null;
     }
-  }, [activeTab, balance, t]);
+  }, [activeTab, balance]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -113,12 +112,12 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>{t('dashboard.addFunds')}</p>
+                        <p>Agregar 100</p>
                     </TooltipContent>
                 </Tooltip>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{t('dashboard.role')}: {user.role}</p>
+                  <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
                 </div>
                 <AlertDialog>
                   <Dialog>
@@ -133,58 +132,58 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
                           </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>{t('dashboard.myAccount')}</DropdownMenuLabel>
+                          <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DialogTrigger asChild>
                             <DropdownMenuItem>
                                 <UserIcon className="mr-2 h-4 w-4"/>
-                                {t('dashboard.profile')}
+                                Perfil
                             </DropdownMenuItem>
                           </DialogTrigger>
                           <Link href="/manual">
                              <DropdownMenuItem>
                                   <HelpCircle className="mr-2 h-4 w-4"/>
-                                  {t('dashboard.help')}
+                                  Ayuda
                              </DropdownMenuItem>
                           </Link>
                           <DropdownMenuSeparator />
                           <AlertDialogTrigger asChild>
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <LogOut className="mr-2 h-4 w-4" />
-                                <span>{t('dashboard.logout')}</span>
+                                <span>Cerrar Sesión</span>
                               </DropdownMenuItem>
                           </AlertDialogTrigger>
                       </DropdownMenuContent>
                   </DropdownMenu>
                    <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>{t('dashboard.userProfile')}</DialogTitle>
+                        <DialogTitle>Perfil de Usuario</DialogTitle>
                         <DialogDescription>
-                          {t('dashboard.profileDescription')}
+                          Esta es la información de tu cuenta.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">{t('login.fullName')}:</span>
+                          <span className="text-right font-semibold">Nombre Completo:</span>
                           <span className="col-span-3">{user.name}</span>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">{t('login.userId')}:</span>
+                          <span className="text-right font-semibold">ID de Usuario:</span>
                           <span className="col-span-3">{user.id}</span>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">{t('dashboard.role')}:</span>
+                          <span className="text-right font-semibold">Rol:</span>
                           <span className="col-span-3 capitalize">{user.role}</span>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">{t('dashboard.balance')}:</span>
+                          <span className="text-right font-semibold">Saldo:</span>
                           <span className="col-span-3">{formatCurrency(balance)}</span>
                         </div>
                          <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="text-right font-semibold">{t('dashboard.funds')}:</span>
+                            <span className="text-right font-semibold">Fondos:</span>
                             <div className="col-span-3">
                               <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
-                                  <Coins className="mr-2 h-4 w-4" /> {t('dashboard.addFunds')}
+                                  <Coins className="mr-2 h-4 w-4" /> Agregar 100
                               </Button>
                             </div>
                         </div>
@@ -193,9 +192,9 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
                   </Dialog>
                   <AlertDialogContent>
                     <AlertDialogHeader className="text-center">
-                      <AlertDialogTitle className="text-center">{t('dashboard.logoutConfirmTitle')}</AlertDialogTitle>
+                      <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
                       <AlertDialogDescription className="text-center">
-                         {t('dashboard.logoutConfirmDescription')}
+                         ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
@@ -209,10 +208,10 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
                         />
                     </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>{t('dashboard.logoutCancel')}</AlertDialogCancel>
+                      <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
                       <form action={handleLogout} className="w-full sm:w-auto">
                         <AlertDialogAction type="submit" className="w-full">
-                           {t('dashboard.logoutConfirm')}
+                           Sí, abandonar
                         </AlertDialogAction>
                       </form>
                     </AlertDialogFooter>
@@ -224,10 +223,10 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
             <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
                 <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="slots">{t('games.slots')}</TabsTrigger>
-                    <TabsTrigger value="blackjack">{t('games.blackjack')}</TabsTrigger>
-                    <TabsTrigger value="roulette">{t('games.roulette')}</TabsTrigger>
-                    <TabsTrigger value="poker">{t('games.poker')}</TabsTrigger>
+                    <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
+                    <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
+                    <TabsTrigger value="roulette">Ruleta</TabsTrigger>
+                    <TabsTrigger value="poker">Póker</TabsTrigger>
                 </TabsList>
                 <TabsContent value={activeTab} forceMount>
                    <div className="min-h-[600px]">{ActiveGame}</div>
@@ -244,7 +243,7 @@ export default function Dashboard({ user, t }: { user: User, t: Awaited<typeof i
               </Link>
             </TooltipTrigger>
             <TooltipContent side="left">
-                <p>{t('dashboard.userManual')}</p>
+                <p>Manual de Usuario</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -7,7 +7,6 @@ import { Alert, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { BookOpen } from 'lucide-react';
-import { Awaited } from '@/lib/i18n';
 
 type Suit = '♠' | '♥' | '♦' | '♣';
 type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K';
@@ -86,10 +85,9 @@ const MiniCard = ({rank, suit}: {rank: Rank | string; suit: Suit}) => {
 interface BlackjackGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
-  t: Awaited<typeof import('@/lib/i18n').getTranslator>
 }
 
-const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange, t }) => {
+const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange }) => {
   const [deck, setDeck] = useState<CardType[]>([]);
   const [playerHand, setPlayerHand] = useState<Hand>([]);
   const [dealerHand, setDealerHand] = useState<Hand>([]);
@@ -101,7 +99,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
-      setMessage(t('games.notEnoughBalance'));
+      setMessage("No tienes saldo suficiente.");
       return;
     }
     
@@ -120,14 +118,14 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
     if (calculateScore(playerHand) === 21) {
         setGameState('dealer');
     }
-  }, [bet, balance, onBalanceChange, t]);
+  }, [bet, balance, onBalanceChange]);
   
   useEffect(() => {
     if (gameState === 'playing') {
       const pScore = calculateScore(playerHand);
       setPlayerScore(pScore);
       if (pScore > 21) {
-        setMessage(t('games.blackjack.bust'));
+        setMessage("¡Te pasaste! Pierdes.");
         setGameState('finished');
       }
     } else {
@@ -139,7 +137,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
     } else {
         setDealerScore(calculateScore(dealerHand.slice(0, 1)));
     }
-  }, [playerHand, dealerHand, gameState, t]);
+  }, [playerHand, dealerHand, gameState]);
 
   const handleHit = () => {
     if (gameState !== 'playing' || !deck.length) return;
@@ -171,15 +169,15 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
           const finalDealerScore = score;
           
           if (finalPlayerScore === 21 && playerHand.length === 2) {
-             setMessage(t('games.blackjack.blackjackWin'));
+             setMessage("¡Blackjack! ¡Ganas!");
              onBalanceChange(bet * 2.5);
           } else if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
-            setMessage(t('games.youWin'));
+            setMessage("¡Ganas!");
             onBalanceChange(bet * 2);
           } else if (finalPlayerScore < finalDealerScore) {
-            setMessage(t('games.dealerWins'));
+            setMessage("El crupier gana.");
           } else {
-            setMessage(t('games.push'));
+            setMessage("Empate. Se devuelve la apuesta.");
             onBalanceChange(bet);
           }
           setGameState('finished');
@@ -188,7 +186,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
       
       setTimeout(dealerTurn, 200);
     }
-  }, [gameState, dealerHand, deck, playerHand, onBalanceChange, bet, t]);
+  }, [gameState, dealerHand, deck, playerHand, onBalanceChange, bet]);
   
   const handleBetChange = (amount: number) => {
     const newBet = bet + amount;
@@ -206,20 +204,20 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
 
   const isPlayerBusted = playerScore > 21;
   const showDealerSecondCard = gameState !== 'playing';
-  const playerWon = gameState === 'finished' && (message.includes(t('games.youWin')) || message.includes('Blackjack'));
+  const playerWon = gameState === 'finished' && (message.includes("¡Ganas!") || message.includes('Blackjack'));
   
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary uppercase">{t('games.blackjack')}</CardTitle>
-        <CardDescription>{t('games.blackjack.description')}</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">Blackjack</CardTitle>
+        <CardDescription>Acércate a 21. El crupier se planta en 17.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
         <div className="w-full space-y-6 min-h-[360px]">
            {gameState !== 'betting' ? (
              <>
                 <div>
-                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">{t('games.dealer')} <Badge variant="secondary">{showDealerSecondCard ? calculateScore(dealerHand) : dealerScore}</Badge></h3>
+                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">Crupier <Badge variant="secondary">{showDealerSecondCard ? calculateScore(dealerHand) : dealerScore}</Badge></h3>
                   <div className="flex justify-center gap-4 h-36 items-center">
                     {dealerHand.map((card, index) => (
                       <GameCard 
@@ -234,7 +232,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">{t('games.yourHand')} <Badge className={cn(isPlayerBusted && 'bg-destructive', playerWon && 'bg-primary')}>{playerScore}</Badge></h3>
+                  <h3 className="text-xl font-semibold text-center mb-2 uppercase">Tu Mano <Badge className={cn(isPlayerBusted && 'bg-destructive', playerWon && 'bg-primary')}>{playerScore}</Badge></h3>
                   <div className={cn("flex justify-center gap-4 h-36 items-center", isPlayerBusted && 'animate-bust-shake', playerWon && 'animate-win-pulse')}>
                     {playerHand.map((card, index) => (
                       <GameCard 
@@ -249,13 +247,13 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
               </>
             ) : (
                 <div className="flex flex-col items-center justify-center gap-4 pt-16 h-full min-h-[360px]">
-                    <div className="text-2xl font-bold uppercase">{t('games.placeYourBet')}</div>
+                    <div className="text-2xl font-bold uppercase">Haz tu Apuesta</div>
                     <div className="flex items-center gap-4">
                         <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
                         <div className="text-3xl font-bold text-primary">${bet}</div>
                         <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
                     </div>
-                    <Button size="lg" onClick={startNewRound} disabled={balance < bet || bet <= 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">{t('games.blackjack.deal')}</Button>
+                    <Button size="lg" onClick={startNewRound} disabled={balance < bet || bet <= 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Repartir</Button>
                 </div>
             )
         }
@@ -270,13 +268,13 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
         <div className="flex gap-4 min-h-[52px]">
             {gameState === 'playing' && (
               <>
-                <Button size="lg" onClick={handleHit} className="uppercase bg-secondary hover:bg-secondary/80">{t('games.blackjack.hit')}</Button>
-                <Button size="lg" onClick={handleStand} variant="outline" className="uppercase">{t('games.blackjack.stand')}</Button>
+                <Button size="lg" onClick={handleHit} className="uppercase bg-secondary hover:bg-secondary/80">Pedir</Button>
+                <Button size="lg" onClick={handleStand} variant="outline" className="uppercase">Plantarse</Button>
               </>
             )}
 
             {gameState === 'finished' && (
-                <Button size="lg" onClick={handleNewGame} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">{t('games.playAgain')}</Button>
+                <Button size="lg" onClick={handleNewGame} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Jugar de Nuevo</Button>
             )}
         </div>
 
@@ -285,56 +283,56 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange,
                 <AccordionTrigger className='text-sm uppercase'>
                     <div className="flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
-                        <span>{t('games.howToPlay')}</span>
+                        <span>Cómo Jugar</span>
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-xs space-y-4">
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-1">{t('games.objective')}</h4>
-                        <p>{t('games.blackjack.objective')}</p>
+                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo</h4>
+                        <p>Tu mano debe sumar un valor más cercano a 21 que la del crupier, sin pasarte de 21.</p>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.blackjack.cardValues')}</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">Valor de las Cartas</h4>
                         <ul className="space-y-3">
                            <li className="flex items-center gap-4">
                                 <div className="flex gap-1">
                                     <MiniCard rank="7" suit="♦" />
                                 </div>
-                                <span>{t('games.blackjack.value2_10')}</span>
+                                <span>Cartas 2-10: Valen su número indicado.</span>
                            </li>
                            <li className="flex items-center gap-4">
                                 <div className="flex gap-1">
                                     <MiniCard rank="K" suit="♠" />
                                 </div>
-                                <span>{t('games.blackjack.valueFace')}</span>
+                                <span>Figuras (J, Q, K): Valen 10 puntos cada una.</span>
                            </li>
                            <li className="flex items-center gap-4">
                                 <div className="flex gap-1">
                                     <MiniCard rank="A" suit="♥" />
                                 </div>
-                                <span>{t('games.blackjack.valueAce')}</span>
+                                <span>As (A): Vale 1 u 11, lo que más te convenga.</span>
                            </li>
                         </ul>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.blackjack.mainRules')}</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">Reglas Principales</h4>
                         <ul className="list-disc list-inside space-y-2">
                             <li className='flex items-center gap-2'>
-                                <span>{t('games.blackjack.rule1')}</span>
-                                <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">{t('games.blackjack.deal')}</Button>
+                                <span>Elige tu apuesta y pulsa</span>
+                                <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">Repartir</Button>
                             </li>
-                            <li>{t('games.blackjack.rule2')}</li>
+                            <li>Recibes 2 cartas. El crupier recibe 2, una de ellas boca abajo.</li>
                             <li className='space-y-2'>
                                 <div>
-                                    {t('games.blackjack.rule3_hit')} <Button size="sm" disabled className="uppercase bg-secondary hover:bg-secondary/80 text-xs h-6 px-2">{t('games.blackjack.hit')}</Button>
+                                    Pulsa <Button size="sm" disabled className="uppercase bg-secondary hover:bg-secondary/80 text-xs h-6 px-2">Pedir</Button> para recibir otra carta
                                 </div>
                                 <div>
-                                    {t('games.blackjack.rule3_stand')} <Button size="sm" disabled variant="outline" className="uppercase text-xs h-6 px-2">{t('games.blackjack.stand')}</Button>
+                                    o pulsa <Button size="sm" disabled variant="outline" className="uppercase text-xs h-6 px-2">Plantarse</Button> para quedarte con tu mano actual.
                                 </div>
                             </li>
-                            <li>{t('games.blackjack.rule4')}</li>
-                            <li>{t('games.blackjack.rule5')}</li>
-                            <li>{t('games.blackjack.rule6')}</li>
+                            <li>Si tu puntuación supera 21, pierdes automáticamente (Bust).</li>
+                            <li>El crupier está obligado a pedir carta hasta que su mano sume 17 o más.</li>
+                            <li>Un Blackjack (un As y una carta de valor 10 en la mano inicial) paga 3 a 2 (1.5x tu apuesta).</li>
                         </ul>
                     </div>
                 </AccordionContent>
