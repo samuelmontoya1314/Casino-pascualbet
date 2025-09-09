@@ -23,13 +23,13 @@ export async function createSession(userId: string, user?: Omit<User, 'password'
   
   // Use the provided user object (from registration), fall back to existing user (from login),
   // or finally create a default object if neither exists (though this case is less likely now).
-  const userData: User = user || existingUser || {
-    id: userId,
-    name: userId,
-    firstName: userId,
-    role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
-    balance: 1000,
-  };
+  const userData: User | undefined = user || existingUser;
+
+  if (!userData) {
+    // This case should ideally not be reached if handleLogin/handleRegister checks for user existence first.
+    // However, as a safeguard, we prevent creating an empty session.
+    throw new Error('Cannot create session for a non-existent user.');
+  }
 
   cookies().set(SESSION_COOKIE_NAME, JSON.stringify(userData), {
     httpOnly: true,
