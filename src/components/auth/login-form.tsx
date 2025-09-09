@@ -18,8 +18,7 @@ function SubmitButton() {
     );
 }
 
-// LoginFormContent contains the client-side logic
-function LoginFormContent() {
+export function LoginForm() {
     const [state, formAction] = useActionState(handleLogin, undefined);
 
     return (
@@ -44,9 +43,4 @@ function LoginFormContent() {
             <SubmitButton />
         </form>
     );
-}
-
-// Main component remains as the entry point
-export function LoginForm() {
-    return <LoginFormContent />;
 }
