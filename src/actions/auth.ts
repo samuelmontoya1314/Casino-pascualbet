@@ -13,7 +13,13 @@ const registerSchema = z.object({
     name: z.string().min(2, 'El nombre es requerido'),
     userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
     phone: z.string().min(10, 'El número de teléfono debe tener al menos 10 caracteres'),
-    password: z.string().min(12, 'La contraseña debe tener al menos 12 caracteres').max(24, 'La contraseña no puede tener más de 24 caracteres'),
+    password: z.string()
+        .min(12, 'La contraseña debe tener al menos 12 caracteres')
+        .max(24, 'La contraseña no puede tener más de 24 caracteres')
+        .refine(
+            (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/.test(value), 
+            'La contraseña debe contener al menos una mayúscula, un número y un carácter especial.'
+        ),
 });
 
 
