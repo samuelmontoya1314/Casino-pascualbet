@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PascualBetLogo } from '@/components/pascualbet-logo';
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState('register');
+  const [activeTab, setActiveTab] = useState('login');
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
