@@ -1,13 +1,13 @@
 
 'use client';
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from '../ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 interface PlinkoGameProps {
   balance: number;
@@ -16,8 +16,7 @@ interface PlinkoGameProps {
 
 type Ball = {
   id: number;
-  xKeyframes: number[];
-  yKeyframes: number[];
+  path: { x: number, y: number }[];
   finalMultiplier: number;
   winnings: number;
   color: string;
@@ -52,28 +51,34 @@ const BUCKET_WIDTH = 60;
 const BUCKET_GAP = 4;
 
 
-const BallComponent = React.memo(({ xKeyframes, yKeyframes, color, onComplete, animationDuration }: { xKeyframes: number[], yKeyframes: number[], color: string, onComplete: () => void, animationDuration: number }) => {
+const BallComponent = React.memo(({ ball, onComplete }: { ball: Ball, onComplete: () => void }) => {
+    const ballRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const animationDuration = (ball.path.length) * 150;
+        const timer = setTimeout(onComplete, animationDuration);
+        return () => clearTimeout(timer);
+    }, [ball, onComplete]);
+
     return (
-      <motion.div
-        initial={{ x: xKeyframes[0], y: yKeyframes[0] }}
-        animate={{ 
-          x: xKeyframes, 
-          y: yKeyframes,
-          transition: {
-            duration: animationDuration,
-            ease: 'linear',
-          }
-        }}
-        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5 } }}
-        onAnimationComplete={onComplete}
-        className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
-        style={{
-          background: color,
-          boxShadow: `0 0 10px ${color}`,
-          left: `calc(50% - 8px)`,
-          top: 0
-        }}
-      />
+        <div
+            ref={ballRef}
+            className="ball-container absolute"
+            style={{
+                left: `calc(50% - 8px)`,
+                top: 0
+            }}
+        >
+          <div 
+              className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
+              style={{
+                background: ball.color,
+                boxShadow: `0 0 10px ${ball.color}`,
+                animation: `plinko-path-animation ${ball.path.length * 150}ms linear forwards`,
+                '--path-keyframes': ball.path.map(p => `${p.x}px ${p.y}px`).join(', ')
+              }}
+          />
+        </div>
     );
 });
 BallComponent.displayName = 'BallComponent';
@@ -101,24 +106,17 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
 
   const calculatePath = useCallback((numRows: number, multiplierCount: number) => {
-    const xKeyframes = [0];
-    const yKeyframes = [-20];
+    const path = [{ x: 0, y: -20 }];
     let offsetIndex = 0;
 
     for (let row = 0; row < numRows; row++) {
-        const currentX = offsetIndex * (pegMarginX / 2);
-        
         const direction = Math.random() < 0.5 ? -1 : 1;
         offsetIndex += direction;
         
         const nextX = offsetIndex * (pegMarginX / 2);
         const nextY = row * PEG_MARGIN_Y + 30;
 
-        xKeyframes.push((currentX + nextX) / 2);
-        yKeyframes.push(yKeyframes[yKeyframes.length - 1]! + PEG_MARGIN_Y / 2);
-        
-        xKeyframes.push(nextX);
-        yKeyframes.push(nextY);
+        path.push({ x: nextX, y: nextY });
     }
 
     const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
@@ -128,11 +126,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     const startX = -totalBucketsWidth / 2 + BUCKET_WIDTH/2;
     const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP);
     
-
-    xKeyframes.push(finalX);
-    yKeyframes.push(numRows * PEG_MARGIN_Y + 50);
+    path.push({ x: finalX, y: numRows * PEG_MARGIN_Y + 50 });
     
-    return { xKeyframes, yKeyframes, finalIndex: safeIndex };
+    return { path, finalIndex: safeIndex };
   }, [pegMarginX]);
 
   const handleBallAnimationComplete = useCallback((id: number) => {
@@ -150,14 +146,13 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         setWinningMultiplierIndex(null);
         onBalanceChange(-betAmount);
 
-        const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
+        const { path, finalIndex } = calculatePath(rows, multipliers.length);
         const multiplier = multipliers[finalIndex];
         const winnings = betAmount * multiplier;
         
         const newBall: Ball = {
           id: Date.now() + Math.random(),
-          xKeyframes,
-          yKeyframes,
+          path,
           finalMultiplier: multiplier,
           winnings,
           color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
@@ -165,7 +160,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
         setBalls(prev => [...prev, newBall]);
         
-        const animationDuration = (rows + 1) * 0.2; 
+        const animationDuration = (rows + 1) * 200; 
         
         setTimeout(() => {
             const profit = winnings;
@@ -174,7 +169,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);
             resolve();
-        }, animationDuration * 1000 + 300); // Add a small buffer
+        }, animationDuration + 300); // Add a small buffer
     })
 
   }, [betAmount, balance, rows, multipliers, calculatePath, onBalanceChange, mode]);
@@ -222,6 +217,32 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border overflow-hidden">
+      <style>{`
+        @keyframes plinko-path-animation {
+            to {
+                offset-path: path('M ' + (getComputedStyle(document.documentElement).getPropertyValue('--path-keyframes') || '0px 0px'));
+                offset-distance: 100%;
+            }
+        }
+        .ball-enter {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        .ball-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 300ms, transform 300ms;
+        }
+        .ball-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .ball-exit-active {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 300ms, transform 300ms;
+        }
+      `}</style>
       <CardContent className="flex flex-col-reverse md:flex-row p-0">
         <div className="w-full md:w-[280px] bg-secondary/30 p-4 space-y-4 border-r border-border flex flex-col">
           <div className='flex-grow space-y-4'>
@@ -310,18 +331,22 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     })}
                   </div>
                 ))}
-                <AnimatePresence>
+                <TransitionGroup>
                   {balls.map(ball => (
-                      <BallComponent 
-                          key={ball.id} 
-                          xKeyframes={ball.xKeyframes}
-                          yKeyframes={ball.yKeyframes}
-                          color={ball.color}
-                          animationDuration={(rows + 1) * 0.2}
-                          onComplete={() => handleBallAnimationComplete(ball.id)}
-                      />
+                      <CSSTransition
+                          key={ball.id}
+                          timeout={300}
+                          classNames="ball"
+                          onExited={() => handleBallAnimationComplete(ball.id)}
+                      >
+                         <BallComponent 
+                              key={ball.id} 
+                              ball={ball}
+                              onComplete={() => handleBallAnimationComplete(ball.id)}
+                          />
+                      </CSSTransition>
                   ))}
-                </AnimatePresence>
+                </TransitionGroup>
               </div>
               <div className="flex justify-center gap-1 mt-4">
                   {multipliers.map((m, i) => {
@@ -350,5 +375,3 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
-
-    
