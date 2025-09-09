@@ -93,4 +93,3 @@ export async function updateUserBalance(id: string, newBalance: number): Promise
     console.error(`Attempted to update balance for a non-existent mock user: ${id}`);
   }
 }
-
