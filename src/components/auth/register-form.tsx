@@ -12,8 +12,8 @@ function SubmitButton() {
     const { pending } = useFormStatus();
 
     return (
-        <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Registrando..." : <> <UserPlus className="mr-2 h-4 w-4" /> Registrarse </>}
+        <Button type="submit" className="w-full h-12 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={pending}>
+            {pending ? "Registrando..." : <> Crear Cuenta </>}
         </Button>
     );
 }
@@ -22,22 +22,22 @@ export function RegisterForm() {
     const [state, formAction] = useActionState(handleRegister, undefined);
 
     return (
-        <form action={formAction} className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="name">Nombre Completo</Label>
-                <Input id="name" name="name" placeholder="ej. Juan Pérez" required />
-            </div>
-            <div className="space-y-2">
+        <form action={formAction} className="space-y-4">
+             <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="ej. juanperez" required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="phone">Número de Teléfono</Label>
-                <Input id="phone" name="phone" placeholder="+57 300 123 4567" type="tel" required />
+                <Input id="userId" name="userId" placeholder="ID de Usuario" required className="h-12" />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input id="password" name="password" type="password" placeholder="Contraseña" required className="h-12"/>
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input id="name" name="name" placeholder="Nombre Completo" required className="h-12" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="phone">Número de Teléfono</Label>
+                <Input id="phone" name="phone" placeholder="Número de Teléfono" type="tel" required className="h-12" />
             </div>
             
             {state?.error && (

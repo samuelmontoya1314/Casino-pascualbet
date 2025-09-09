@@ -2,33 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Press Start 2P', system-ui;
-  image-rendering: pixelated;
-}
-
 @layer base {
   :root {
-    --background: 220 13% 18%; /* Dark Slate Gray */
-    --foreground: 0 0% 98%; /* Almost White */
-    --card: 220 13% 22%;
+    --background: 220 13% 10%; /* Darker Slate Gray */
+    --foreground: 0 0% 98%;
+    --card: 220 13% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 220 13% 18%;
+    --popover: 220 13% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 207 90% 54%; /* Bright Blue */
+    --primary: 207 90% 54%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 220 13% 30%;
+    --secondary: 220 13% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 13% 30%;
+    --muted: 220 13% 18%;
     --muted-foreground: 220 10% 65%;
-    --accent: 326 91% 59%; /* Bright Pink */
+    --accent: 326 91% 59%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 35%;
-    --input: 220 13% 30%;
+    --border: 220 13% 25%;
+    --input: 220 13% 20%;
     --ring: 207 90% 54%;
-    --radius: 0rem;
+    --radius: 0.5rem;
   }
 
   .dark {
@@ -49,7 +44,7 @@ body {
     --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 25%;
-    --input: 220 13% 25%;
+    --input: 220 13% 20%;
     --ring: 207 90% 54%;
   }
 }

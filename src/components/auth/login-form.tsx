@@ -11,7 +11,7 @@ import { AlertCircle, LogIn } from 'lucide-react';
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" className="w-full h-12 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={pending}>
             {pending ? "Iniciando Sesión..." : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
         </Button>
     );
@@ -21,14 +21,14 @@ export function LoginForm() {
     const [state, formAction] = useActionState(handleLogin, undefined);
 
     return (
-        <form action={formAction} className="space-y-6">
+        <form action={formAction} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="ej. admin" required />
+                <Input id="userId" name="userId" placeholder="ej. admin" required className="h-12" />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input id="password" name="password" type="password" required className="h-12" />
             </div>
             
             {state?.error && (
