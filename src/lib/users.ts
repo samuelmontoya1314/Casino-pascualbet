@@ -44,6 +44,18 @@ const users: Map<string, User> = new Map([
       role: "user",
       balance: 500,
     },
+  ],
+  [
+    "usuario",
+    {
+      id: "usuario",
+      password: "password",
+      name: "Usuario de Prueba",
+      firstName: "Usuario",
+      firstLastName: "Prueba",
+      role: "user",
+      balance: 1000,
+    },
   ]
 ]);
 
@@ -81,3 +93,4 @@ export async function updateUserBalance(id: string, newBalance: number): Promise
     console.error(`Attempted to update balance for a non-existent mock user: ${id}`);
   }
 }
+
