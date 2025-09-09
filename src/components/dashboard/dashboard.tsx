@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
+  DialogFooter
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -21,17 +23,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, AlertCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useActionState, useEffect } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
-import { updateBalance } from '@/actions/user';
+import { updateBalance, updateUser } from '@/actions/user';
 import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
+import { useFormStatus } from 'react-dom';
+import { Alert } from '../ui/alert';
+
 
 const LoadingComponent = () => (
     <div className="p-8 flex items-center justify-center">
@@ -45,12 +52,33 @@ const RouletteGame = dynamic(() => import('@/components/games/roulette'), { load
 const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
 const PlinkoGame = dynamic(() => import('@/components/games/plinko'), { loading: () => <LoadingComponent /> });
 
+function SaveButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending ? 'Guardando...' : 'Guardar Cambios'}
+        </Button>
+    );
+}
 
 export default function Dashboard({ user }: { user: User }) {
   const [balance, setBalance] = useState(user.balance);
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('slots');
+  const [profileOpen, setProfileOpen] = useState(false);
   const { toast } = useToast();
+
+  const [updateUserState, formAction] = useActionState(updateUser, { error: null, success: false });
+
+  useEffect(() => {
+    if (updateUserState.success) {
+        toast({
+            title: "Perfil Actualizado",
+            description: "Tus datos se han guardado correctamente.",
+        });
+        setProfileOpen(false);
+    }
+  }, [updateUserState, toast]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -124,7 +152,7 @@ export default function Dashboard({ user }: { user: User }) {
                   <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
                 </div>
                 <AlertDialog>
-                  <Dialog>
+                  <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                           <Button variant="secondary" size="icon" className="overflow-hidden rounded-none h-12 w-12 border">
@@ -159,51 +187,65 @@ export default function Dashboard({ user }: { user: User }) {
                           </AlertDialogTrigger>
                       </DropdownMenuContent>
                   </DropdownMenu>
-                   <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Perfil de Usuario</DialogTitle>
-                        <DialogDescription>
-                          Esta es la información de tu cuenta.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Nombre Completo:</span>
-                          <span className="col-span-3">{user.name}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">ID de Usuario:</span>
-                          <span className="col-span-3">{user.id}</span>
-                        </div>
-                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Nacionalidad:</span>
-                          <span className="col-span-3">{user.nationality}</span>
-                        </div>
-                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Fecha de Nacimiento:</span>
-                          <span className="col-span-3">{user.birthDate}</span>
-                        </div>
-                         <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">No. Documento:</span>
-                          <span className="col-span-3">{user.documentNumber}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Rol:</span>
-                          <span className="col-span-3 capitalize">{user.role}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="text-right font-semibold">Saldo:</span>
-                          <span className="col-span-3">{formatCurrency(balance)}</span>
-                        </div>
-                         <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="text-right font-semibold">Fondos:</span>
-                            <div className="col-span-3">
-                              <Button onClick={() => handleBalanceChange(100)} size="sm" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
-                                  <Coins className="mr-2 h-4 w-4" /> Agregar 100
-                              </Button>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Perfil de Usuario</DialogTitle>
+                            <DialogDescription>
+                                Aquí puedes ver y editar la información de tu cuenta.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form action={formAction} className="space-y-4">
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="firstName">Primer Nombre</Label>
+                                    <Input id="firstName" name="firstName" defaultValue={user.firstName} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="secondName">Segundo Nombre</Label>
+                                    <Input id="secondName" name="secondName" defaultValue={user.secondName} />
+                                </div>
                             </div>
-                        </div>
-                      </div>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="firstLastName">Primer Apellido</Label>
+                                    <Input id="firstLastName" name="firstLastName" defaultValue={user.firstLastName} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="secondLastName">Segundo Apellido</Label>
+                                    <Input id="secondLastName" name="secondLastName" defaultValue={user.secondLastName} />
+                                </div>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
+                                    <Input id="birthDate" name="birthDate" type="date" defaultValue={user.birthDate} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="nationality">Nacionalidad</Label>
+                                    <Input id="nationality" name="nationality" defaultValue={user.nationality} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>ID de Usuario</Label>
+                                <Input defaultValue={user.id} disabled />
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Número de Documento</Label>
+                                <Input defaultValue={user.documentNumber} disabled />
+                            </div>
+                             {updateUserState?.error && (
+                                <Alert variant="destructive" className="mt-4">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <span>{updateUserState.error}</span>
+                                </Alert>
+                            )}
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary">Cancelar</Button>
+                                </DialogClose>
+                                <SaveButton />
+                            </DialogFooter>
+                        </form>
                     </DialogContent>
                   </Dialog>
                   <AlertDialogContent>
