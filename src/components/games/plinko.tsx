@@ -49,6 +49,8 @@ const getSafeMultipliers = (risk: 'low' | 'medium' | 'high', rows: number): numb
 const PEG_DIAMETER = 12;
 const PEG_MARGIN_X = 38;
 const PEG_MARGIN_Y = 32;
+const BUCKET_WIDTH = 60; // as per style={{ maxWidth: '60px' }}
+const BUCKET_GAP = 4; // as per gap-1
 
 const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => {
   const [betAmount, setBetAmount] = useState(10);
@@ -86,7 +88,13 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
     const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
     
-    const finalX = (safeIndex - (multiplierCount - 1) / 2) * (PEG_MARGIN_X + 4);
+    // Total width of all buckets and gaps
+    const totalBucketsWidth = multiplierCount * BUCKET_WIDTH + (multiplierCount - 1) * BUCKET_GAP;
+    // The starting x-position of the first bucket (relative to the center)
+    const startX = -totalBucketsWidth / 2;
+    // The center x-position of the winning bucket
+    const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP) + BUCKET_WIDTH / 2;
+
     xKeyframes.push(finalX);
     yKeyframes.push(numRows * PEG_MARGIN_Y + 50);
     
@@ -113,13 +121,13 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     };
 
     setBalls(prev => [...prev, newBall]);
+    const profit = winnings - betAmount;
+    onBalanceChange(profit);
 
     const animationDuration = (rows + 1) * 200 + 300; 
 
     setTimeout(() => {
       setWinningMultiplierIndex(finalIndex);
-      const profit = winnings - betAmount;
-      onBalanceChange(profit);
       setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
       setIsDropping(false);
     }, animationDuration);
@@ -274,5 +282,3 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
-
-    
