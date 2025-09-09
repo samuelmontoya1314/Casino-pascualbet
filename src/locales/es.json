@@ -119,7 +119,7 @@
         "poker.rule2_bet": "- Pones una apuesta adicional igual a tu Ante para continuar.",
         "poker.rule2_check": "- No apuestas más, pero sigues en la mano.",
         "poker.rule2_fold": "- Te retiras y pierdes tu apuesta inicial.",
-        "poker.rule3_community": "Si continúas, se revelarán las 5 cartas comunitarias en tres etapas (3, luego 1 y finalmente 1).",
+        "poker.rule3_community": "Si continúas, se revelarán las 5 cartas comunitarias en tres etapas (3, luego 1, y finalmente 1).",
         "poker.rule4_showdown": "Al final, el crupier revela sus cartas. El jugador con la mejor mano de 5 cartas gana el bote completo.",
         "poker.handRankings": "Ranking de Manos (De mejor a peor)",
         "poker.royalFlush": "Escalera Real",
