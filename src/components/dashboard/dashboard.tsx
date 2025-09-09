@@ -1,3 +1,4 @@
+
 'use client';
 import { handleLogout } from '@/actions/auth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -42,6 +43,7 @@ const SlotsGame = dynamic(() => import('@/components/games/slots'), { loading: (
 const BlackjackGame = dynamic(() => import('@/components/games/blackjack'), { loading: () => <LoadingComponent /> });
 const RouletteGame = dynamic(() => import('@/components/games/roulette'), { loading: () => <LoadingComponent /> });
 const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
+const PlinkoGame = dynamic(() => import('@/components/games/plinko'), { loading: () => <LoadingComponent /> });
 
 
 export default function Dashboard({ user }: { user: User }) {
@@ -87,6 +89,8 @@ export default function Dashboard({ user }: { user: User }) {
         return <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} />;
       case 'poker':
         return <PokerGame balance={balance} onBalanceChange={handleBalanceChange} />;
+      case 'plinko':
+        return <PlinkoGame balance={balance} onBalanceChange={handleBalanceChange} />;
       default:
         return null;
     }
@@ -234,11 +238,12 @@ export default function Dashboard({ user }: { user: User }) {
         </TooltipProvider>
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
             <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
                     <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
                     <TabsTrigger value="roulette">Ruleta</TabsTrigger>
                     <TabsTrigger value="poker">Póker</TabsTrigger>
+                    <TabsTrigger value="plinko">Plinko</TabsTrigger>
                 </TabsList>
                 <TabsContent value={activeTab} forceMount>
                    <div className="min-h-[600px]">{ActiveGame}</div>
