@@ -10,8 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
-  DialogFooter
+  DialogClose
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -23,21 +22,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, AlertCircle } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition, useMemo, useActionState, useEffect } from 'react';
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
-import { updateBalance, updateUser } from '@/actions/user';
+import { updateBalance } from '@/actions/user';
 import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { useFormStatus } from 'react-dom';
-import { Alert } from '../ui/alert';
+import { EditProfileForm } from './edit-profile-form';
 
 
 const LoadingComponent = () => (
@@ -52,33 +48,14 @@ const RouletteGame = dynamic(() => import('@/components/games/roulette'), { load
 const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
 const PlinkoGame = dynamic(() => import('@/components/games/plinko'), { loading: () => <LoadingComponent /> });
 
-function SaveButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending}>
-            {pending ? 'Guardando...' : 'Guardar Cambios'}
-        </Button>
-    );
-}
 
 export default function Dashboard({ user }: { user: User }) {
+  const [sessionUser, setSessionUser] = useState(user);
   const [balance, setBalance] = useState(user.balance);
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('slots');
   const [profileOpen, setProfileOpen] = useState(false);
   const { toast } = useToast();
-
-  const [updateUserState, formAction] = useActionState(updateUser, { error: null, success: false });
-
-  useEffect(() => {
-    if (updateUserState.success) {
-        toast({
-            title: "Perfil Actualizado",
-            description: "Tus datos se han guardado correctamente.",
-        });
-        setProfileOpen(false);
-    }
-  }, [updateUserState, toast]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -105,6 +82,15 @@ export default function Dashboard({ user }: { user: User }) {
             setBalance(result.newBalance!);
         }
     });
+  }
+
+  const handleProfileUpdate = (updatedUser: User) => {
+    setSessionUser(updatedUser);
+    toast({
+        title: "Perfil Actualizado",
+        description: "Tus datos se han guardado correctamente.",
+    });
+    setProfileOpen(false);
   }
   
   const ActiveGame = useMemo(() => {
@@ -148,8 +134,8 @@ export default function Dashboard({ user }: { user: User }) {
                     </TooltipContent>
                 </Tooltip>
                 <div className="text-right hidden sm:block">
-                  <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">Rol: {user.role}</p>
+                  <p className="font-semibold text-sm">{sessionUser.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">Rol: {sessionUser.role}</p>
                 </div>
                 <AlertDialog>
                   <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
@@ -158,7 +144,7 @@ export default function Dashboard({ user }: { user: User }) {
                           <Button variant="secondary" size="icon" className="overflow-hidden rounded-none h-12 w-12 border">
                               <Avatar className="h-12 w-12 rounded-none">
                                   <AvatarFallback className="bg-primary/20 text-primary font-bold rounded-none">
-                                      {user.name.split(' ').map(n => n[0]).join('')}
+                                      {sessionUser.name.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                               </Avatar>
                           </Button>
@@ -194,58 +180,7 @@ export default function Dashboard({ user }: { user: User }) {
                                 Aquí puedes ver y editar la información de tu cuenta.
                             </DialogDescription>
                         </DialogHeader>
-                        <form action={formAction} className="space-y-4">
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="firstName">Primer Nombre</Label>
-                                    <Input id="firstName" name="firstName" defaultValue={user.firstName} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="secondName">Segundo Nombre</Label>
-                                    <Input id="secondName" name="secondName" defaultValue={user.secondName} />
-                                </div>
-                            </div>
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="firstLastName">Primer Apellido</Label>
-                                    <Input id="firstLastName" name="firstLastName" defaultValue={user.firstLastName} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="secondLastName">Segundo Apellido</Label>
-                                    <Input id="secondLastName" name="secondLastName" defaultValue={user.secondLastName} />
-                                </div>
-                            </div>
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
-                                    <Input id="birthDate" name="birthDate" type="date" defaultValue={user.birthDate} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="nationality">Nacionalidad</Label>
-                                    <Input id="nationality" name="nationality" defaultValue={user.nationality} />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>ID de Usuario</Label>
-                                <Input defaultValue={user.id} disabled />
-                            </div>
-                             <div className="space-y-2">
-                                <Label>Número de Documento</Label>
-                                <Input defaultValue={user.documentNumber} disabled />
-                            </div>
-                             {updateUserState?.error && (
-                                <Alert variant="destructive" className="mt-4">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <span>{updateUserState.error}</span>
-                                </Alert>
-                            )}
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button type="button" variant="secondary">Cancelar</Button>
-                                </DialogClose>
-                                <SaveButton />
-                            </DialogFooter>
-                        </form>
+                        <EditProfileForm user={sessionUser} onUpdate={handleProfileUpdate} onCancel={() => setProfileOpen(false)} />
                     </DialogContent>
                   </Dialog>
                   <AlertDialogContent>

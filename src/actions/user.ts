@@ -18,14 +18,14 @@ const updateUserSchema = z.object({
 export async function updateUser(prevState: any, formData: FormData) {
     const session = await getSession();
     if (!session) {
-        return { error: 'Not authenticated', success: false };
+        return { error: 'Not authenticated', success: false, data: null };
     }
 
     const validatedFields = updateUserSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
         const errorMessages = validatedFields.error.errors.map(e => e.message).join(', ');
-        return { error: `Campos inválidos: ${errorMessages}`, success: false };
+        return { error: `Campos inválidos: ${errorMessages}`, success: false, data: null };
     }
 
     const { firstName, secondName, firstLastName, secondLastName, birthDate, nationality } = validatedFields.data;
@@ -46,7 +46,7 @@ export async function updateUser(prevState: any, formData: FormData) {
     // Revalidate the path to ensure the UI updates with the new session data
     revalidatePath('/');
 
-    return { success: true, error: null };
+    return { success: true, error: null, data: updatedUser };
 }
 
 
