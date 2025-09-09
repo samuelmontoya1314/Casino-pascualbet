@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, LogIn } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -18,7 +18,8 @@ function SubmitButton() {
     );
 }
 
-export function LoginForm() {
+// LoginFormContent contains the client-side logic
+function LoginFormContent() {
     const [state, formAction] = useActionState(handleLogin, undefined);
 
     return (
@@ -43,4 +44,9 @@ export function LoginForm() {
             <SubmitButton />
         </form>
     );
+}
+
+// Main component remains as the entry point
+export function LoginForm() {
+    return <LoginFormContent />;
 }
