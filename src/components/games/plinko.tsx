@@ -31,10 +31,14 @@ const riskMultipliers = {
 const getSafeMultipliers = (risk: 'low' | 'medium' | 'high', rows: number): number[] => {
   const base = rows <= 11 ? riskMultipliers[risk][8] : riskMultipliers[risk][16];
   const midPoint = Math.floor(base.length / 2);
-  const halfRows = Math.floor(rows / 2);
-  
-  // Ensure we don't go out of bounds for smaller row counts
   const rowCountForMultipliers = Math.floor(rows/2) * 2 + 1;
+  
+  if (rows > base.length) {
+     const start = midPoint - Math.floor(base.length / 2);
+     const end = start + base.length;
+     return base.slice(start, end);
+  }
+
   const start = midPoint - Math.floor(rowCountForMultipliers / 2);
   const end = start + rowCountForMultipliers;
   
@@ -56,31 +60,27 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
 
-  const calculatePath = (numRows: number) => {
-    let currentOffset = 0;
-    const path = [{ x: 0, y: -20 }]; // Start above the first peg
+  const calculatePath = useCallback((numRows: number, multiplierCount: number) => {
+    let position = { x: 0, y: -20 };
+    const path = [position];
+    let offsetIndex = 0;
 
-    for (let i = 0; i < numRows; i++) {
-        // Add point at the current peg
-        path.push({ x: currentOffset * (PEG_MARGIN_X / 2), y: i * PEG_MARGIN_Y + 30 });
-        
-        const direction = Math.random() < 0.5 ? -1 : 1;
-        currentOffset += direction;
-
-        // Add point between pegs
-        path.push({ x: currentOffset * (PEG_MARGIN_X / 2), y: (i + 0.5) * PEG_MARGIN_Y + 30 });
+    for (let row = 0; row < numRows; row++) {
+      const direction = Math.random() < 0.5 ? -1 : 1;
+      offsetIndex += direction;
+      const x = offsetIndex * (PEG_MARGIN_X / 2);
+      const y = row * PEG_MARGIN_Y + 30;
+      path.push({ x, y });
     }
 
-    const finalIndex = (currentOffset + numRows) / 2;
-    const safeIndex = Math.max(0, Math.min(multipliers.length - 1, finalIndex));
+    const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
+    const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
     
-    // Add final point in the multiplier bucket
-    const numMultipliers = multipliers.length;
-    const finalX = (safeIndex - (numMultipliers - 1) / 2) * (PEG_MARGIN_X + 4);
+    const finalX = (safeIndex - (multiplierCount - 1) / 2) * (PEG_MARGIN_X + 4);
     path.push({ x: finalX, y: numRows * PEG_MARGIN_Y + 50 });
     
     return { path, finalIndex: safeIndex };
-  }
+  }, []);
 
   const handleDropBall = useCallback(() => {
     if (isDropping || balance < betAmount) return;
@@ -89,12 +89,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     setWinningMultiplierIndex(null);
     onBalanceChange(-betAmount);
 
-    const { path, finalIndex } = calculatePath(rows);
+    const { path, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
     const winnings = betAmount * multiplier;
     
     const newBall: Ball = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       path,
       finalMultiplier: multiplier,
       winnings,
@@ -112,7 +112,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
       onBalanceChange(winnings);
       setHistory(prev => [{ multiplier, profit: winnings - betAmount }, ...prev.slice(0, 14)]);
       setIsDropping(false);
-    }, animationDuration + 500); // Wait for animation to finish
+    }, animationDuration + 500); 
 
   }, [isDropping, balance, betAmount, rows, onBalanceChange, multipliers, calculatePath]);
 
@@ -137,28 +137,22 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   };
 
 
-  const BallComponent = ({ ball }: { ball: Ball }) => {
+  const BallComponent = ({ ball, onComplete }: { ball: Ball, onComplete: (id: number) => void }) => {
     const xKeyframes = ball.path.map(p => p.x);
     const yKeyframes = ball.path.map(p => p.y);
 
     return (
       <motion.div
-        initial={{
-            offsetDistance: "0%",
-            opacity: 1
-        }}
-        animate={{
-            offsetDistance: "100%",
-            opacity: [1, 1, 1, 1, 0]
-        }}
+        initial={{ x: xKeyframes[0], y: yKeyframes[0], opacity: 1 }}
+        animate={{ x: xKeyframes, y: yKeyframes, opacity: [1, 1, 0] }}
         transition={{
-          duration: (rows + 1) * 0.15,
-          ease: 'linear',
-          opacity: { duration: 0.2, delay: (rows + 1) * 0.15 + 0.3 }
+            duration: (rows + 1) * 0.15,
+            ease: 'linear',
+            opacity: { duration: 0.2, delay: (rows + 1) * 0.15, times: [0, 0.99, 1] }
         }}
+        onAnimationComplete={() => onComplete(ball.id)}
         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
         style={{
-          offsetPath: `path('M${ball.path.map(p => `${p.x} ${p.y}`).join(' L')}')`,
           background: ball.color,
           boxShadow: `0 0 10px ${ball.color}`,
           left: `calc(50% - 8px)`,
@@ -234,7 +228,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     </div>
                   ))}
                   <AnimatePresence>
-                    {balls.map(ball => <BallComponent key={ball.id} ball={ball} />)}
+                    {balls.map(ball => (
+                        <BallComponent key={ball.id} ball={ball} onComplete={(id) => setBalls(prev => prev.filter(b => b.id !== id))} />
+                    ))}
                   </AnimatePresence>
                 </div>
             </div>
@@ -264,5 +260,3 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
-
-    
