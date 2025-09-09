@@ -43,6 +43,8 @@ export async function handleRegister(prevState: any, formData: FormData) {
 
   const { userId, name, phone } = validatedFields.data;
   
+  const locale = getLocaleFromPhone(phone);
+  
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.
   const newUser: User = {
@@ -50,7 +52,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     name: name,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
-    locale: getLocaleFromPhone(phone),
+    locale: locale,
   };
 
   await createSession(newUser.id, newUser);
