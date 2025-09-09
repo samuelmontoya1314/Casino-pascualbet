@@ -16,7 +16,7 @@ interface PlinkoGameProps {
 
 type Ball = {
   id: number;
-  path: number[];
+  path: { x: number; y: number }[];
   finalMultiplier: number;
   winnings: number;
   color: string;
@@ -32,10 +32,18 @@ const getSafeMultipliers = (risk: 'low' | 'medium' | 'high', rows: number): numb
   const base = rows <= 11 ? riskMultipliers[risk][8] : riskMultipliers[risk][16];
   const midPoint = Math.floor(base.length / 2);
   const halfRows = Math.floor(rows / 2);
-  const start = midPoint - halfRows;
-  const end = midPoint + halfRows + 1;
+  
+  // Ensure we don't go out of bounds for smaller row counts
+  const rowCountForMultipliers = Math.floor(rows/2) * 2 + 1;
+  const start = midPoint - Math.floor(rowCountForMultipliers / 2);
+  const end = start + rowCountForMultipliers;
+  
   return base.slice(start, end);
 };
+
+const PEG_DIAMETER = 12;
+const PEG_MARGIN_X = 38;
+const PEG_MARGIN_Y = 32;
 
 const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => {
   const [betAmount, setBetAmount] = useState(10);
@@ -44,26 +52,45 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const [balls, setBalls] = useState<Ball[]>([]);
   const [isDropping, setIsDropping] = useState(false);
   const [history, setHistory] = useState<{ multiplier: number; profit: number }[]>([]);
+  const [winningMultiplierIndex, setWinningMultiplierIndex] = useState<number | null>(null);
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
+
+  const calculatePath = (numRows: number) => {
+    let currentOffset = 0;
+    const path = [{ x: 0, y: -20 }]; // Start above the first peg
+
+    for (let i = 0; i < numRows; i++) {
+        // Add point at the current peg
+        path.push({ x: currentOffset * (PEG_MARGIN_X / 2), y: i * PEG_MARGIN_Y + 30 });
+        
+        const direction = Math.random() < 0.5 ? -1 : 1;
+        currentOffset += direction;
+
+        // Add point between pegs
+        path.push({ x: currentOffset * (PEG_MARGIN_X / 2), y: (i + 0.5) * PEG_MARGIN_Y + 30 });
+    }
+
+    const finalIndex = (currentOffset + numRows) / 2;
+    const safeIndex = Math.max(0, Math.min(multipliers.length - 1, finalIndex));
+    
+    // Add final point in the multiplier bucket
+    const numMultipliers = multipliers.length;
+    const finalX = (safeIndex - (numMultipliers - 1) / 2) * (PEG_MARGIN_X + 4);
+    path.push({ x: finalX, y: numRows * PEG_MARGIN_Y + 50 });
+    
+    return { path, finalIndex: safeIndex };
+  }
 
   const handleDropBall = useCallback(() => {
     if (isDropping || balance < betAmount) return;
 
     setIsDropping(true);
+    setWinningMultiplierIndex(null);
     onBalanceChange(-betAmount);
 
-    let path: number[] = [];
-    let currentOffset = 0;
-    for (let i = 0; i < rows; i++) {
-      const direction = Math.random() < 0.5 ? -0.5 : 0.5;
-      path.push(direction);
-      currentOffset += direction;
-    }
-
-    const finalIndex = Math.round(currentOffset + Math.floor(rows / 2));
-    const safeIndex = Math.max(0, Math.min(multipliers.length - 1, finalIndex));
-    const multiplier = multipliers[safeIndex];
+    const { path, finalIndex } = calculatePath(rows);
+    const multiplier = multipliers[finalIndex];
     const winnings = betAmount * multiplier;
     
     const newBall: Ball = {
@@ -71,18 +98,23 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
       path,
       finalMultiplier: multiplier,
       winnings,
-      color: multiplier > 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+      color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
     };
 
     setBalls(prev => [...prev, newBall]);
+    const animationDuration = (rows + 1) * 150;
+
+    setTimeout(() => {
+        setWinningMultiplierIndex(finalIndex);
+    }, animationDuration);
 
     setTimeout(() => {
       onBalanceChange(winnings);
       setHistory(prev => [{ multiplier, profit: winnings - betAmount }, ...prev.slice(0, 14)]);
       setIsDropping(false);
-    }, (rows + 1) * 150 + 500); // Wait for animation to finish
+    }, animationDuration + 500); // Wait for animation to finish
 
-  }, [isDropping, balance, betAmount, rows, onBalanceChange, multipliers]);
+  }, [isDropping, balance, betAmount, rows, onBalanceChange, multipliers, calculatePath]);
 
   useEffect(() => {
     if (balls.length > 5) {
@@ -104,33 +136,33 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     return 'bg-muted/80 text-muted-foreground';
   };
 
-  const PEG_DIAMETER = 12;
-  const PEG_MARGIN_X = 38;
-  const PEG_MARGIN_Y = 32;
 
   const BallComponent = ({ ball }: { ball: Ball }) => {
-    const xPath = ball.path.reduce((acc, dir) => [...acc, acc[acc.length - 1] + dir * PEG_MARGIN_X], [0]);
-    const yPath = Array.from({ length: rows + 1 }, (_, i) => i * PEG_MARGIN_Y);
+    const xKeyframes = ball.path.map(p => p.x);
+    const yKeyframes = ball.path.map(p => p.y);
 
     return (
       <motion.div
-        initial={{ x: 0, y: -20, opacity: 0 }}
+        initial={{
+            offsetDistance: "0%",
+            opacity: 1
+        }}
         animate={{
-          x: xPath.map(x => x),
-          y: yPath,
-          opacity: 1,
+            offsetDistance: "100%",
+            opacity: [1, 1, 1, 1, 0]
         }}
         transition={{
           duration: (rows + 1) * 0.15,
           ease: 'linear',
-          x: { type: 'spring', stiffness: 200, damping: 20 }
+          opacity: { duration: 0.2, delay: (rows + 1) * 0.15 + 0.3 }
         }}
         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
         style={{
-          top: 20,
-          left: `calc(50% - 8px)`,
+          offsetPath: `path('M${ball.path.map(p => `${p.x} ${p.y}`).join(' L')}')`,
           background: ball.color,
           boxShadow: `0 0 10px ${ball.color}`,
+          left: `calc(50% - 8px)`,
+          top: 0
         }}
       />
     );
@@ -185,12 +217,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             <div className="absolute w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 60%)'
             }}></div>
-            <div className="flex-grow w-full flex items-center justify-center">
-                <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
+            <div className="flex-grow w-full flex flex-col items-center justify-center">
+                <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50, width: rows * PEG_MARGIN_X }}>
                   {Array.from({ length: rows }).map((_, rowIndex) => (
                     <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
-                      {Array.from({ length: rowIndex + 1 }).map((_, pegIndex) => {
-                         const leftOffset = (pegIndex - rowIndex / 2) * PEG_MARGIN_X;
+                      {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
+                         const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
                          return (
                             <div
                                 key={pegIndex}
@@ -208,7 +240,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             </div>
             <div className="w-full flex justify-center gap-1 p-2">
                 {multipliers.map((m, i) => {
-                    const isWinner = balls.length > 0 && !isDropping && balls[balls.length - 1].finalMultiplier === m;
+                    const isWinner = winningMultiplierIndex === i;
                     return (
                        <div
                           key={i}
@@ -232,3 +264,5 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
+
+    
