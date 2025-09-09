@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
 import type { User } from '@/lib/users';
+import { getLocaleFromPhone } from '@/lib/i18n';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido'),
@@ -40,7 +41,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, name } = validatedFields.data;
+  const { userId, name, phone } = validatedFields.data;
   
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.
@@ -49,6 +50,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     name: name,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
+    locale: getLocaleFromPhone(phone),
   };
 
   await createSession(newUser.id, newUser);

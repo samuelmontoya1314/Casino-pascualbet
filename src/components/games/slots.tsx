@@ -7,6 +7,7 @@ import { Star, Cherry, Gem, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { BookOpen } from 'lucide-react';
+import { Awaited } from '@/lib/i18n';
 
 const symbols = [
     { icon: <Cherry className="w-16 h-16 text-red-500" />, value: 'cherry', multiplier: 2, key: 'cherry' },
@@ -20,6 +21,7 @@ const getRandomSymbol = () => symbols[Math.floor(Math.random() * symbols.length)
 interface SlotsGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
+  t: Awaited<typeof import('@/lib/i18n').getTranslator>
 }
 
 const Reel = ({ symbol, isSpinning }: { symbol: typeof symbols[0], isSpinning: boolean }) => {
@@ -46,7 +48,7 @@ const Reel = ({ symbol, isSpinning }: { symbol: typeof symbols[0], isSpinning: b
 };
 
 
-const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
+const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange, t }) => {
   const [reels, setReels] = useState(() => [symbols[0], symbols[1], symbols[2]]);
   const [spinning, setSpinning] = useState(false);
   const [message, setMessage] = useState('');
@@ -55,7 +57,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
   const spinReels = useCallback(() => {
     if (spinning || balance < betAmount) {
-        if (balance < betAmount) setMessage("Saldo insuficiente.");
+        if (balance < betAmount) setMessage(t('games.notEnoughBalance'));
         return;
     }
 
@@ -84,28 +86,28 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
         if (isJackpot) {
             const winnings = betAmount * resolvedReels[0].multiplier;
-            setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
+            setMessage(t('games.slots.jackpotMessage', { amount: winnings }));
             onBalanceChange(winnings);
             setWinningLine([true, true, true]);
         } else if (isTwoInLine) {
             const winnings = betAmount * resolvedReels[0].multiplier * 0.5;
-            setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
+            setMessage(t('games.slots.twoInLineMessage', { amount: winnings }));
             onBalanceChange(winnings);
             setWinningLine([true, true, false]);
         } else {
-            setMessage('¡Suerte la próxima vez!');
+            setMessage(t('games.nextTime'));
         }
     });
-}, [spinning, balance, betAmount, onBalanceChange, reels]);
+}, [spinning, balance, betAmount, onBalanceChange, reels, t]);
 
 
-  const playerWon = message.includes('Ganas');
+  const playerWon = message.includes(t('games.win'));
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary uppercase">Tragamonedas</CardTitle>
-        <CardDescription>¡Alinea símbolos para ganar!</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">{t('games.slots')}</CardTitle>
+        <CardDescription>{t('games.slots.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8 min-h-[450px]">
         <div className="flex gap-6 p-6 bg-secondary rounded-none border-4 border-border">
@@ -124,9 +126,9 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
 
         <div className="flex flex-col items-center gap-2">
             <Button size="lg" onClick={spinReels} disabled={spinning || balance < betAmount} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-16 py-8 text-2xl transform transition-transform hover:scale-105 active:scale-95 uppercase">
-              {spinning ? 'Girando...' : 'Girar'}
+              {spinning ? t('games.spinning') : t('games.spin')}
             </Button>
-            <p className="text-muted-foreground uppercase">Costo: ${betAmount}</p>
+            <p className="text-muted-foreground uppercase">{t('games.cost')}: ${betAmount}</p>
         </div>
 
         <Accordion type="single" collapsible className="w-full max-w-md">
@@ -134,16 +136,16 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
                 <AccordionTrigger className='text-sm uppercase'>
                     <div className="flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
-                        <span>Cómo Jugar</span>
+                        <span>{t('games.howToPlay')}</span>
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-xs space-y-4">
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo</h4>
-                        <p>Alinea los símbolos en la línea central para ganar premios. ¡La apuesta es siempre de 10 COP!</p>
+                        <h4 className="font-bold uppercase text-primary mb-1">{t('games.objective')}</h4>
+                        <p>{t('games.slots.objective')}</p>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Combinaciones Ganadoras</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.slots.winningCombinations')}</h4>
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <div className="flex gap-1 p-1 bg-background rounded-md">
@@ -151,7 +153,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
                                     <Cherry className="w-6 h-6 text-red-500" />
                                     <Cherry className="w-6 h-6 text-red-500" />
                                 </div>
-                                <span className="font-semibold">- Jackpot: 3 iguales (Gran Premio)</span>
+                                <span className="font-semibold">- {t('games.slots.jackpot')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="flex gap-1 p-1 bg-background rounded-md">
@@ -159,12 +161,12 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
                                     <Star className="w-6 h-6 text-blue-400" />
                                     <Gem className="w-6 h-6 text-purple-500" />
                                 </div>
-                                <span className="font-semibold">- Dos en línea (Premio Menor)</span>
+                                <span className="font-semibold">- {t('games.slots.twoInLine')}</span>
                             </div>
                         </div>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Tabla de Pagos (Apuesta x Multiplicador)</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.slots.payoutTable')}</h4>
                         <ul className="space-y-1 bg-background/50 p-2 rounded-md">
                             {symbols.map(s => (
                                 <li key={s.value} className="flex items-center justify-between">
@@ -176,7 +178,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
                                 </li>
                             ))}
                         </ul>
-                        <p className="text-muted-foreground mt-2 text-center">El premio por 2 en línea es la mitad del multiplicador.</p>
+                        <p className="text-muted-foreground mt-2 text-center">{t('games.slots.twoInLinePayout')}</p>
                     </div>
                 </AccordionContent>
             </AccordionItem>

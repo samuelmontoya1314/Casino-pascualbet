@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { BookOpen, User, Bot } from 'lucide-react';
 import { evaluateHand, HandRank, Card as PokerCard, rankPokerHand, compareHands } from '@/lib/poker';
+import { Awaited } from '@/lib/i18n';
 
 const GameCard = ({ card, hidden, revealed, style, className }: { card?: PokerCard; hidden?: boolean, revealed?: boolean, style?: React.CSSProperties, className?: string }) => {
     if (hidden || !card) {
@@ -42,9 +43,10 @@ const MiniCard = ({rank, suit}: {rank: string; suit: '♠' | '♥' | '♦' | '�
 interface PokerGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
+  t: Awaited<typeof import('@/lib/i18n').getTranslator>
 }
 
-const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
+const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange, t }) => {
   const [deck, setDeck] = useState<PokerCard[]>([]);
   const [playerHand, setPlayerHand] = useState<PokerCard[]>([]);
   const [dealerHand, setDealerHand] = useState<PokerCard[]>([]);
@@ -74,7 +76,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
   const startNewRound = useCallback(() => {
     if (balance < bet) {
-      setMessage("Saldo insuficiente.");
+      setMessage(t('games.notEnoughBalance'));
       return;
     }
 
@@ -90,10 +92,10 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     
     setDeck(newDeck);
     setGameState('pre-flop');
-    setMessage('Ronda de apuestas. ¿Apuestas, Pasas o te Retiras?');
+    setMessage(t('games.poker.bettingRoundMessage'));
     setPlayerHandRank(null);
     setDealerHandRank(null);
-  }, [balance, bet, onBalanceChange]);
+  }, [balance, bet, onBalanceChange, t]);
 
   const proceedWithCommunityCards = () => {
       // Burn a card and deal the flop
@@ -104,7 +106,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
       setGameState('flop');
       setCommunityCards(flop);
       setDeck(currentDeck);
-      setMessage('Flop. Se revelan las 3 primeras cartas.');
+      setMessage(t('games.poker.flopMessage'));
 
       setTimeout(() => {
           // Burn and deal the turn
@@ -113,7 +115,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
           const newCommunity = [...flop, turn];
           setCommunityCards(newCommunity);
           setGameState('turn');
-          setMessage('Turn. Se revela la cuarta carta.');
+          setMessage(t('games.poker.turnMessage'));
           setDeck(currentDeck);
 
           setTimeout(() => {
@@ -123,7 +125,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
               const finalCommunity = [...newCommunity, river];
               setCommunityCards(finalCommunity);
               setGameState('river');
-               setMessage('River. Se revela la última carta. ¡Showdown!');
+               setMessage(t('games.poker.riverMessage'));
               setDeck(currentDeck);
               
               setTimeout(() => {
@@ -137,7 +139,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     if (gameState !== 'pre-flop') return;
 
     if (action === 'fold') {
-      setMessage('Te has retirado. El crupier gana el bote.');
+      setMessage(t('games.poker.foldMessage'));
       setGameState('finished');
       return;
     }
@@ -145,7 +147,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     if (action === 'bet') {
       const raiseAmount = bet;
       if (balance < raiseAmount) {
-        setMessage('No tienes suficiente saldo para apostar.');
+        setMessage(t('games.notEnoughBalance'));
         return;
       }
       onBalanceChange(-raiseAmount);
@@ -167,17 +169,17 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         const finalPot = pot * 2; // Ante + Bet
 
         if (winner === 'player') {
-            setMessage(`¡Ganas con ${pHand.name}!`);
+            setMessage(t('games.poker.winMessage', { handName: pHand.name }));
             onBalanceChange(finalPot);
         } else if (winner === 'dealer') {
-            setMessage(`El crupier gana con ${dHand.name}.`);
+            setMessage(t('games.poker.dealerWinMessage', { handName: dHand.name }));
         } else {
-            setMessage('¡Empate! Se divide el bote.');
+            setMessage(t('games.push'));
             onBalanceChange(pot); // Bets are returned (ante + bet / 2 per player)
         }
         setGameState('finished');
     }
-  }, [gameState, communityCards, playerHand, dealerHand, onBalanceChange, pot]);
+  }, [gameState, communityCards, playerHand, dealerHand, onBalanceChange, pot, t]);
 
   const handleBetChange = (amount: number) => {
     const newBet = bet + amount;
@@ -186,14 +188,14 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     }
   }
 
-  const playerWon = gameState === 'finished' && message.includes('Ganas');
+  const playerWon = gameState === 'finished' && message.includes(t('games.youWin'));
   const finalPot = pot + (gameState === 'pre-flop' ? bet : 0);
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary uppercase">Póker Texas Hold'em</CardTitle>
-        <CardDescription>1v1 contra el crupier. ¿Tienes lo que se necesita?</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">{t('games.poker.title')}</CardTitle>
+        <CardDescription>{t('games.poker.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-8">
         
@@ -201,7 +203,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
             {/* Dealer Area */}
             <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-center mb-2 uppercase flex items-center gap-2">
-                    <Bot /> Crupier 
+                    <Bot /> {t('games.dealer')} 
                     {dealerHandRank && <Badge variant="secondary" className={cn(!playerWon && 'animate-win-pulse bg-primary/80')}>{dealerHandRank.name}</Badge>}
                 </h3>
                 <div className="flex justify-center gap-4">
@@ -218,13 +220,13 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                         <GameCard key={index} card={communityCards[index]} revealed={true} />
                     ))}
                 </div>
-                 <div className="text-2xl font-bold uppercase">Bote: <span className="text-primary">${finalPot}</span></div>
+                 <div className="text-2xl font-bold uppercase">{t('games.poker.pot')}: <span className="text-primary">${finalPot}</span></div>
             </div>
 
             {/* Player Area */}
             <div className="flex flex-col items-center">
                  <h3 className="text-xl font-semibold text-center mb-2 uppercase flex items-center gap-2">
-                    <User /> Tu Mano 
+                    <User /> {t('games.yourHand')}
                     {playerHandRank && <Badge variant="secondary" className={cn(playerWon && 'animate-win-pulse bg-primary/80')}>{playerHandRank.name}</Badge>}
                 </h3>
                 <div className={cn("flex justify-center gap-4", playerWon && 'animate-win-pulse')}>
@@ -244,24 +246,24 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         <div className="flex flex-col items-center gap-4 min-h-[148px]">
             {gameState === 'betting' && (
                 <div className="flex flex-col items-center gap-4 pt-8">
-                    <div className="text-2xl font-bold uppercase">Apuesta Inicial (Ante)</div>
+                    <div className="text-2xl font-bold uppercase">{t('games.poker.ante')}</div>
                     <div className="flex items-center gap-4">
                         <Button onClick={() => handleBetChange(-10)} disabled={bet <= 10}>-</Button>
                         <div className="text-3xl font-bold text-primary">${bet}</div>
                         <Button onClick={() => handleBetChange(10)} disabled={bet >= balance}>+</Button>
                     </div>
-                    <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Repartir</Button>
+                    <Button size="lg" onClick={startNewRound} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">{t('games.blackjack.deal')}</Button>
                 </div>
             )}
             {gameState === 'pre-flop' && (
                 <div className="flex flex-wrap justify-center gap-4">
-                     <Button size="lg" onClick={() => handleAction('bet')} className="bg-green-600 hover:bg-green-700 uppercase">Apostar (${bet})</Button>
-                     <Button size="lg" onClick={() => handleAction('check')} variant="outline" className="uppercase">Pasar</Button>
-                     <Button size="lg" onClick={() => handleAction('fold')} className="bg-red-600 hover:bg-red-700 uppercase">No Ir</Button>
+                     <Button size="lg" onClick={() => handleAction('bet')} className="bg-green-600 hover:bg-green-700 uppercase">{t('games.poker.bet')} (${bet})</Button>
+                     <Button size="lg" onClick={() => handleAction('check')} variant="outline" className="uppercase">{t('games.poker.check')}</Button>
+                     <Button size="lg" onClick={() => handleAction('fold')} className="bg-red-600 hover:bg-red-700 uppercase">{t('games.poker.fold')}</Button>
                 </div>
             )}
             {gameState === 'finished' && (
-                <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">Jugar de Nuevo</Button>
+                <Button size="lg" onClick={() => setGameState('betting')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">{t('games.playAgain')}</Button>
             )}
         </div>
 
@@ -270,37 +272,36 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                 <AccordionTrigger className='text-sm uppercase'>
                     <div className="flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
-                        <span>Cómo Jugar al Texas Hold'em</span>
+                        <span>{t('games.poker.howToPlay')}</span>
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-xs space-y-4">
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo</h4>
-                        <p>Consigue la mejor mano de póker de 5 cartas combinando tus 2 cartas privadas con las 5 cartas comunitarias de la mesa.</p>
+                        <h4 className="font-bold uppercase text-primary mb-1">{t('games.objective')}</h4>
+                        <p>{t('games.poker.objective')}</p>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Fases del Juego</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.poker.gamePhases')}</h4>
                         <ol className="list-decimal list-inside space-y-2">
                             <li>
-                                <strong>Apuesta Inicial (Ante):</strong> Eliges tu apuesta y pulsas <Button size="sm" disabled className="h-6 px-2 text-xs uppercase">Repartir</Button>.
-                                Se te reparten 2 cartas boca arriba. El crupier recibe 2 boca abajo.
+                                <strong>{t('games.poker.ante')}:</strong> {t('games.poker.rule1_ante')}
                             </li>
                             <li>
-                                <strong>Decisión Post-Reparto:</strong> Tienes tres opciones:
+                                <strong>{t('games.poker.postDealDecision')}:</strong> {t('games.poker.rule2_options')}
                                 <div className="flex flex-col gap-2 my-2 pl-4">
                                   <div className="flex gap-2 items-center">
-                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-green-600">Apostar</Button> <span>- Pones una apuesta adicional igual a tu Ante para continuar.</span>
+                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-green-600">{t('games.poker.bet')}</Button> <span>- {t('games.poker.rule2_bet')}</span>
                                   </div>
                                   <div className="flex gap-2 items-center">
-                                      <Button size="sm" disabled variant="outline" className="h-6 px-2 text-xs uppercase">Pasar</Button> <span>- No apuestas más, pero sigues en la mano.</span>
+                                      <Button size="sm" disabled variant="outline" className="h-6 px-2 text-xs uppercase">{t('games.poker.check')}</Button> <span>- {t('games.poker.rule2_check')}</span>
                                   </div>
                                   <div className="flex gap-2 items-center">
-                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-red-600">No Ir</Button> <span>- Te retiras y pierdes tu apuesta inicial.</span>
+                                      <Button size="sm" disabled className="h-6 px-2 text-xs uppercase bg-red-600">{t('games.poker.fold')}</Button> <span>- {t('games.poker.rule2_fold')}</span>
                                   </div>
                                 </div>
                             </li>
                             <li>
-                                <strong>El Flop, Turn y River:</strong> Si continúas, se revelarán las 5 cartas comunitarias en tres etapas (3, luego 1 y finalmente 1).
+                                <strong>{t('games.poker.communityCards')}:</strong> {t('games.poker.rule3_community')}
                                 <div className="flex items-center justify-center gap-2 my-2 p-2 bg-background/50 rounded">
                                    <MiniCard rank="A" suit="♥" /><MiniCard rank="K" suit="♥" /><MiniCard rank="Q" suit="♥" />
                                    <MiniCard rank="J" suit="♥" />
@@ -308,24 +309,24 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
                                 </div>
                             </li>
                              <li>
-                                <strong>Showdown:</strong> Al final, el crupier revela sus cartas. El jugador con la mejor mano de 5 cartas gana el bote completo.
+                                <strong>Showdown:</strong> {t('games.poker.rule4_showdown')}
                             </li>
                         </ol>
                     </div>
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Ranking de Manos (De mejor a peor)</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.poker.handRankings')}</h4>
                          <ul className="space-y-1 text-xs uppercase bg-background/50 p-2 rounded-md">
                             {[
-                                {name: 'Escalera Real', value: 'Royal Flush'},
-                                {name: 'Escalera de Color', value: 'Straight Flush'},
-                                {name: 'Póker', value: 'Four of a Kind'},
-                                {name: 'Full House', value: 'Full House'},
-                                {name: 'Color', value: 'Flush'},
-                                {name: 'Escalera', value: 'Straight'},
-                                {name: 'Trío', value: 'Three of a Kind'},
-                                {name: 'Doble Pareja', value: 'Two Pair'},
-                                {name: 'Pareja', value: 'One Pair'},
-                                {name: 'Carta Alta', value: 'High Card'},
+                                {name: t('games.poker.royalFlush'), value: 'Royal Flush'},
+                                {name: t('games.poker.straightFlush'), value: 'Straight Flush'},
+                                {name: t('games.poker.fourOfAKind'), value: 'Four of a Kind'},
+                                {name: t('games.poker.fullHouse'), value: 'Full House'},
+                                {name: t('games.poker.flush'), value: 'Flush'},
+                                {name: t('games.poker.straight'), value: 'Straight'},
+                                {name: t('games.poker.threeOfAKind'), value: 'Three of a Kind'},
+                                {name: t('games.poker.twoPair'), value: 'Two Pair'},
+                                {name: t('games.poker.onePair'), value: 'One Pair'},
+                                {name: t('games.poker.highCard'), value: 'High Card'},
                             ].map(p => (
                                 <li key={p.name} className="flex justify-between items-center">
                                     <span>{p.name}</span>

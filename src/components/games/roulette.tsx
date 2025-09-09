@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { BookOpen } from 'lucide-react';
+import { Awaited } from '@/lib/i18n';
 
 const numbers = [
   { num: 0, color: 'green' },
@@ -26,9 +27,10 @@ type Bet = { type: BetType, value?: number, amount: number };
 interface RouletteGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
+  t: Awaited<typeof import('@/lib/i18n').getTranslator>
 }
 
-const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange }) => {
+const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange, t }) => {
   const [bets, setBets] = useState<Bet[]>([]);
   const [betAmount, setBetAmount] = useState(10);
   const [spinning, setSpinning] = useState(false);
@@ -40,7 +42,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
     if (spinning) return;
     const totalBet = bets.reduce((acc, b) => acc + b.amount, 0);
     if (betAmount > balance - totalBet) {
-      setMessage("No tienes saldo suficiente para esta apuesta.");
+      setMessage(t('games.notEnoughBalance'));
       return;
     }
     const newBet: Bet = { type, value, amount: betAmount };
@@ -53,7 +55,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   const spinWheel = useCallback(() => {
     if (spinning || bets.length === 0) return;
     if (totalBet > balance) {
-        setMessage('Saldo insuficiente para esta apuesta.');
+        setMessage(t('games.notEnoughBalance'));
         return;
     }
 
@@ -95,9 +97,9 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
           
           if (winnings > 0) {
             onBalanceChange(winnings);
-            setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
+            setMessage(t('games.roulette.winMessage', { number: winningNumber.num, amount: winnings }));
           } else {
-            setMessage(`El número es ${winningNumber.num}. Suerte la próxima.`);
+            setMessage(t('games.roulette.loseMessage', { number: winningNumber.num }));
           }
           
           setResult(winningNumber);
@@ -106,7 +108,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         }, 4000); 
     }, 100);
 
-  }, [spinning, bets, totalBet, balance, onBalanceChange]);
+  }, [spinning, bets, totalBet, balance, onBalanceChange, t]);
   
   const clearBets = () => {
     if(spinning) return;
@@ -124,8 +126,8 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold text-primary uppercase">Ruleta</CardTitle>
-        <CardDescription>¡Haz tus apuestas y gira!</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary uppercase">{t('games.roulette')}</CardTitle>
+        <CardDescription>{t('games.roulette.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
         <div className={cn("relative w-96 h-96 rounded-full border-8 bg-secondary flex items-center justify-center shadow-inner overflow-hidden", spinning ? 'border-primary' : 'border-border')}>
@@ -157,21 +159,21 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
         </div>
         
         {message && (
-          <Alert variant={message.includes('Ganaste') ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', message.includes('Ganaste') ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
+          <Alert variant={message.includes(t('games.win')) ? 'default' : 'destructive'} className={cn('transition-opacity duration-300 min-h-[60px]', message.includes(t('games.win')) ? 'pixel-border pixel-border-primary text-primary' : message ? 'border-destructive text-destructive' : 'border-transparent')}>
             <AlertTitle className="font-bold text-lg uppercase text-center">{message}</AlertTitle>
           </Alert>
         )}
 
         <div className="w-full max-w-2xl">
             <div className="text-center mb-4">
-                <Badge variant="secondary" className="text-lg">Apuesta Total: ${totalBet}</Badge>
+                <Badge variant="secondary" className="text-lg">{t('games.totalBet')}: ${totalBet}</Badge>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
               <Button onClick={() => placeBet('low')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">1-18</Button>
-              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">Par</Button>
-              <Button onClick={() => placeBet('red')} className="bg-accent hover:bg-accent/80 text-white uppercase">Rojo</Button>
-              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700 text-white uppercase">Negro</Button>
-              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">Impar</Button>
+              <Button onClick={() => placeBet('even')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">{t('games.roulette.even')}</Button>
+              <Button onClick={() => placeBet('red')} className="bg-accent hover:bg-accent/80 text-white uppercase">{t('games.roulette.red')}</Button>
+              <Button onClick={() => placeBet('black')} className="bg-gray-800 hover:bg-gray-700 text-white uppercase">{t('games.roulette.black')}</Button>
+              <Button onClick={() => placeBet('odd')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">{t('games.roulette.odd')}</Button>
               <Button onClick={() => placeBet('high')} className="bg-gray-700 hover:bg-gray-600 text-white uppercase">19-36</Button>
             </div>
             <div className="grid grid-cols-12 gap-1">
@@ -185,16 +187,16 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 </Button>
             </div>
             <div className="flex items-center gap-2 mt-4">
-                <span className="font-bold uppercase">Monto:</span>
+                <span className="font-bold uppercase">{t('games.amount')}:</span>
                 <Input type="number" value={betAmount} onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 1))} className="w-24" />
             </div>
         </div>
 
         <div className="flex gap-4 min-h-[52px]">
           <Button size="lg" onClick={spinWheel} disabled={spinning || bets.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase">
-            {spinning ? 'Girando...' : 'Girar'}
+            {spinning ? t('games.spinning') : t('games.spin')}
           </Button>
-          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning} className="uppercase">Limpiar</Button>
+          <Button size="lg" onClick={clearBets} variant="secondary" disabled={spinning} className="uppercase">{t('games.clear')}</Button>
         </div>
 
         <Accordion type="single" collapsible className="w-full max-w-md">
@@ -202,48 +204,48 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
                 <AccordionTrigger className='text-sm uppercase'>
                     <div className="flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
-                        <span>Cómo Jugar</span>
+                        <span>{t('games.howToPlay')}</span>
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-xs space-y-4">
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-1">Objetivo del Juego</h4>
-                        <p>Adivina en qué número, color o grupo caerá la bola para ganar.</p>
+                        <h4 className="font-bold uppercase text-primary mb-1">{t('games.objective')}</h4>
+                        <p>{t('games.roulette.objective')}</p>
                     </div>
 
                      <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Tipos de Apuesta</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.roulette.betTypes')}</h4>
                         <ul className="space-y-3">
                            <li className="flex items-center gap-4">
                                <div className="flex gap-1">
                                     <Button disabled size="sm" variant="outline" className="h-8 w-8 p-0 bg-accent text-white">18</Button>
                                </div>
-                               <span><strong>Número Individual (Straight):</strong> Apuesta a un solo número. ¡El que más paga! (35 a 1)</span>
+                               <span><strong>{t('games.roulette.straightBet')}:</strong> {t('games.roulette.straightBetDesc')}</span>
                            </li>
                            <li className="flex items-center gap-4">
                                <div className="flex gap-1">
-                                    <Button disabled size="sm" className="h-8 px-3 bg-accent hover:bg-accent/80 text-white uppercase">Rojo</Button>
-                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-800 hover:bg-gray-700 text-white uppercase">Negro</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-accent hover:bg-accent/80 text-white uppercase">{t('games.roulette.red')}</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-800 hover:bg-gray-700 text-white uppercase">{t('games.roulette.black')}</Button>
                                </div>
-                               <span><strong>Rojo o Negro:</strong> Apuesta al color del número ganador. (1 a 1)</span>
+                               <span><strong>{t('games.roulette.colorBet')}:</strong> {t('games.roulette.colorBetDesc')}</span>
                            </li>
                            <li className="flex items-center gap-4">
                                 <div className="flex gap-1">
-                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">Par</Button>
-                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">Impar</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">{t('games.roulette.even')}</Button>
+                                    <Button disabled size="sm" className="h-8 px-3 bg-gray-700 hover:bg-gray-600 text-white uppercase">{t('games.roulette.odd')}</Button>
                                </div>
-                               <span><strong>Par o Impar:</strong> Apuesta a si el número será par o impar. (1 a 1)</span>
+                               <span><strong>{t('games.roulette.evenOddBet')}:</strong> {t('games.roulette.evenOddBetDesc')}</span>
                            </li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="font-bold uppercase text-primary mb-2">Cómo Jugar</h4>
+                        <h4 className="font-bold uppercase text-primary mb-2">{t('games.howToPlay')}</h4>
                         <ul className="list-disc list-inside space-y-2">
-                            <li><strong>1. Fija tu Monto:</strong> Usa el campo <Input value={betAmount} disabled className="w-16 h-6 inline-block ml-1 mr-1" /> para decidir cuánto vale cada clic.</li>
-                            <li><strong>2. Haz tus Apuestas:</strong> Haz clic en los números o en las zonas del tablero para colocar tus fichas.</li>
-                            <li><strong>3. Inicia el Juego:</strong> Cuando estés listo, pulsa <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">Girar</Button>.</li>
-                            <li><strong>4. Limpiar Apuestas:</strong> Si te equivocas, pulsa <Button size="sm" disabled variant="secondary" className="uppercase text-xs h-6 px-2">Limpiar</Button> para retirar todas tus apuestas antes de girar.</li>
+                            <li>{t('games.roulette.rule1')} <Input value={betAmount} disabled className="w-16 h-6 inline-block ml-1 mr-1" /></li>
+                            <li>{t('games.roulette.rule2')}</li>
+                            <li>{t('games.roulette.rule3')} <Button size="sm" disabled className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-xs h-6 px-2">{t('games.spin')}</Button>.</li>
+                            <li>{t('games.roulette.rule4')} <Button size="sm" disabled variant="secondary" className="uppercase text-xs h-6 px-2">{t('games.clear')}</Button> {t('games.roulette.rule4_cont')}</li>
                         </ul>
                     </div>
                 </AccordionContent>

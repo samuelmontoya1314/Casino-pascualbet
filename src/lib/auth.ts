@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import type { User } from './users';
+import { getLocaleFromPhone } from './i18n';
 
 const SESSION_COOKIE_NAME = 'secure-access-session';
 
@@ -10,6 +11,10 @@ export async function getSession(): Promise<User | null> {
   try {
     // The session value is a stringified User object
     const user: User = JSON.parse(sessionValue);
+    // Let's ensure a default locale if it's missing for older sessions
+    if (!user.locale) {
+      user.locale = 'es';
+    }
     return user;
   } catch (error) {
     // If parsing fails, the cookie is invalid
@@ -23,6 +28,7 @@ export async function createSession(userId: string, user?: Omit<User, 'password'
     name: userId,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
+    locale: 'es', // Default to Spanish
   };
 
   cookies().set(SESSION_COOKIE_NAME, JSON.stringify(userData), {

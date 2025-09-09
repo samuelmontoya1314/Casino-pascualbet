@@ -45,6 +45,7 @@ export default function ManualPage() {
                      <div className="space-y-4 w-64 p-4 rounded-md bg-secondary/30">
                         <Input disabled placeholder="Nombre Completo" />
                         <Input disabled placeholder="ID de Usuario" />
+                         <Input disabled placeholder="Número de Teléfono (+1...)" />
                         <Input disabled type="password" placeholder="Contraseña" />
                         <Button disabled className="w-full uppercase"><UserPlus className="mr-2"/>Registrarse</Button>
                      </div>
