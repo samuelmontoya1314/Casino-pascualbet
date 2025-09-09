@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,14 +15,14 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 220 13% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 13% 18%;
+    --muted: 220 13% 22%; /* Slightly lighter for tabs list */
     --muted-foreground: 220 10% 65%;
     --accent: 326 91% 59%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 25%;
-    --input: 220 13% 20%;
+    --input: 220 13% 10%;
     --ring: 207 90% 54%;
     --radius: 0.5rem;
   }
@@ -37,14 +38,14 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 220 13% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 13% 18%;
+    --muted: 220 13% 22%; /* Slightly lighter for tabs list */
     --muted-foreground: 220 10% 65%;
     --accent: 326 91% 59%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 25%;
-    --input: 220 13% 20%;
+    --input: 220 13% 10%;
     --ring: 207 90% 54%;
   }
 }
