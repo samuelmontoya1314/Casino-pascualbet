@@ -120,13 +120,18 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
     
     const totalBucketsWidth = multiplierCount * BUCKET_WIDTH + (multiplierCount - 1) * BUCKET_GAP;
-    const startX = -totalBucketsWidth / 2;
-    const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP) + BUCKET_WIDTH / 2;
+    const startX = -totalBucketsWidth / 2 + BUCKET_WIDTH/2;
+    const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP);
+    
 
     xKeyframes.push(finalX);
     yKeyframes.push(numRows * PEG_MARGIN_Y + 50);
     
     return { xKeyframes, yKeyframes, finalIndex: safeIndex };
+  }, []);
+
+  const handleBallAnimationComplete = useCallback((id: number) => {
+    setBalls(prev => prev.filter(b => b.id !== id));
   }, []);
 
   const dropSingleBall = useCallback(() => {
@@ -155,7 +160,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
         setBalls(prev => [...prev, newBall]);
         
-        const animationDuration = (rows + 1) * 200 + 300; 
+        const animationDuration = (rows + 1) * 0.2; 
         
         setTimeout(() => {
             const profit = winnings;
@@ -164,7 +169,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);
             resolve();
-        }, animationDuration);
+        }, animationDuration * 1000 + 300); // Add a small buffer
     })
 
   }, [betAmount, balance, rows, multipliers, calculatePath, onBalanceChange, mode]);
@@ -176,29 +181,19 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
       await dropSingleBall();
     } else { // Auto mode
       setIsAutoBetting(true);
-
       for (let i = 0; i < autoBetCount; i++) {
-        // This check is inside the loop to allow stopping mid-way if state changes
-        if(i > 0 && !isAutoBetting) break; 
-        
-        await dropSingleBall();
-        
-        // Stop if balance runs out
-        if (balance - betAmount < 0 && i < autoBetCount - 1) {
-            setIsAutoBetting(false);
-            break;
+        // This check is inside the loop to allow stopping mid-way
+        if (balance < betAmount) {
+          setIsAutoBetting(false);
+          break;
         }
-
-        await new Promise(resolve => setTimeout(resolve, 250)); // Delay between drops
+        await dropSingleBall();
+        await new Promise(resolve => setTimeout(resolve, 300)); // Delay between drops
       }
       setIsAutoBetting(false);
     }
   }
 
-
-  const handleBallAnimationComplete = useCallback((id: number) => {
-    setBalls(prev => prev.filter(b => b.id !== id));
-  }, []);
 
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -291,56 +286,59 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-between p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
             <div className="absolute inset-0 w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
-            <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
-              {Array.from({ length: rows }).map((_, rowIndex) => (
-                <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
-                  {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
-                     const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
-                     return (
-                        <div
-                            key={pegIndex}
-                            className="absolute w-3 h-3 bg-border rounded-full shadow-md"
-                            style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
-                        />
-                     )
-                  })}
-                </div>
-              ))}
-              <AnimatePresence>
-                {balls.map(ball => (
-                    <BallComponent 
-                        key={ball.id} 
-                        xKeyframes={ball.xKeyframes}
-                        yKeyframes={ball.yKeyframes}
-                        color={ball.color}
-                        animationDuration={(rows + 1) * 0.2}
-                        onComplete={() => handleBallAnimationComplete(ball.id)}
-                    />
+
+            <div className="flex flex-col items-center">
+              <div className="relative" style={{ height: rows * PEG_MARGIN_Y + 50 }}>
+                {Array.from({ length: rows }).map((_, rowIndex) => (
+                  <div key={rowIndex} className="flex justify-center" style={{ height: PEG_MARGIN_Y }}>
+                    {Array.from({ length: rowIndex + 2 }).map((_, pegIndex) => {
+                       const leftOffset = (pegIndex - (rowIndex + 1) / 2) * PEG_MARGIN_X;
+                       return (
+                          <div
+                              key={pegIndex}
+                              className="absolute w-3 h-3 bg-border rounded-full shadow-md"
+                              style={{ top: rowIndex * PEG_MARGIN_Y + 30, left: `calc(50% + ${leftOffset}px - 6px)` }}
+                          />
+                       )
+                    })}
+                  </div>
                 ))}
-              </AnimatePresence>
-            </div>
-            <div className="w-full flex justify-center gap-1 p-2">
-                {multipliers.map((m, i) => {
-                    const isWinner = winningMultiplierIndex === i;
-                    return (
-                       <div
-                          key={i}
-                          className={cn(
-                            'flex-1 flex items-center justify-center text-xs font-bold py-3 rounded-md transition-all duration-300',
-                            'transform-gpu',
-                            getMultiplierColor(m),
-                            isWinner && 'animate-plinko-win'
-                           )}
-                           style={{ maxWidth: '60px' }}
-                        >
-                        {m}x
-                      </div>
-                    )
-                })}
+                <AnimatePresence>
+                  {balls.map(ball => (
+                      <BallComponent 
+                          key={ball.id} 
+                          xKeyframes={ball.xKeyframes}
+                          yKeyframes={ball.yKeyframes}
+                          color={ball.color}
+                          animationDuration={(rows + 1) * 0.2}
+                          onComplete={() => handleBallAnimationComplete(ball.id)}
+                      />
+                  ))}
+                </AnimatePresence>
+              </div>
+              <div className="flex justify-center gap-1 mt-4">
+                  {multipliers.map((m, i) => {
+                      const isWinner = winningMultiplierIndex === i;
+                      return (
+                         <div
+                            key={i}
+                            className={cn(
+                              'flex items-center justify-center text-xs font-bold py-3 rounded-md transition-all duration-300',
+                              'transform-gpu',
+                              getMultiplierColor(m),
+                              isWinner && 'animate-plinko-win'
+                             )}
+                             style={{ width: `${BUCKET_WIDTH}px` }}
+                          >
+                          {m}x
+                        </div>
+                      )
+                  })}
+              </div>
             </div>
         </div>
       </CardContent>
@@ -349,5 +347,3 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 };
 
 export default PlinkoGame;
-
-    
