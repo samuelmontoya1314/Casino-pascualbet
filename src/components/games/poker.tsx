@@ -7,9 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
-import { BookOpen, User, Bot } from 'lucide-react';
+import { BookOpen, User } from 'lucide-react';
 import { evaluateHand, HandRank, Card as PokerCard, rankPokerHand, compareHands } from '@/lib/poker';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import Image from 'next/image';
 
 const GameCard = ({ card, hidden, revealed, style, className }: { card?: PokerCard; hidden?: boolean, revealed?: boolean, style?: React.CSSProperties, className?: string }) => {
     if (hidden || !card) {
@@ -202,13 +202,16 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         <div className="w-full max-w-4xl mx-auto space-y-6">
             {/* Dealer Area */}
             <div className="flex flex-col items-center">
-                <div className="flex items-center gap-3 mb-2">
-                    <Avatar className="w-10 h-10 border-2 border-border">
-                        <AvatarFallback className="bg-secondary">
-                            <Bot className="w-6 h-6 text-secondary-foreground" />
-                        </AvatarFallback>
-                    </Avatar>
-                    <div>
+                <div className="flex items-center gap-4 mb-2">
+                    <Image 
+                        src="https://picsum.photos/100/100" 
+                        alt="Crupier" 
+                        width={80} 
+                        height={80}
+                        data-ai-hint="female croupier"
+                        className="rounded-full border-2 border-border"
+                    />
+                    <div className="flex flex-col items-start">
                         <h3 className="text-xl font-semibold uppercase">Crupier</h3>
                         {dealerHandRank && <Badge variant="secondary" className={cn('h-5', !playerWon && 'animate-win-pulse bg-primary/80')}>{dealerHandRank.name}</Badge>}
                     </div>
@@ -351,5 +354,3 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 };
 
 export default PokerGame;
-
-    
