@@ -52,26 +52,25 @@ const PEG_MARGIN_Y = 32;
 const BUCKET_WIDTH = 60;
 const BUCKET_GAP = 4;
 
-const BallComponent = React.memo(({ ball, onComplete, rows }: { ball: Ball, onComplete: (id: number) => void, rows: number }) => {
-    const animationDuration = (rows + 1) * 0.2;
 
+const BallComponent = React.memo(({ xKeyframes, yKeyframes, color, onComplete, animationDuration }: { xKeyframes: number[], yKeyframes: number[], color: string, onComplete: () => void, animationDuration: number }) => {
     return (
       <motion.div
-        initial={{ x: ball.xKeyframes[0], y: ball.yKeyframes[0] }}
+        initial={{ x: xKeyframes[0], y: yKeyframes[0] }}
         animate={{ 
-          x: ball.xKeyframes, 
-          y: ball.yKeyframes,
+          x: xKeyframes, 
+          y: yKeyframes,
           transition: {
             duration: animationDuration,
             ease: 'linear',
           }
         }}
         exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5 } }}
-        onAnimationComplete={() => onComplete(ball.id)}
+        onAnimationComplete={onComplete}
         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
         style={{
-          background: ball.color,
-          boxShadow: `0 0 10px ${ball.color}`,
+          background: color,
+          boxShadow: `0 0 10px ${color}`,
           left: `calc(50% - 8px)`,
           top: 0
         }}
@@ -131,56 +130,65 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   }, []);
 
   const dropSingleBall = useCallback(() => {
-    setIsDropping(true);
-    setWinningMultiplierIndex(null);
-
-    const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
-    const multiplier = multipliers[finalIndex];
-    const winnings = betAmount * multiplier;
-    
-    const newBall: Ball = {
-      id: Date.now() + Math.random(),
-      xKeyframes,
-      yKeyframes,
-      finalMultiplier: multiplier,
-      winnings,
-      color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-    };
-
-    setBalls(prev => [...prev, newBall]);
-    
-    const animationDuration = (rows + 1) * 200 + 300; 
+    if (balance < betAmount) {
+      if (mode === 'auto') setIsAutoBetting(false);
+      return Promise.resolve();
+    }
     
     return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const profit = winnings - betAmount;
-        onBalanceChange(profit);
-        setWinningMultiplierIndex(finalIndex);
-        setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
-        setIsDropping(false);
-        resolve();
-      }, animationDuration);
+        setIsDropping(true);
+        setWinningMultiplierIndex(null);
+        onBalanceChange(-betAmount);
+
+        const { xKeyframes, yKeyframes, finalIndex } = calculatePath(rows, multipliers.length);
+        const multiplier = multipliers[finalIndex];
+        const winnings = betAmount * multiplier;
+        
+        const newBall: Ball = {
+          id: Date.now() + Math.random(),
+          xKeyframes,
+          yKeyframes,
+          finalMultiplier: multiplier,
+          winnings,
+          color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+        };
+
+        setBalls(prev => [...prev, newBall]);
+        
+        const animationDuration = (rows + 1) * 200 + 300; 
+        
+        setTimeout(() => {
+            const profit = winnings;
+            onBalanceChange(profit);
+            setWinningMultiplierIndex(finalIndex);
+            setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
+            setIsDropping(false);
+            resolve();
+        }, animationDuration);
     })
 
-  }, [betAmount, rows, multipliers, calculatePath, onBalanceChange]);
+  }, [betAmount, balance, rows, multipliers, calculatePath, onBalanceChange, mode]);
   
   const handleBet = async () => {
-    if (isAutoBetting) return;
+    if (isAutoBetting || isDropping) return;
 
     if(mode === 'manual') {
-      if (balance < betAmount || isDropping) return;
-      onBalanceChange(-betAmount);
       await dropSingleBall();
     } else { // Auto mode
-      const totalCost = betAmount * autoBetCount;
-      if (balance < totalCost) return;
-      
       setIsAutoBetting(true);
-      onBalanceChange(-totalCost);
 
       for (let i = 0; i < autoBetCount; i++) {
-        if (!isAutoBetting) break; // Allow stopping
+        // This check is inside the loop to allow stopping mid-way if state changes
+        if(i > 0 && !isAutoBetting) break; 
+        
         await dropSingleBall();
+        
+        // Stop if balance runs out
+        if (balance - betAmount < 0 && i < autoBetCount - 1) {
+            setIsAutoBetting(false);
+            break;
+        }
+
         await new Promise(resolve => setTimeout(resolve, 250)); // Delay between drops
       }
       setIsAutoBetting(false);
@@ -265,7 +273,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
           
           <div className="space-y-2">
-            <Button onClick={handleBet} disabled={isBettingDisabled || balance < betAmount} size="lg" className="w-full h-16 text-xl uppercase font-bold bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button 
+                onClick={handleBet} 
+                disabled={isBettingDisabled || balance < betAmount} 
+                size="lg" 
+                className="w-full h-16 text-xl uppercase font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
               {isAutoBetting ? 'Apostando...' : 'Apostar'}
             </Button>
              <div className="flex gap-2 overflow-x-auto pb-2">
@@ -278,7 +291,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-end p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-between p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
             <div className="absolute inset-0 w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
@@ -301,9 +314,11 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                 {balls.map(ball => (
                     <BallComponent 
                         key={ball.id} 
-                        ball={ball}
-                        onComplete={handleBallAnimationComplete} 
-                        rows={rows}
+                        xKeyframes={ball.xKeyframes}
+                        yKeyframes={ball.yKeyframes}
+                        color={ball.color}
+                        animationDuration={(rows + 1) * 0.2}
+                        onComplete={() => handleBallAnimationComplete(ball.id)}
                     />
                 ))}
               </AnimatePresence>
