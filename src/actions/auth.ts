@@ -13,6 +13,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
     name: z.string().min(2, 'El nombre es requerido'),
     userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
+    phone: z.string().min(10, 'El número de teléfono debe tener al menos 10 dígitos'),
     password: z.string(), // No validation needed for mock
 });
 
