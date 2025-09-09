@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { BookOpen, User, Bot } from 'lucide-react';
 import { evaluateHand, HandRank, Card as PokerCard, rankPokerHand, compareHands } from '@/lib/poker';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 
 const GameCard = ({ card, hidden, revealed, style, className }: { card?: PokerCard; hidden?: boolean, revealed?: boolean, style?: React.CSSProperties, className?: string }) => {
     if (hidden || !card) {
@@ -200,10 +202,17 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         <div className="w-full max-w-4xl mx-auto space-y-6">
             {/* Dealer Area */}
             <div className="flex flex-col items-center">
-                <h3 className="text-xl font-semibold text-center mb-2 uppercase flex items-center gap-2">
-                    <Bot /> Crupier 
-                    {dealerHandRank && <Badge variant="secondary" className={cn(!playerWon && 'animate-win-pulse bg-primary/80')}>{dealerHandRank.name}</Badge>}
-                </h3>
+                <div className="flex items-center gap-3 mb-2">
+                    <Avatar className="w-10 h-10 border-2 border-border">
+                        <AvatarFallback className="bg-secondary">
+                            <Bot className="w-6 h-6 text-secondary-foreground" />
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <h3 className="text-xl font-semibold uppercase">Crupier</h3>
+                        {dealerHandRank && <Badge variant="secondary" className={cn('h-5', !playerWon && 'animate-win-pulse bg-primary/80')}>{dealerHandRank.name}</Badge>}
+                    </div>
+                </div>
                 <div className="flex justify-center gap-4">
                     {dealerHand.map((card, index) => (
                         <GameCard key={index} card={card} hidden={gameState !== 'showdown' && gameState !== 'finished'} revealed={gameState === 'showdown'}/>
@@ -342,3 +351,5 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 };
 
 export default PokerGame;
+
+    
