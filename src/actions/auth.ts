@@ -47,7 +47,7 @@ export async function handleLogin(prevState: any, formData: FormData) {
   }
   
   // In this mock implementation, we bypass password check and just create the session
-  await createSession(userId, user);
+  await createSession(userId);
   redirect('/');
 }
 
@@ -78,7 +78,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     balance: 1000,
   };
 
-  await createSession(newUser.id, newUser);
+  await createSession(userId, newUser);
   redirect('/');
 }
 

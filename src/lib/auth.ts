@@ -18,20 +18,18 @@ export async function getSession(): Promise<User | null> {
   }
 }
 
-export async function createSession(userId: string, user?: Omit<User, 'password'>) {
-  const existingUser = await findUserById(userId);
-  
-  // Use the provided user object (from registration), fall back to existing user (from login),
-  // or finally create a default object if neither exists (though this case is less likely now).
-  const userData: User | undefined = user || existingUser;
+export async function createSession(userId: string, newUser?: Omit<User, 'password'>) {
+  // For registration, a newUser object is passed.
+  // For login, only userId is passed, and we need to fetch the user.
+  const userToSession = newUser ?? await findUserById(userId);
 
-  if (!userData) {
+  if (!userToSession) {
     // This case should ideally not be reached if handleLogin/handleRegister checks for user existence first.
     // However, as a safeguard, we prevent creating an empty session.
     throw new Error('Cannot create session for a non-existent user.');
   }
 
-  cookies().set(SESSION_COOKIE_NAME, JSON.stringify(userData), {
+  cookies().set(SESSION_COOKIE_NAME, JSON.stringify(userToSession), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 1 day
