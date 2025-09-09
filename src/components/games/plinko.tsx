@@ -87,8 +87,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
     setIsDropping(true);
     setWinningMultiplierIndex(null);
-    onBalanceChange(-betAmount);
-
+    
     const { path, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
     const winnings = betAmount * multiplier;
@@ -109,8 +108,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     }, animationDuration);
 
     setTimeout(() => {
-      onBalanceChange(winnings);
-      setHistory(prev => [{ multiplier, profit: winnings - betAmount }, ...prev.slice(0, 14)]);
+      const profit = winnings - betAmount;
+      onBalanceChange(profit);
+      setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
       setIsDropping(false);
     }, animationDuration + 500); 
 
