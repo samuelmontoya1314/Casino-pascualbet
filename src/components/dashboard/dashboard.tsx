@@ -172,6 +172,10 @@ export default function Dashboard({ user }: { user: User }) {
                           <span className="col-span-3">{user.id}</span>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
+                          <span className="text-right font-semibold">Teléfono:</span>
+                          <span className="col-span-3">{user.phone}</span>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
                           <span className="text-right font-semibold">Rol:</span>
                           <span className="col-span-3 capitalize">{user.role}</span>
                         </div>

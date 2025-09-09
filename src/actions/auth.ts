@@ -12,6 +12,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
     name: z.string().min(2, 'El nombre es requerido'),
     userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
+    phone: z.string().min(10, 'El número de teléfono debe tener al menos 10 caracteres'),
     password: z.string(), // No validation needed for mock
 });
 
@@ -38,13 +39,14 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, name } = validatedFields.data;
+  const { userId, name, phone } = validatedFields.data;
   
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.
   const newUser = {
     id: userId,
     name: name,
+    phone: phone,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };

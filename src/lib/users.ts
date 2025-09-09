@@ -5,6 +5,7 @@ export type User = {
   id: string;
   password?: string; // Password is now optional as we are not validating it
   name: string;
+  phone?: string;
   role: 'admin' | 'user';
   balance: number;
 };
@@ -18,6 +19,7 @@ const users: Map<string, User> = new Map([
       id: "admin",
       password: "password",
       name: "Admin User",
+      phone: "+1 555-0100",
       role: "admin",
       balance: 10000,
     },

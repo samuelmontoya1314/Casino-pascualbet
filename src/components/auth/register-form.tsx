@@ -32,6 +32,10 @@ export function RegisterForm() {
                 <Input id="userId" name="userId" placeholder="ej. juanperez" required />
             </div>
             <div className="space-y-2">
+                <Label htmlFor="phone">Número de Teléfono</Label>
+                <Input id="phone" name="phone" placeholder="+57 300 123 4567" type="tel" required />
+            </div>
+            <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
                 <Input id="password" name="password" type="password" required />
             </div>
