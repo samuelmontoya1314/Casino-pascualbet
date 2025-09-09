@@ -83,11 +83,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   }, []);
 
   const handleDropBall = useCallback(() => {
-    if (isDropping || balance < betAmount) return;
+    if (balance < betAmount) return;
 
-    setIsDropping(true);
+    setIsDropping(true); // Disable button immediately
     setWinningMultiplierIndex(null);
-    onBalanceChange(-betAmount);
 
     const { path, finalIndex } = calculatePath(rows, multipliers.length);
     const multiplier = multipliers[finalIndex];
@@ -102,53 +101,55 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     };
 
     setBalls(prev => [...prev, newBall]);
-    const animationDuration = (rows + 1) * 150;
+    const animationDuration = (rows + 1) * 150 + 300; 
 
     setTimeout(() => {
-        setWinningMultiplierIndex(finalIndex);
-        const profit = winnings - betAmount;
-        onBalanceChange(winnings); // Give back winnings
-        setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
-        setIsDropping(false);
-    }, animationDuration); 
+      setWinningMultiplierIndex(finalIndex);
+      const profit = winnings - betAmount;
+      onBalanceChange(profit);
+      setHistory(prev => [{ multiplier, profit }, ...prev.slice(0, 14)]);
+      // Re-enable button after animation and state updates are done
+      setIsDropping(false);
+    }, animationDuration);
 
-  }, [isDropping, balance, betAmount, rows, onBalanceChange, multipliers, calculatePath]);
+  }, [balance, betAmount, rows, multipliers, calculatePath, onBalanceChange]);
 
-  useEffect(() => {
-    if (balls.length > 5) {
-      setTimeout(() => setBalls(prev => prev.slice(1)), 1000);
-    }
-  }, [balls]);
 
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     setBetAmount(isNaN(value) || value <= 0 ? 1 : value);
   };
 
-  const getMultiplierColor = (multiplier: number, forHistory = false) => {
+  const getMultiplierColor = (multiplier: number) => {
     if (multiplier >= 100) return 'bg-red-500/80 text-white';
     if (multiplier >= 10) return 'bg-orange-400/80 text-white';
     if (multiplier >= 2) return 'bg-yellow-400/80 text-black';
-    if (multiplier > 1) return forHistory ? 'bg-primary/30 text-primary' : 'bg-primary/80 text-primary-foreground';
+    if (multiplier > 1) return 'bg-primary/80 text-primary-foreground';
     if (multiplier === 1) return 'bg-blue-500/80 text-white';
     return 'bg-muted/80 text-muted-foreground';
   };
+  
+  const getHistoryColor = (multiplier: number) => {
+    if (multiplier > 1) return 'bg-primary/30 text-primary';
+    return 'bg-muted text-muted-foreground';
+  }
 
 
-  const BallComponent = ({ ball, onComplete }: { ball: Ball, onComplete: (id: number) => void }) => {
-    const xKeyframes = ball.path.map(p => p.x);
-    const yKeyframes = ball.path.map(p => p.y);
+  const BallComponent = ({ ball, xKeyframes, yKeyframes, onComplete }: { ball: Ball, xKeyframes: number[], yKeyframes: number[], onComplete: (id: number) => void }) => {
     const animationDuration = (rows + 1) * 0.15;
 
     return (
       <motion.div
         initial={{ x: xKeyframes[0], y: yKeyframes[0] }}
-        animate={{ x: xKeyframes, y: yKeyframes }}
-        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.3 } }}
-        transition={{
+        animate={{ 
+          x: xKeyframes, 
+          y: yKeyframes,
+          transition: {
             duration: animationDuration,
             ease: 'linear',
+          }
         }}
+        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5 } }}
         onAnimationComplete={() => onComplete(ball.id)}
         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
         style={{
@@ -198,7 +199,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             </Button>
              <div className="flex gap-2 overflow-x-auto pb-2">
                 {history.map((item, i) => (
-                    <Badge key={i} className={cn("text-xs font-bold whitespace-nowrap", getMultiplierColor(item.multiplier, true))}>
+                    <Badge key={i} className={cn("text-xs font-bold whitespace-nowrap", getHistoryColor(item.multiplier))}>
                         {item.multiplier}x
                     </Badge>
                 ))}
@@ -227,7 +228,13 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
               ))}
               <AnimatePresence>
                 {balls.map(ball => (
-                    <BallComponent key={ball.id} ball={ball} onComplete={() => setBalls(prev => prev.filter(b => b.id !== ball.id))} />
+                    <BallComponent 
+                        key={ball.id} 
+                        ball={ball}
+                        xKeyframes={ball.path.map(p => p.x)}
+                        yKeyframes={ball.path.map(p => p.y)}
+                        onComplete={() => setBalls(prev => prev.filter(b => b.id !== ball.id))} 
+                    />
                 ))}
               </AnimatePresence>
             </div>
