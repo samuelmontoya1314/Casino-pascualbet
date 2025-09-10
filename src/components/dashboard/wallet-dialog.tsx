@@ -90,7 +90,7 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
   const banks = ["BANCO DE BOGOTA", "BANCOLOMBIA", "DAVIVIENDA", "BANCO AGRARIO", "NEQUI", "DAVIPLATA"];
 
   return (
-    <DialogContent className="max-w-md flex flex-col h-full sm:h-auto">
+    <DialogContent className="max-w-md flex flex-col h-[90vh] sm:h-auto">
       <DialogHeader>
         <DialogTitle className="text-center text-2xl">Billetera</DialogTitle>
       </DialogHeader>
@@ -103,10 +103,9 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
           <TabsTrigger value="deposit">Depositar</TabsTrigger>
           <TabsTrigger value="withdraw">Retirar</TabsTrigger>
         </TabsList>
-        <ScrollArea className="flex-1">
-          <div className="max-h-[70vh] sm:max-h-full pr-4">
-            <TabsContent value="deposit">
-              <div className="space-y-4 py-4">
+            <TabsContent value="deposit" className="flex-1 overflow-hidden mt-0">
+             <ScrollArea className="h-full">
+              <div className="space-y-4 py-4 pr-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount-deposit">Monto</Label>
                   <div className="relative">
@@ -159,9 +158,11 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
                 )}
                 <Button onClick={handleDeposit} className="w-full h-12 bg-green-600 hover:bg-green-700 text-white text-lg">Depositar</Button>
               </div>
+              </ScrollArea>
             </TabsContent>
-            <TabsContent value="withdraw">
-               <div className="space-y-4 py-4">
+            <TabsContent value="withdraw" className="flex-1 overflow-hidden mt-0">
+                <ScrollArea className="h-full">
+               <div className="space-y-4 py-4 pr-4">
                   <div className="p-4 rounded-md bg-secondary text-center mb-4">
                     <p className="text-muted-foreground">Saldo Disponible para Retirar</p>
                     <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
@@ -237,9 +238,8 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
                 )}
                   <Button onClick={handleWithdraw} className="w-full h-12 bg-primary hover:bg-primary/90 text-white text-lg">Transferir</Button>
                </div>
+               </ScrollArea>
             </TabsContent>
-          </div>
-        </ScrollArea>
       </Tabs>
     </DialogContent>
   );
