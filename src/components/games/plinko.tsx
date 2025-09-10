@@ -51,10 +51,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [autoBetCount, setAutoBetCount] = useState(10);
   const [isAutoBetting, setIsAutoBetting] = useState(false);
-  const [showBall, setShowBall] = useState(false);
-  const [ballColor, setBallColor] = useState('hsl(var(--primary))');
+  const [ballState, setBallState] = useState<{show: boolean, color: string, endX: number}>({show: false, color: 'hsl(var(--primary))', endX: 0});
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const pegMarginX = useMemo(() => {
     const bucketRowWidth = multipliers.length * BUCKET_WIDTH + (multipliers.length - 1) * BUCKET_GAP;
@@ -86,21 +86,25 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         const multiplier = multipliers[finalIndex];
         const winnings = betAmount * multiplier;
         
-        setBallColor(multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))');
-        setShowBall(true);
+        const ballColor = multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))';
+        const numBuckets = multipliers.length;
+        const totalWidth = numBuckets * BUCKET_WIDTH + (numBuckets - 1) * BUCKET_GAP;
+        const endX = (finalIndex - (numBuckets - 1) / 2) * (BUCKET_WIDTH + BUCKET_GAP);
+
+        setBallState({show: true, color: ballColor, endX });
         
         setTimeout(() => {
-            setShowBall(false);
+            setBallState(s => ({...s, show: false}));
             const profit = winnings;
             onBalanceChange(profit);
             setWinningMultiplierIndex(finalIndex);
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);
             resolve();
-        }, 1000);
+        }, 1200);
     })
 
-  }, [betAmount, balance, multipliers, calculateOutcome, onBalanceChange, mode]);
+  }, [betAmount, balance, multipliers, calculateOutcome, onBalanceChange, mode, rows]);
   
   const handleBet = async () => {
     if (isAutoBetting || isDropping) return;
@@ -115,7 +119,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         if (betsLeft > 0 && balance >= betAmount && document.visibilityState === 'visible') {
            await dropSingleBall();
            betsLeft--;
-           setTimeout(runAutoBet, 300);
+           setTimeout(runAutoBet, 1500);
         } else {
            setIsAutoBetting(false);
         }
@@ -216,7 +220,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-end p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+        <div ref={gameContainerRef} className="flex-1 flex flex-col items-center justify-end p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
              <div className="absolute inset-0 w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
@@ -236,15 +240,17 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     })}
                   </div>
                 ))}
-                {showBall && (
+                {ballState.show && (
                     <div 
                         className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50 animate-plinko-ball-drop"
                         style={{
-                            background: ballColor,
-                            boxShadow: `0 0 10px ${ballColor}`,
+                            '--ball-end-y': `${rows * PEG_MARGIN_Y + 30}px`,
+                            '--ball-end-x': `${ballState.endX}px`,
+                            background: ballState.color,
+                            boxShadow: `0 0 10px ${ballState.color}`,
                             left: 'calc(50% - 8px)',
                             top: 0
-                        }}
+                        } as React.CSSProperties}
                     />
                 )}
               </div>
