@@ -60,8 +60,7 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
       return;
     }
     setError('');
-    onBalanceChange(amount, 'deposit');
-    onClose();
+    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
   };
   
   const handleWithdraw = () => {
