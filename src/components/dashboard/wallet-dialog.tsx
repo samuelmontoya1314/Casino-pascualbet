@@ -64,8 +64,8 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
   };
   
   const handleWithdraw = () => {
-    if (balance < 15000) {
-       setError(`No puedes retirar. Tu saldo es inferior a ${formatCurrency(15000)}.`);
+    if (balance < 20000) {
+       setError(`No puedes retirar. Tu saldo es inferior a ${formatCurrency(20000)}.`);
        return;
     }
     if (typeof amount !== 'number' || amount <= 0) {
@@ -76,12 +76,17 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
         setError('No puedes retirar más de tu saldo actual.');
         return;
     }
+     if (amount < 20000) {
+      setError(`El monto mínimo de retiro es de ${formatCurrency(20000)}.`);
+      return;
+    }
      setError('');
      onBalanceChange(-amount, 'withdraw');
      onClose();
   };
 
   const presetAmounts = [40000, 80000, 200000, 400000];
+  const banks = ["BANCO DE BOGOTA", "BANCOLOMBIA", "DAVIVIENDA", "BANCO AGRARIO", "NEQUI", "DAVIPLATA"];
 
   return (
     <DialogContent className="max-w-md">
@@ -154,12 +159,45 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
         </TabsContent>
         <TabsContent value="withdraw">
            <div className="space-y-4 py-4">
-              <div className="p-4 rounded-md bg-secondary text-center">
-                <p className="text-muted-foreground">Saldo Disponible</p>
+              <div className="p-4 rounded-md bg-secondary text-center mb-4">
+                <p className="text-muted-foreground">Saldo Disponible para Retirar</p>
                 <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="amount-withdraw">Monto a Retirar</Label>
+                <Label>Tipo de cuenta</Label>
+                 <Select defaultValue="ahorros">
+                    <SelectTrigger className="h-12 bg-input">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="ahorros">Ahorros</SelectItem>
+                        <SelectItem value="corriente">Corriente</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="account-number">Número de cuenta bancaria</Label>
+                <Input id="account-number" placeholder="Introduce el número de cuenta" className="h-12 bg-input"/>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Seleccionar banco</Label>
+                 <Select defaultValue="banco-de-bogota">
+                    <SelectTrigger className="h-12 bg-input">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                       {banks.map(bank => (
+                           <SelectItem key={bank} value={bank.toLowerCase().replace(/ /g, '-')}>{bank}</SelectItem>
+                       ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="amount-withdraw">Monto de retiro</Label>
                 <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                     <Input 
@@ -168,21 +206,38 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
                         value={amount === '' ? '' : new Intl.NumberFormat('es-CO').format(amount)}
                         onChange={(e) => handleAmountChange(e.target.value)}
                         className="pl-6 h-12 text-lg"
-                        placeholder="0.00"
+                        placeholder="0"
                     />
                 </div>
-                <p className="text-xs text-muted-foreground">Monto mínimo de retiro: {formatCurrency(15000)}</p>
               </div>
+               <div className="text-xs text-muted-foreground space-y-1">
+                 <p>Monto mínimo de retiro: {formatCurrency(20000)}</p>
+                 <p>Monto máximo de retiro: {formatCurrency(balance)}</p>
+               </div>
+              
+                <div className="text-xs text-muted-foreground space-y-2 bg-secondary/30 p-3 rounded-md">
+                    <p className="font-bold">Para avanzar con el retiro, ten en cuenta:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                        <li>La cuenta debe estar verificada.</li>
+                        <li>Debes haber apostado el 100% de todos tus depósitos para poder procesar el retiro.</li>
+                        <li>Máximo se podrán realizar 3 retiros por día.</li>
+                        <li>Si realizas tu retiro a través de Efecty, recibirás el código al número de WhatsApp registrado.</li>
+                        <li>Si el monto solicitado es igual o mayor a 48 UVT definido para el...</li>
+                    </ul>
+                </div>
+
               {error && (
-                 <Alert variant="destructive" className="text-xs">
+                 <Alert variant="destructive" className="text-xs mt-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
             )}
-              <Button onClick={handleWithdraw} className="w-full h-12 bg-primary hover:bg-primary/90 text-white text-lg">Retirar</Button>
+              <Button onClick={handleWithdraw} className="w-full h-12 bg-primary hover:bg-primary/90 text-white text-lg">Transferir</Button>
            </div>
         </TabsContent>
       </Tabs>
     </DialogContent>
   );
 }
+
+    
