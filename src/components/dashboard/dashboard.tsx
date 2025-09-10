@@ -34,6 +34,7 @@ import { Skeleton } from '../ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
+import { WalletDialog } from './wallet-dialog';
 
 
 const LoadingComponent = () => (
@@ -55,6 +56,7 @@ export default function Dashboard({ user }: { user: User }) {
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('slots');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [walletOpen, setWalletOpen] = useState(false);
   const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
@@ -62,10 +64,11 @@ export default function Dashboard({ user }: { user: User }) {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
-  const handleBalanceChange = (amount: number) => {
+  const handleBalanceChange = (amount: number, type: 'deposit' | 'withdraw' | 'bet' | 'win' | 'refund') => {
     startTransition(async () => {
         const currentBalance = balance;
         setBalance(prev => prev + amount); // Optimistic update
@@ -80,6 +83,17 @@ export default function Dashboard({ user }: { user: User }) {
         } else if (result && result.success) {
             // Update with the definitive balance from server
             setBalance(result.newBalance!);
+            if (type === 'deposit') {
+                 toast({
+                    title: "Depósito Exitoso",
+                    description: `Has añadido ${formatCurrency(amount)} a tu cuenta.`,
+                });
+            } else if (type === 'withdraw') {
+                 toast({
+                    title: "Retiro Exitoso",
+                    description: `Has retirado ${formatCurrency(Math.abs(amount))} de tu cuenta.`,
+                });
+            }
         }
     });
   }
@@ -94,17 +108,18 @@ export default function Dashboard({ user }: { user: User }) {
   }
   
   const ActiveGame = useMemo(() => {
+    const gameProps = { balance, onBalanceChange: (amount:number) => handleBalanceChange(amount, 'bet') };
     switch (activeTab) {
       case 'slots':
-        return <SlotsGame balance={balance} onBalanceChange={handleBalanceChange} />;
+        return <SlotsGame {...gameProps} />;
       case 'blackjack':
-        return <BlackjackGame balance={balance} onBalanceChange={handleBalanceChange} />;
+        return <BlackjackGame {...gameProps} />;
       case 'roulette':
-        return <RouletteGame balance={balance} onBalanceChange={handleBalanceChange} />;
+        return <RouletteGame {...gameProps} />;
       case 'poker':
-        return <PokerGame balance={balance} onBalanceChange={handleBalanceChange} />;
+        return <PokerGame {...gameProps} />;
       case 'plinko':
-        return <PlinkoGame balance={balance} onBalanceChange={handleBalanceChange} />;
+        return <PlinkoGame {...gameProps} />;
       default:
         return null;
     }
@@ -123,16 +138,25 @@ export default function Dashboard({ user }: { user: User }) {
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>
                 </div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button onClick={() => handleBalanceChange(100)} size="icon" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
-                            <Coins className="h-5 w-5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Agregar 100</p>
-                    </TooltipContent>
-                </Tooltip>
+                <Dialog open={walletOpen} onOpenChange={setWalletOpen}>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                           <DialogTrigger asChild>
+                              <Button size="icon" variant="outline" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground" disabled={isPending}>
+                                  <Coins className="h-5 w-5" />
+                              </Button>
+                           </DialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Billetera</p>
+                      </TooltipContent>
+                  </Tooltip>
+                  <WalletDialog 
+                    balance={balance} 
+                    onBalanceChange={handleBalanceChange}
+                    onClose={() => setWalletOpen(false)}
+                  />
+                </Dialog>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{sessionUser.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">Rol: {sessionUser.role}</p>
