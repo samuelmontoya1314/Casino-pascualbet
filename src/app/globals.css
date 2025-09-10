@@ -145,26 +145,16 @@
     }
 
     @keyframes plinko-ball-drop-path {
-      0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-      }
-      20% {
-        transform: translate(calc(var(--ball-end-x) * 0.2), calc(var(--ball-end-y) * 0.1)) scale(1.1);
-      }
-      40% {
-        transform: translate(calc(var(--ball-end-x) * 0.5), calc(var(--ball-end-y) * 0.3)) scale(1);
-      }
-      60% {
-        transform: translate(calc(var(--ball-end-x) * 0.8), calc(var(--ball-end-y) * 0.6)) scale(1.1);
-      }
-      100% {
-        transform: translate(var(--ball-end-x), var(--ball-end-y)) scale(1);
-        opacity: 1;
-      }
+      0% { transform: translate(var(--ball-start-x), 0); }
+      15% { transform: translate(calc(var(--ball-start-x) + var(--bounce-1-x)), calc(var(--ball-end-y) * 0.15)); }
+      30% { transform: translate(calc(var(--ball-start-x) + var(--bounce-2-x)), calc(var(--ball-end-y) * 0.3)); }
+      45% { transform: translate(calc(var(--ball-start-x) + var(--bounce-3-x)), calc(var(--ball-end-y) * 0.45)); }
+      60% { transform: translate(calc(var(--ball-end-x) * 0.7), calc(var(--ball-end-y) * 0.6)); }
+      80% { transform: translate(calc(var(--ball-end-x) * 0.9), calc(var(--ball-end-y) * 0.8)); }
+      100% { transform: translate(var(--ball-end-x), var(--ball-end-y)); }
     }
     .animate-plinko-ball-drop {
-        animation: plinko-ball-drop-path 1.2s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+        animation: plinko-ball-drop-path 1.5s cubic-bezier(0.5, 0.1, 0.5, 1) forwards;
     }
 
     @keyframes plinko-multiplier-win {

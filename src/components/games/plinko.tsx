@@ -51,7 +51,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [autoBetCount, setAutoBetCount] = useState(10);
   const [isAutoBetting, setIsAutoBetting] = useState(false);
-  const [ballState, setBallState] = useState<{show: boolean, color: string, endX: number}>({show: false, color: 'hsl(var(--primary))', endX: 0});
+  const [ballState, setBallState] = useState<{show: boolean, color: string, endX: number, startX: number, bounce1: number, bounce2: number, bounce3: number}>({show: false, color: 'hsl(var(--primary))', endX: 0, startX: 0, bounce1: 0, bounce2: 0, bounce3: 0});
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -88,10 +88,14 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         
         const ballColor = multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))';
         const numBuckets = multipliers.length;
-        const totalWidth = numBuckets * BUCKET_WIDTH + (numBuckets - 1) * BUCKET_GAP;
         const endX = (finalIndex - (numBuckets - 1) / 2) * (BUCKET_WIDTH + BUCKET_GAP);
+        
+        const startX = (Math.random() - 0.5) * 40;
+        const bounce1 = (Math.random() - 0.5) * 60;
+        const bounce2 = (Math.random() - 0.5) * 80;
+        const bounce3 = (Math.random() - 0.5) * 60;
 
-        setBallState({show: true, color: ballColor, endX });
+        setBallState({show: true, color: ballColor, endX, startX, bounce1, bounce2, bounce3 });
         
         setTimeout(() => {
             setBallState(s => ({...s, show: false}));
@@ -101,7 +105,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);
             resolve();
-        }, 1200);
+        }, 1500);
     })
 
   }, [betAmount, balance, multipliers, calculateOutcome, onBalanceChange, mode, rows]);
@@ -119,7 +123,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         if (betsLeft > 0 && balance >= betAmount && document.visibilityState === 'visible') {
            await dropSingleBall();
            betsLeft--;
-           setTimeout(runAutoBet, 1500);
+           setTimeout(runAutoBet, 1800);
         } else {
            setIsAutoBetting(false);
         }
@@ -246,6 +250,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                         style={{
                             '--ball-end-y': `${rows * PEG_MARGIN_Y + 30}px`,
                             '--ball-end-x': `${ballState.endX}px`,
+                            '--ball-start-x': `${ballState.startX}px`,
+                            '--bounce-1-x': `${ballState.bounce1}px`,
+                            '--bounce-2-x': `${ballState.bounce2}px`,
+                            '--bounce-3-x': `${ballState.bounce3}px`,
                             background: ballState.color,
                             boxShadow: `0 0 10px ${ballState.color}`,
                             left: 'calc(50% - 8px)',
