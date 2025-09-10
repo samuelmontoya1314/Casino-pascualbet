@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../ui/alert';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface WalletDialogProps {
   balance: number;
@@ -89,7 +90,7 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
   const banks = ["BANCO DE BOGOTA", "BANCOLOMBIA", "DAVIVIENDA", "BANCO AGRARIO", "NEQUI", "DAVIPLATA"];
 
   return (
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-w-md flex flex-col h-full sm:h-auto">
       <DialogHeader>
         <DialogTitle className="text-center text-2xl">Billetera</DialogTitle>
       </DialogHeader>
@@ -97,147 +98,149 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
           setActiveTab(value as 'deposit' | 'withdraw');
           setAmount(0);
           setError('');
-        }} className="w-full">
+        }} className="w-full flex flex-col flex-1 min-h-0">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="deposit">Depositar</TabsTrigger>
           <TabsTrigger value="withdraw">Retirar</TabsTrigger>
         </TabsList>
-        <TabsContent value="deposit">
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount-deposit">Monto</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input 
-                    id="amount-deposit" 
-                    type="text"
-                    value={amount === '' ? '' : new Intl.NumberFormat('es-CO').format(amount)}
-                    onChange={(e) => handleAmountChange(e.target.value)} 
-                    className="pl-6 pr-24 h-12 text-lg"
-                    placeholder="0.00"
-                />
-                <div className="absolute right-1 top-1/2 -translate-y-1/2">
-                    <Select defaultValue="nequi">
-                      <SelectTrigger className="w-[80px] bg-transparent border-0">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="nequi">Nequi</SelectItem>
-                        <SelectItem value="pse">PSE</SelectItem>
-                        <SelectItem value="bancolombia">Bancolombia</SelectItem>
-                      </SelectContent>
-                    </Select>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">Monto mínimo de depósito: {formatCurrency(10000)}</p>
-              <p className="text-xs text-muted-foreground">Monto máximo de depósito: {formatCurrency(4000000)}</p>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-                {presetAmounts.map(p => (
-                    <Button key={p} variant="outline" onClick={() => setPresetAmount(p)}>
-                        {formatCurrency(p)}
-                    </Button>
-                ))}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="promo-code">¿Tienes un código promocional?</Label>
-                <Input 
-                    id="promo-code"
-                    placeholder="Introduce el código de bonificación"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                />
-            </div>
-            {error && (
-                 <Alert variant="destructive" className="text-xs">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-            <Button onClick={handleDeposit} className="w-full h-12 bg-green-600 hover:bg-green-700 text-white text-lg">Depositar</Button>
-          </div>
-        </TabsContent>
-        <TabsContent value="withdraw">
-           <div className="space-y-4 py-4">
-              <div className="p-4 rounded-md bg-secondary text-center mb-4">
-                <p className="text-muted-foreground">Saldo Disponible para Retirar</p>
-                <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Tipo de cuenta</Label>
-                 <Select defaultValue="ahorros">
-                    <SelectTrigger className="h-12 bg-input">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="ahorros">Ahorros</SelectItem>
-                        <SelectItem value="corriente">Corriente</SelectItem>
-                    </SelectContent>
-                </Select>
-              </div>
-
-               <div className="space-y-2">
-                <Label htmlFor="account-number">Número de cuenta bancaria</Label>
-                <Input id="account-number" placeholder="Introduce el número de cuenta" className="h-12 bg-input"/>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Seleccionar banco</Label>
-                 <Select defaultValue="banco-de-bogota">
-                    <SelectTrigger className="h-12 bg-input">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                       {banks.map(bank => (
-                           <SelectItem key={bank} value={bank.toLowerCase().replace(/ /g, '-')}>{bank}</SelectItem>
-                       ))}
-                    </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="amount-withdraw">Monto de retiro</Label>
-                <div className="relative">
+        <ScrollArea className="flex-1">
+          <div className="max-h-[70vh] sm:max-h-full pr-4">
+            <TabsContent value="deposit">
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="amount-deposit">Monto</Label>
+                  <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                     <Input 
-                        id="amount-withdraw" 
+                        id="amount-deposit" 
                         type="text"
                         value={amount === '' ? '' : new Intl.NumberFormat('es-CO').format(amount)}
-                        onChange={(e) => handleAmountChange(e.target.value)}
-                        className="pl-6 h-12 text-lg"
-                        placeholder="0"
+                        onChange={(e) => handleAmountChange(e.target.value)} 
+                        className="pl-6 pr-24 h-12 text-lg"
+                        placeholder="0.00"
+                    />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                        <Select defaultValue="nequi">
+                          <SelectTrigger className="w-[80px] bg-transparent border-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="nequi">Nequi</SelectItem>
+                            <SelectItem value="pse">PSE</SelectItem>
+                            <SelectItem value="bancolombia">Bancolombia</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Monto mínimo de depósito: {formatCurrency(10000)}</p>
+                  <p className="text-xs text-muted-foreground">Monto máximo de depósito: {formatCurrency(4000000)}</p>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                    {presetAmounts.map(p => (
+                        <Button key={p} variant="outline" onClick={() => setPresetAmount(p)}>
+                            {formatCurrency(p)}
+                        </Button>
+                    ))}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="promo-code">¿Tienes un código promocional?</Label>
+                    <Input 
+                        id="promo-code"
+                        placeholder="Introduce el código de bonificación"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
                     />
                 </div>
+                {error && (
+                     <Alert variant="destructive" className="text-xs">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+                <Button onClick={handleDeposit} className="w-full h-12 bg-green-600 hover:bg-green-700 text-white text-lg">Depositar</Button>
               </div>
-               <div className="text-xs text-muted-foreground space-y-1">
-                 <p>Monto mínimo de retiro: {formatCurrency(20000)}</p>
-                 <p>Monto máximo de retiro: {formatCurrency(balance)}</p>
-               </div>
-              
-                <div className="text-xs text-muted-foreground space-y-2 bg-secondary/30 p-3 rounded-md">
-                    <p className="font-bold">Para avanzar con el retiro, ten en cuenta:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>La cuenta debe estar verificada.</li>
-                        <li>Debes haber apostado el 100% de todos tus depósitos para poder procesar el retiro.</li>
-                        <li>Máximo se podrán realizar 3 retiros por día.</li>
-                        <li>Si realizas tu retiro a través de Efecty, recibirás el código al número de WhatsApp registrado.</li>
-                        <li>Si el monto solicitado es igual o mayor a 48 UVT definido para el...</li>
-                    </ul>
-                </div>
+            </TabsContent>
+            <TabsContent value="withdraw">
+               <div className="space-y-4 py-4">
+                  <div className="p-4 rounded-md bg-secondary text-center mb-4">
+                    <p className="text-muted-foreground">Saldo Disponible para Retirar</p>
+                    <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
+                  </div>
 
-              {error && (
-                 <Alert variant="destructive" className="text-xs mt-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-              <Button onClick={handleWithdraw} className="w-full h-12 bg-primary hover:bg-primary/90 text-white text-lg">Transferir</Button>
-           </div>
-        </TabsContent>
+                  <div className="space-y-2">
+                    <Label>Tipo de cuenta</Label>
+                     <Select defaultValue="ahorros">
+                        <SelectTrigger className="h-12 bg-input">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ahorros">Ahorros</SelectItem>
+                            <SelectItem value="corriente">Corriente</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  </div>
+
+                   <div className="space-y-2">
+                    <Label htmlFor="account-number">Número de cuenta bancaria</Label>
+                    <Input id="account-number" placeholder="Introduce el número de cuenta" className="h-12 bg-input"/>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Seleccionar banco</Label>
+                     <Select defaultValue="banco-de-bogota">
+                        <SelectTrigger className="h-12 bg-input">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {banks.map(bank => (
+                               <SelectItem key={bank} value={bank.toLowerCase().replace(/ /g, '-')}>{bank}</SelectItem>
+                           ))}
+                        </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="amount-withdraw">Monto de retiro</Label>
+                    <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input 
+                            id="amount-withdraw" 
+                            type="text"
+                            value={amount === '' ? '' : new Intl.NumberFormat('es-CO').format(amount)}
+                            onChange={(e) => handleAmountChange(e.target.value)}
+                            className="pl-6 h-12 text-lg"
+                            placeholder="0"
+                        />
+                    </div>
+                  </div>
+                   <div className="text-xs text-muted-foreground space-y-1">
+                     <p>Monto mínimo de retiro: {formatCurrency(20000)}</p>
+                     <p>Monto máximo de retiro: {formatCurrency(balance)}</p>
+                   </div>
+                  
+                    <div className="text-xs text-muted-foreground space-y-2 bg-secondary/30 p-3 rounded-md">
+                        <p className="font-bold">Para avanzar con el retiro, ten en cuenta:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                            <li>La cuenta debe estar verificada.</li>
+                            <li>Debes haber apostado el 100% de todos tus depósitos para poder procesar el retiro.</li>
+                            <li>Máximo se podrán realizar 3 retiros por día.</li>
+                            <li>Si realizas tu retiro a través de Efecty, recibirás el código al número de WhatsApp registrado.</li>
+                            <li>Si el monto solicitado es igual o mayor a 48 UVT definido para el...</li>
+                        </ul>
+                    </div>
+
+                  {error && (
+                     <Alert variant="destructive" className="text-xs mt-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+                  <Button onClick={handleWithdraw} className="w-full h-12 bg-primary hover:bg-primary/90 text-white text-lg">Transferir</Button>
+               </div>
+            </TabsContent>
+          </div>
+        </ScrollArea>
       </Tabs>
     </DialogContent>
   );
 }
-
-    
