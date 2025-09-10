@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -7,20 +6,11 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from '../ui/badge';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 interface PlinkoGameProps {
   balance: number;
   onBalanceChange: (amount: number) => void;
 }
-
-type Ball = {
-  id: number;
-  path: { x: number, y: number }[];
-  finalMultiplier: number;
-  winnings: number;
-  color: string;
-};
 
 const riskMultipliers = {
   low: { 8: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6], 16: [16, 9, 2, 1.4, 1.1, 1, 0.5, 1, 0.5, 1, 1.1, 1.4, 2, 9, 16] },
@@ -50,45 +40,10 @@ const PEG_MARGIN_Y = 32;
 const BUCKET_WIDTH = 60;
 const BUCKET_GAP = 4;
 
-
-const BallComponent = React.memo(({ ball, onComplete }: { ball: Ball, onComplete: () => void }) => {
-    const ballRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const animationDuration = (ball.path.length) * 150;
-        const timer = setTimeout(onComplete, animationDuration);
-        return () => clearTimeout(timer);
-    }, [ball, onComplete]);
-
-    return (
-        <div
-            ref={ballRef}
-            className="ball-container absolute"
-            style={{
-                left: `calc(50% - 8px)`,
-                top: 0
-            }}
-        >
-          <div 
-              className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50"
-              style={{
-                background: ball.color,
-                boxShadow: `0 0 10px ${ball.color}`,
-                animation: `plinko-path-animation ${ball.path.length * 150}ms linear forwards`,
-                '--path-keyframes': ball.path.map(p => `${p.x}px ${p.y}px`).join(', ')
-              }}
-          />
-        </div>
-    );
-});
-BallComponent.displayName = 'BallComponent';
-
-
 const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => {
   const [betAmount, setBetAmount] = useState(10);
   const [risk, setRisk] = useState<'low' | 'medium' | 'high'>('medium');
   const [rows, setRows] = useState(8);
-  const [balls, setBalls] = useState<Ball[]>([]);
   const [isDropping, setIsDropping] = useState(false);
   const [history, setHistory] = useState<{ multiplier: number; profit: number }[]>([]);
   const [winningMultiplierIndex, setWinningMultiplierIndex] = useState<number | null>(null);
@@ -96,6 +51,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [autoBetCount, setAutoBetCount] = useState(10);
   const [isAutoBetting, setIsAutoBetting] = useState(false);
+  const [showBall, setShowBall] = useState(false);
+  const [ballColor, setBallColor] = useState('hsl(var(--primary))');
 
   const multipliers = useMemo(() => getSafeMultipliers(risk, rows), [risk, rows]);
 
@@ -105,35 +62,14 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
   }, [multipliers]);
 
 
-  const calculatePath = useCallback((numRows: number, multiplierCount: number) => {
-    const path = [{ x: 0, y: -20 }];
-    let offsetIndex = 0;
-
-    for (let row = 0; row < numRows; row++) {
-        const direction = Math.random() < 0.5 ? -1 : 1;
-        offsetIndex += direction;
-        
-        const nextX = offsetIndex * (pegMarginX / 2);
-        const nextY = row * PEG_MARGIN_Y + 30;
-
-        path.push({ x: nextX, y: nextY });
+  const calculateOutcome = useCallback(() => {
+    let finalBucketIndex = 0;
+    for (let i = 0; i < rows; i++) {
+        finalBucketIndex += (Math.random() < 0.5 ? -0.5 : 0.5);
     }
-
-    const finalBucketIndex = Math.round((offsetIndex + numRows) / 2);
-    const safeIndex = Math.max(0, Math.min(multiplierCount - 1, finalBucketIndex));
-    
-    const totalBucketsWidth = multiplierCount * BUCKET_WIDTH + (multiplierCount - 1) * BUCKET_GAP;
-    const startX = -totalBucketsWidth / 2 + BUCKET_WIDTH/2;
-    const finalX = startX + safeIndex * (BUCKET_WIDTH + BUCKET_GAP);
-    
-    path.push({ x: finalX, y: numRows * PEG_MARGIN_Y + 50 });
-    
-    return { path, finalIndex: safeIndex };
-  }, [pegMarginX]);
-
-  const handleBallAnimationComplete = useCallback((id: number) => {
-    setBalls(prev => prev.filter(b => b.id !== id));
-  }, []);
+    const finalIndex = Math.round(finalBucketIndex + (multipliers.length-1)/2);
+    return Math.max(0, Math.min(multipliers.length - 1, finalIndex));
+  }, [rows, multipliers.length]);
 
   const dropSingleBall = useCallback(() => {
     if (balance < betAmount) {
@@ -145,34 +81,26 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         setIsDropping(true);
         setWinningMultiplierIndex(null);
         onBalanceChange(-betAmount);
-
-        const { path, finalIndex } = calculatePath(rows, multipliers.length);
+        
+        const finalIndex = calculateOutcome();
         const multiplier = multipliers[finalIndex];
         const winnings = betAmount * multiplier;
         
-        const newBall: Ball = {
-          id: Date.now() + Math.random(),
-          path,
-          finalMultiplier: multiplier,
-          winnings,
-          color: multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-        };
-
-        setBalls(prev => [...prev, newBall]);
-        
-        const animationDuration = (rows + 1) * 200; 
+        setBallColor(multiplier >= 2 ? 'hsl(var(--primary))' : multiplier > 0.5 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))');
+        setShowBall(true);
         
         setTimeout(() => {
+            setShowBall(false);
             const profit = winnings;
             onBalanceChange(profit);
             setWinningMultiplierIndex(finalIndex);
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);
             resolve();
-        }, animationDuration + 300); // Add a small buffer
+        }, 1000);
     })
 
-  }, [betAmount, balance, rows, multipliers, calculatePath, onBalanceChange, mode]);
+  }, [betAmount, balance, multipliers, calculateOutcome, onBalanceChange, mode]);
   
   const handleBet = async () => {
     if (isAutoBetting || isDropping) return;
@@ -181,15 +109,18 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
       await dropSingleBall();
     } else { // Auto mode
       setIsAutoBetting(true);
-      for (let i = 0; i < autoBetCount; i++) {
-        if (!document.hidden && balance >= betAmount) {
-            await dropSingleBall();
-            await new Promise(resolve => setTimeout(resolve, 300));
+      let betsLeft = autoBetCount;
+      
+      const runAutoBet = async () => {
+        if (betsLeft > 0 && balance >= betAmount && document.visibilityState === 'visible') {
+           await dropSingleBall();
+           betsLeft--;
+           setTimeout(runAutoBet, 300);
         } else {
-            break;
+           setIsAutoBetting(false);
         }
       }
-      setIsAutoBetting(false);
+      runAutoBet();
     }
   }
 
@@ -217,32 +148,6 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
 
   return (
     <Card className="w-full bg-card/70 border-0 pixel-border overflow-hidden">
-      <style>{`
-        @keyframes plinko-path-animation {
-            to {
-                offset-path: path('M ' + (getComputedStyle(document.documentElement).getPropertyValue('--path-keyframes') || '0px 0px'));
-                offset-distance: 100%;
-            }
-        }
-        .ball-enter {
-            opacity: 0;
-            transform: scale(0.5);
-        }
-        .ball-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 300ms, transform 300ms;
-        }
-        .ball-exit {
-            opacity: 1;
-            transform: scale(1);
-        }
-        .ball-exit-active {
-            opacity: 0;
-            transform: scale(0.5);
-            transition: opacity 300ms, transform 300ms;
-        }
-      `}</style>
       <CardContent className="flex flex-col-reverse md:flex-row p-0">
         <div className="w-full md:w-[280px] bg-secondary/30 p-4 space-y-4 border-r border-border flex flex-col">
           <div className='flex-grow space-y-4'>
@@ -299,7 +204,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                 size="lg" 
                 className="w-full h-16 text-xl uppercase font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isAutoBetting ? 'Apostando...' : 'Apostar'}
+              {isAutoBetting ? `Parar (${autoBetCount})` : 'Apostar'}
             </Button>
              <div className="flex gap-2 overflow-x-auto pb-2">
                 {history.map((item, i) => (
@@ -311,7 +216,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-end p-4 min-h-[500px] md:min-h-[600px] bg-background/50 relative overflow-hidden">
              <div className="absolute inset-0 w-full h-full" style={{
                 background: 'radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), transparent 70%)'
             }}></div>
@@ -331,22 +236,17 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
                     })}
                   </div>
                 ))}
-                <TransitionGroup>
-                  {balls.map(ball => (
-                      <CSSTransition
-                          key={ball.id}
-                          timeout={300}
-                          classNames="ball"
-                          onExited={() => handleBallAnimationComplete(ball.id)}
-                      >
-                         <BallComponent 
-                              key={ball.id} 
-                              ball={ball}
-                              onComplete={() => handleBallAnimationComplete(ball.id)}
-                          />
-                      </CSSTransition>
-                  ))}
-                </TransitionGroup>
+                {showBall && (
+                    <div 
+                        className="absolute z-10 w-4 h-4 rounded-full border-2 border-white/50 animate-plinko-ball-drop"
+                        style={{
+                            background: ballColor,
+                            boxShadow: `0 0 10px ${ballColor}`,
+                            left: 'calc(50% - 8px)',
+                            top: 0
+                        }}
+                    />
+                )}
               </div>
               <div className="flex justify-center gap-1 mt-4">
                   {multipliers.map((m, i) => {
