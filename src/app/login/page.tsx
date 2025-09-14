@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,9 +7,11 @@ import { RegisterForm } from '@/components/auth/register-form';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PascualBetLogo } from '@/components/pascualbet-logo';
+import { useI18n } from '@/hooks/use-i18n';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('login');
+  const t = useI18n();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -23,8 +26,8 @@ export default function LoginPage() {
             <Card className="bg-card rounded-lg shadow-lg border-0">
                 <CardHeader className="text-center pb-4">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="login">Entrar</TabsTrigger>
-                        <TabsTrigger value="register">Crear Cuenta</TabsTrigger>
+                        <TabsTrigger value="login">{t('login.logIn')}</TabsTrigger>
+                        <TabsTrigger value="register">{t('login.createAccountTitle')}</TabsTrigger>
                     </TabsList>
                 </CardHeader>
                 <CardContent>
@@ -32,9 +35,9 @@ export default function LoginPage() {
                         <LoginForm />
                          <div className="text-center mt-6">
                            <p className="text-muted-foreground">
-                             ¿No tienes una cuenta?{' '}
+                             {t('login.dontHaveAccount')}{' '}
                              <button onClick={() => setActiveTab('register')} className="font-semibold text-primary hover:underline focus:outline-none">
-                               Regístrate
+                               {t('login.register')}
                              </button>
                            </p>
                         </div>
@@ -43,9 +46,9 @@ export default function LoginPage() {
                         <RegisterForm />
                          <div className="text-center mt-6">
                             <p className="text-muted-foreground">
-                              ¿Ya tienes una cuenta?{' '}
+                              {t('login.alreadyHaveAccount')}{' '}
                               <button onClick={() => setActiveTab('login')} className="font-semibold text-primary hover:underline focus:outline-none">
-                                Iniciar sesión
+                                {t('login.logIn')}
                               </button>
                             </p>
                         </div>

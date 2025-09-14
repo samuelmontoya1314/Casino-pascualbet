@@ -1,3 +1,4 @@
+
 {
     "login": {
         "logIn": "Log In",
@@ -7,14 +8,22 @@
         "createAccountTitle": "Create Account",
         "createAccountDescription": "Welcome bonus upon registration!",
         "userId": "User ID",
+        "userIdPlaceholder": "Enter your user ID",
         "password": "Password",
+        "passwordPlaceholder": "Enter your password",
         "loggingIn": "Logging In...",
         "loginFailed": "Login Failed",
         "fullName": "Full Name",
         "fullNamePlaceholder": "e.g. John Doe",
         "phoneNumber": "Phone Number",
         "registering": "Registering...",
-        "registrationFailed": "Registration Failed"
+        "registrationFailed": "Registration Failed",
+        "invalidFields": "Invalid fields: {errorMessages}",
+        "userNotFound": "User not found.",
+        "userIdInUse": "User ID is already taken. Please choose another one.",
+        "alreadyHaveAccount": "Already have an account?",
+        "dontHaveAccount": "Don't have an account?",
+        "createOne": "Create one"
     },
     "dashboard": {
         "addFunds": "Add 100",

@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, ShieldCheck } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition, useMemo, Suspense } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
 import { updateBalance } from '@/actions/user';
@@ -34,6 +34,8 @@ import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
 import { WalletDialog } from './wallet-dialog';
 import { Dialog } from '@radix-ui/react-dialog';
+import { LanguageSwitcher } from './language-switcher';
+import { useI18n } from '@/hooks/use-i18n';
 
 
 const LoadingComponent = () => (
@@ -58,6 +60,7 @@ export default function Dashboard({ user }: { user: User }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const { toast } = useToast();
+  const t = useI18n();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -76,7 +79,7 @@ export default function Dashboard({ user }: { user: User }) {
         if (result && result.error) {
             setBalance(currentBalance); // Revert on error
             toast({
-                title: "Error de Sincronización",
+                title: t('dashboard.syncError'),
                 description: result.error,
                 variant: "destructive"
             });
@@ -137,6 +140,7 @@ export default function Dashboard({ user }: { user: User }) {
                  <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
+                <LanguageSwitcher />
                 <div className="flex items-center gap-3 rounded-none bg-secondary px-4 py-2 border">
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>
@@ -162,7 +166,7 @@ export default function Dashboard({ user }: { user: User }) {
                 </Dialog>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{sessionUser.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">Rol: {sessionUser.role}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{t('dashboard.role')}: {sessionUser.role}</p>
                 </div>
                 <AlertDialog>
                   <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
@@ -177,34 +181,34 @@ export default function Dashboard({ user }: { user: User }) {
                           </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t('dashboard.myAccount')}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DialogTrigger asChild>
                             <DropdownMenuItem>
                                 <UserIcon className="mr-2 h-4 w-4"/>
-                                Perfil
+                                {t('dashboard.profile')}
                             </DropdownMenuItem>
                           </DialogTrigger>
                           <Link href="/manual">
                              <DropdownMenuItem>
                                   <HelpCircle className="mr-2 h-4 w-4"/>
-                                  Ayuda
+                                  {t('dashboard.help')}
                              </DropdownMenuItem>
                           </Link>
                           <DropdownMenuSeparator />
                           <AlertDialogTrigger asChild>
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <LogOut className="mr-2 h-4 w-4" />
-                                <span>Cerrar Sesión</span>
+                                <span>{t('dashboard.logout')}</span>
                               </DropdownMenuItem>
                           </AlertDialogTrigger>
                       </DropdownMenuContent>
                   </DropdownMenu>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Perfil de Usuario</DialogTitle>
+                            <DialogTitle>{t('dashboard.userProfile')}</DialogTitle>
                             <DialogDescription>
-                                Aquí puedes ver y editar la información de tu cuenta.
+                                {t('dashboard.profileDescription')}
                             </DialogDescription>
                         </DialogHeader>
                         <EditProfileForm user={sessionUser} onUpdate={handleProfileUpdate} onCancel={() => setProfileOpen(false)} />
@@ -212,9 +216,9 @@ export default function Dashboard({ user }: { user: User }) {
                   </Dialog>
                   <AlertDialogContent>
                     <AlertDialogHeader className="text-center">
-                      <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
+                      <AlertDialogTitle className="text-center">{t('dashboard.logoutConfirmTitle')}</AlertDialogTitle>
                       <AlertDialogDescription className="text-center">
-                         ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
+                         {t('dashboard.logoutConfirmDescription')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
@@ -228,10 +232,10 @@ export default function Dashboard({ user }: { user: User }) {
                         />
                     </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
+                      <AlertDialogCancel>{t('dashboard.logoutCancel')}</AlertDialogCancel>
                       <form action={handleLogout} className="w-full sm:w-auto">
                         <AlertDialogAction type="submit" className="w-full">
-                           Sí, abandonar
+                           {t('dashboard.logoutConfirm')}
                         </AlertDialogAction>
                       </form>
                     </AlertDialogFooter>
@@ -243,10 +247,10 @@ export default function Dashboard({ user }: { user: User }) {
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
              <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
                 <TabsList className={`grid w-full ${sessionUser.role === 'admin' ? 'grid-cols-6' : 'grid-cols-5'}`}>
-                    <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
-                    <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
-                    <TabsTrigger value="roulette">Ruleta</TabsTrigger>
-                    <TabsTrigger value="poker">Póker</TabsTrigger>
+                    <TabsTrigger value="slots">{t('games.slots')}</TabsTrigger>
+                    <TabsTrigger value="blackjack">{t('games.blackjack')}</TabsTrigger>
+                    <TabsTrigger value="roulette">{t('games.roulette')}</TabsTrigger>
+                    <TabsTrigger value="poker">{t('games.poker')}</TabsTrigger>
                     <TabsTrigger value="plinko">Plinko</TabsTrigger>
                     {sessionUser.role === 'admin' && (
                         <TabsTrigger value="admin" className="flex items-center gap-2">
@@ -269,14 +273,10 @@ export default function Dashboard({ user }: { user: User }) {
               </Link>
             </TooltipTrigger>
             <TooltipContent side="left">
-                <p>Manual de Usuario</p>
+                <p>{t('dashboard.userManual')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
     </div>
   );
 }
-
-    
-
-    
