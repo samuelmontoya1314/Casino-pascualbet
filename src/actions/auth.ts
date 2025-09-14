@@ -7,8 +7,8 @@ import { createSession, deleteSession } from '@/lib/auth';
 import { findUserById, addUser } from '@/lib/users';
 
 const loginSchema = z.object({
-  userId: z.string().min(1, 'El ID de usuario es requerido').max(24, 'El ID de usuario no puede tener más de 24 caracteres'),
-  password: z.string().min(1, 'La contraseña es requerida').max(24, 'La contraseña no puede tener más de 24 caracteres'),
+  userId: z.string().min(1, 'El ID de usuario es requerido').max(24, 'El ID de usuario no puede tener más de 24 caracteres').regex(/^[a-zA-Z0-9]+$/, 'Solo se permiten letras y números.'),
+  password: z.string().min(1, 'La contraseña es requerida').max(24, 'La contraseña no puede tener más de 24 caracteres').regex(/^[a-zA-Z0-9]+$/, 'Solo se permiten letras y números.'),
 });
 
 const registerSchema = z.object({
@@ -17,8 +17,8 @@ const registerSchema = z.object({
         .min(8, 'La contraseña debe tener al menos 8 caracteres')
         .max(24, 'La contraseña no puede tener más de 24 caracteres')
         .refine(
-            (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/.test(value), 
-            'La contraseña debe contener al menos una mayúscula, un número y un carácter especial.'
+            (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value), 
+            'La contraseña debe contener al menos una mayúscula y un número.'
         ),
     fullName: z.string()
         .min(1, "El nombre completo es requerido")

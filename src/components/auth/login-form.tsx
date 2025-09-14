@@ -1,6 +1,6 @@
 
 'use client';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { handleLogin } from '@/actions/auth';
 import { Button } from '@/components/ui/button';
@@ -20,16 +20,43 @@ function SubmitButton() {
 
 export function LoginForm() {
     const [state, formAction] = useActionState(handleLogin, undefined);
+    const [userId, setUserId] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleInput = (setter: (value: string) => void) => (e: React.FormEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        const sanitizedValue = target.value.replace(/[^a-zA-Z0-9]/g, '');
+        setter(sanitizedValue);
+    };
 
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="Introduce tu ID de usuario" required className="h-12 bg-input" maxLength={24} />
+                <Input 
+                    id="userId" 
+                    name="userId" 
+                    placeholder="Introduce tu ID de usuario" 
+                    required 
+                    className="h-12 bg-input" 
+                    maxLength={24}
+                    value={userId}
+                    onInput={handleInput(setUserId)}
+                />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" placeholder="Introduce tu contraseña" required className="h-12 bg-input" maxLength={24} />
+                <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    placeholder="Introduce tu contraseña" 
+                    required 
+                    className="h-12 bg-input" 
+                    maxLength={24} 
+                    value={password}
+                    onInput={handleInput(setPassword)}
+                />
             </div>
             
             {state?.error && (
