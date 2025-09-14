@@ -64,9 +64,13 @@ export function RegisterForm() {
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
+                        locale={es}
                         mode="single"
                         selected={date}
                         onSelect={setDate}
+                        captionLayout="dropdown-buttons"
+                        fromYear={new Date().getFullYear() - 100}
+                        toYear={new Date().getFullYear()}
                         initialFocus
                         />
                     </PopoverContent>
@@ -91,7 +95,16 @@ export function RegisterForm() {
             </div>
              <div className="space-y-2">
                 <Label htmlFor="documentNumber">Documento de identidad</Label>
-                <Input id="documentNumber" name="documentNumber" required className="h-12 bg-input" />
+                <Input 
+                    id="documentNumber" 
+                    name="documentNumber" 
+                    required 
+                    className="h-12 bg-input"
+                    onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = target.value.replace(/[^0-9]/g, '');
+                    }}
+                />
             </div>
             
             {state?.error && (
