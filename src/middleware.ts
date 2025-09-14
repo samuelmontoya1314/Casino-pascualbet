@@ -32,23 +32,23 @@ export function middleware(request: NextRequest) {
   }
 
   // 3. Handle authentication routing
-  const locale = pathname.split('/')[1] || defaultLocale;
+  const locale = locales.find(l => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) || defaultLocale;
+  
   const publicPaths = ['/login', '/manual'];
-  // Check if the path without the locale is a public path
-  const pathWithoutLocale = pathname.substring(locale.length + 1);
-  const isPublicPath = publicPaths.some(path => pathWithoutLocale === path || (path === '/' && pathWithoutLocale === ''));
-
+  // The path without locale starts after the locale prefix (e.g., /es/login -> /login)
+  const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/';
+  const isPublicPath = publicPaths.some(p => p === pathWithoutLocale);
 
   const homeUrl = new URL(`/${locale}`, request.url);
   const loginUrl = new URL(`/${locale}/login`, request.url);
 
   // If not logged in and trying to access a protected route, redirect to login
-  if (!sessionCookie && !isPublicPath && pathname !== `/${locale}/`) {
+  if (!sessionCookie && !isPublicPath) {
     return NextResponse.redirect(loginUrl);
   }
 
   // If logged in and trying to access login page, redirect to home
-  if (sessionCookie && (pathname === `/${locale}/login`)) {
+  if (sessionCookie && pathWithoutLocale === '/login') {
     return NextResponse.redirect(homeUrl);
   }
 
