@@ -7,7 +7,7 @@ import { firestore } from '@/lib/firebase';
  * It attempts to write a simple document to a 'test-connection' collection.
  * This is not used by the UI and is for verification purposes only.
  */
-export async function testFirestoreConnection() {
+export async function testFirestoreConnection(): Promise<{ success: boolean; message: string }> {
   try {
     const docRef = firestore.collection('test-connection').doc('first-test');
     await docRef.set({
