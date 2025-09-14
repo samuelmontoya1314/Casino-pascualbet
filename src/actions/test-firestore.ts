@@ -25,3 +25,4 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
     return { success: false, message: 'Firestore connection failed with an unknown error.' };
   }
 }
+
