@@ -61,7 +61,8 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
       return;
     }
     setError('');
-    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+    onBalanceChange(amount, 'deposit');
+    onClose();
   };
   
   const handleWithdraw = () => {
@@ -83,6 +84,7 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
     }
      setError('');
      onBalanceChange(-amount, 'withdraw');
+     window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
      onClose();
   };
 
@@ -244,3 +246,5 @@ export function WalletDialog({ balance, onBalanceChange, onClose }: WalletDialog
     </DialogContent>
   );
 }
+
+    
