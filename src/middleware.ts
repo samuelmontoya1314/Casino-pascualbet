@@ -18,32 +18,35 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
-  // 2. Handle internationalization routing.
-  const pathnameIsMissingLocale = nextConfig.i18n!.locales.every(
+  
+  // 2. Handle i18n redirection.
+  const { locales, defaultLocale } = nextConfig.i18n!;
+  const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
+  // Redirect if there is no locale
   if (pathnameIsMissingLocale) {
-    const locale = nextConfig.i18n!.defaultLocale;
-    const newUrl = new URL(`/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url);
+    const newUrl = new URL(`/${defaultLocale}${pathname}`, request.url);
     return NextResponse.redirect(newUrl);
   }
 
-  // 3. Handle authentication routing.
-  const locale = pathname.split('/')[1];
+  // 3. Handle authentication routing
+  const locale = pathname.split('/')[1] || defaultLocale;
   const publicPaths = ['/login', '/manual'];
+  // Check if the path without the locale is a public path
   const isPublicPath = publicPaths.some(path => pathname === `/${locale}${path}` || pathname === path);
   
+  const homeUrl = new URL(`/${locale}`, request.url);
+  const loginUrl = new URL(`/${locale}/login`, request.url);
+
   // If not logged in and trying to access a protected route, redirect to login
   if (!sessionCookie && !isPublicPath) {
-    const loginUrl = new URL(`/${locale}/login`, request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // If logged in and trying to access login page, redirect to home
-  if (sessionCookie && pathname === `/${locale}/login`) {
-    const homeUrl = new URL(`/${locale}`, request.url);
+  if (sessionCookie && (pathname === `/${locale}/login` || pathname === '/login')) {
     return NextResponse.redirect(homeUrl);
   }
 
