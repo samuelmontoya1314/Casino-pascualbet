@@ -19,10 +19,7 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
     return { success: true, message: 'Document successfully written to Firestore.' };
   } catch (error) {
     console.error('Error testing Firestore connection:', error);
-    if (error instanceof Error) {
-      return { success: false, message: `Firestore connection failed: ${error.message}` };
-    }
-    return { success: false, message: 'Firestore connection failed with an unknown error.' };
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { success: false, message: `Firestore connection failed: ${errorMessage}` };
   }
 }
-
