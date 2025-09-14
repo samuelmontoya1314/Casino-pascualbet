@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import nextConfig from '../next.config';
+import { locales, defaultLocale } from './lib/i18n';
 
 const PUBLIC_FILE = /\.(.*)$/;
 
@@ -20,7 +20,6 @@ export function middleware(request: NextRequest) {
   }
   
   // 2. Handle i18n redirection.
-  const { locales, defaultLocale } = nextConfig.i18n!;
   const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );

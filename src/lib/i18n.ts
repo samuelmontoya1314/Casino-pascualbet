@@ -5,7 +5,8 @@ export const dictionaries = {
 };
 
 export type Locale = keyof typeof dictionaries;
-export const locales = Object.keys(dictionaries) as Locale[];
+export const locales: Locale[] = ['en', 'es'];
+export const defaultLocale: Locale = 'es';
 
 
 export const getTranslator = async (locale: Locale = 'es') => {
