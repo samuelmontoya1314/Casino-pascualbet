@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
 import { findUserById, addUser } from '@/lib/users';
+import { differenceInYears } from 'date-fns';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido').max(24, 'El ID de usuario no puede tener más de 24 caracteres').regex(/^[a-zA-Z0-9]+$/, 'Solo se permiten letras y números.'),
@@ -24,6 +25,15 @@ const registerSchema = z.object({
         .min(1, "El nombre completo es requerido")
         .regex(/^[a-zA-Z\s]+$/, "El nombre completo solo debe contener letras y espacios"),
     birthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
+    terms: z.literal('on', {
+        errorMap: () => ({ message: 'Debes aceptar los términos y condiciones.' }),
+    }),
+}).refine(data => {
+    const age = differenceInYears(new Date(), new Date(data.birthDate));
+    return age >= 18;
+}, {
+    message: "Solo se permiten usuarios mayores de 18 años.",
+    path: ["birthDate"], // Path to show error on
 });
 
 
