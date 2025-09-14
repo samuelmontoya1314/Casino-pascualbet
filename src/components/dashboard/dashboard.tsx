@@ -224,7 +224,7 @@ export default function Dashboard({ user }: { user: User }) {
                             width={300}
                             height={225}
                             data-ai-hint="miner quitting diamonds"
-                            className="rounded-md"
+                            className="rounded-md w-full object-contain"
                         />
                     </div>
                     <AlertDialogFooter>
@@ -276,5 +276,7 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
+
+    
 
     
