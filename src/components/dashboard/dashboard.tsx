@@ -108,7 +108,7 @@ export default function Dashboard({ user }: { user: User }) {
   }
   
   const ActiveGame = useMemo(() => {
-    const gameProps = { balance, onBalanceChange: (amount:number) => handleBalanceChange(amount, 'bet') };
+    const gameProps = { balance, onBalanceChange: handleBalanceChange };
     switch (activeTab) {
       case 'slots':
         return <SlotsGame {...gameProps} />;
@@ -125,7 +125,8 @@ export default function Dashboard({ user }: { user: User }) {
       default:
         return null;
     }
-  }, [activeTab, balance, sessionUser.role]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, sessionUser.role]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -275,3 +276,5 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
+
+    
