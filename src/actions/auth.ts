@@ -7,8 +7,8 @@ import { createSession, deleteSession } from '@/lib/auth';
 import { findUserById, addUser } from '@/lib/users';
 
 const loginSchema = z.object({
-  userId: z.string().min(1, 'El ID de usuario es requerido'),
-  password: z.string(), // No validation needed for mock
+  userId: z.string().min(1, 'El ID de usuario es requerido').max(24, 'El ID de usuario no puede tener más de 24 caracteres'),
+  password: z.string().min(1, 'La contraseña es requerida').max(24, 'La contraseña no puede tener más de 24 caracteres'),
 });
 
 const registerSchema = z.object({
@@ -35,7 +35,8 @@ export async function handleLogin(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
-    return { error: 'Campos inválidos.' };
+    const errorMessages = validatedFields.error.errors.map(e => e.message).join(', ');
+    return { error: `Campos inválidos: ${errorMessages}` };
   }
 
   const { userId } = validatedFields.data;

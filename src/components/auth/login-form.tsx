@@ -25,11 +25,11 @@ export function LoginForm() {
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="Introduce tu ID de usuario" required className="h-12 bg-input" />
+                <Input id="userId" name="userId" placeholder="Introduce tu ID de usuario" required className="h-12 bg-input" maxLength={24} />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" placeholder="Introduce tu contraseña" required className="h-12 bg-input" />
+                <Input id="password" name="password" type="password" placeholder="Introduce tu contraseña" required className="h-12 bg-input" maxLength={24} />
             </div>
             
             {state?.error && (
