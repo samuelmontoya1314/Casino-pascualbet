@@ -20,6 +20,7 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
   } catch (error) {
     console.error('Error testing Firestore connection:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    // This explicit return is crucial to prevent the function from returning undefined on error.
     return { success: false, message: `Firestore connection failed: ${errorMessage}` };
   }
 }

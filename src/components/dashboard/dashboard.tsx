@@ -110,7 +110,8 @@ export default function Dashboard({ user }: { user: User }) {
 
   const handleTestFirestore = async () => {
     const result = await testFirestoreConnection();
-    if (result.success) {
+    // Add a safeguard to ensure 'result' is not undefined
+    if (result && result.success) {
       toast({
         title: "¡Conexión Exitosa!",
         description: "Se escribió un documento en Firestore. ¡Revisa tu consola de Firebase!",
@@ -118,7 +119,7 @@ export default function Dashboard({ user }: { user: User }) {
     } else {
       toast({
         title: "Error de Conexión",
-        description: `No se pudo conectar a Firestore: ${result.message}`,
+        description: `No se pudo conectar a Firestore: ${result?.message || 'Error desconocido.'}`,
         variant: "destructive",
       });
     }
