@@ -16,28 +16,14 @@ export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   
-  const currentLocale = pathname.split('/')[1];
+  const currentLocale = pathname.split('/')[1] as 'es' | 'en';
 
   const changeLocale = (newLocale: string) => {
     const segments = pathname.split('/');
-    const hasLocale = locales.includes(segments[1] as any);
-
-    let newPath;
-    if (hasLocale) {
-      segments[1] = newLocale;
-      newPath = segments.join('/');
-    } else {
-      newPath = `/${newLocale}${pathname}`;
-    }
-    
-    // Ensure we don't end up with double slashes or incorrect root paths
-    newPath = newPath.replace('//', '/');
-    if (newPath.startsWith(`/${newLocale}/${newLocale}`)) {
-       newPath = newPath.replace(`/${newLocale}`, '');
-    }
+    segments[1] = newLocale;
+    const newPath = segments.join('/');
 
     router.push(newPath);
-    router.refresh();
   };
 
   const getFlagSrc = (locale: string) => {
@@ -52,7 +38,7 @@ export function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <Image 
-            src={getFlagSrc(currentLocale === 'en' ? 'en' : 'es')}
+            src={getFlagSrc(currentLocale)}
             alt={currentLocale === 'en' ? 'UK Flag' : 'Spain Flag'}
             width={24}
             height={24}

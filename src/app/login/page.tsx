@@ -8,6 +8,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PascualBetLogo } from '@/components/pascualbet-logo';
 import { useI18n } from '@/hooks/use-i18n';
+import { LanguageSwitcher } from '@/components/dashboard/language-switcher';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('login');
@@ -18,7 +19,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md mx-auto">
         <div className="flex flex-col items-center justify-center text-center mb-8">
           <PascualBetLogo className="w-32 h-auto mb-4" />
-          <h1 className="text-3xl font-bold">Bienvenido a PascualBet</h1>
+           <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-bold">Bienvenido a PascualBet</h1>
+              <LanguageSwitcher />
+           </div>
           <p className="text-muted-foreground">Tu casino online de confianza.</p>
         </div>
         
