@@ -21,9 +21,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, Database } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition, useMemo, useEffect } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
 import { updateBalance } from '@/actions/user';
@@ -34,7 +34,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
 import { WalletDialog } from './wallet-dialog';
-import { testFirestoreConnection } from '@/actions/test-firestore';
 
 
 const LoadingComponent = () => (
@@ -106,32 +105,6 @@ export default function Dashboard({ user }: { user: User }) {
     });
     setProfileOpen(false);
   }
-
-  const handleTestFirestore = async () => {
-    toast({
-        title: "Probando conexión...",
-        description: "Enviando una solicitud a Firestore.",
-    });
-    const result = await testFirestoreConnection();
-    if (result && result.success) {
-      toast({
-        title: "¡Conexión Exitosa!",
-        description: result.message,
-      });
-    } else if (result) { // Check if result is not undefined
-      toast({
-        title: "Error de Conexión",
-        description: result.message,
-        variant: "destructive",
-      });
-    } else { // Fallback for unexpected undefined
-       toast({
-        title: "Error Inesperado",
-        description: "La función de prueba no devolvió un resultado. Revisa la consola del servidor.",
-        variant: "destructive",
-      });
-    }
-  };
   
   const ActiveGame = useMemo(() => {
     const gameProps = { balance, onBalanceChange: (amount:number) => handleBalanceChange(amount, 'bet') };
@@ -160,16 +133,6 @@ export default function Dashboard({ user }: { user: User }) {
                  <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
-                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button onClick={handleTestFirestore} variant="outline" size="icon">
-                            <Database className="h-5 w-5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Probar conexión a Firestore</p>
-                    </TooltipContent>
-                </Tooltip>
                 <div className="flex items-center gap-3 rounded-none bg-secondary px-4 py-2 border">
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>

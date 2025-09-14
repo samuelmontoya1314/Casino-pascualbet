@@ -1,6 +1,4 @@
-
-// This is a mock in-memory database.
-// In a real application, you would use a database like Firestore, PostgreSQL, etc.
+import { firestore } from '@/lib/firebase';
 
 export type User = {
   id: string;
@@ -18,11 +16,9 @@ export type User = {
   balance: number;
 };
 
-// This map acts as a simple, volatile in-memory store.
-// It will be reset on every server restart.
-const users: Map<string, User> = new Map([
-  [
-    "admin",
+const usersCollection = firestore.collection('users');
+
+const seedUsers: User[] = [
     {
       id: "admin",
       password: "password",
@@ -32,9 +28,6 @@ const users: Map<string, User> = new Map([
       role: "admin",
       balance: 10000,
     },
-  ],
-  [
-    "pascual",
     {
       id: "pascual",
       password: "password123",
@@ -44,9 +37,6 @@ const users: Map<string, User> = new Map([
       role: "user",
       balance: 500,
     },
-  ],
-  [
-    "usuario",
     {
       id: "usuario",
       password: "password",
@@ -56,40 +46,55 @@ const users: Map<string, User> = new Map([
       role: "user",
       balance: 1000,
     },
-  ]
-]);
+];
+
+// Function to seed initial users if the collection is empty
+const seedDatabase = async () => {
+    const snapshot = await usersCollection.limit(1).get();
+    if (snapshot.empty) {
+        console.log('Users collection is empty, seeding initial users...');
+        const batch = firestore.batch();
+        seedUsers.forEach(user => {
+            const docRef = usersCollection.doc(user.id);
+            batch.set(docRef, user);
+        });
+        await batch.commit();
+        console.log('Initial users seeded.');
+    }
+};
+
+// We call seedDatabase at the module level.
+// This will run once when the server starts.
+seedDatabase().catch(console.error);
 
 
 export async function findUserById(id: string): Promise<User | undefined> {
-  // Simulate async database call
-  await new Promise(resolve => setTimeout(resolve, 50)); 
-  const user = users.get(id);
-  // This function is only used on the server, so returning the full user object is safe.
-  if (user) {
-    return { ...user };
+  const userDoc = await usersCollection.doc(id).get();
+  if (!userDoc.exists) {
+    return undefined;
   }
-  return undefined;
+  return userDoc.data() as User;
 }
 
 export async function addUser(user: User): Promise<void> {
-  // Simulate async database call
-  await new Promise(resolve => setTimeout(resolve, 50));
-  if (users.has(user.id)) {
+  const userDocRef = usersCollection.doc(user.id);
+  const userDoc = await userDocRef.get();
+
+  if (userDoc.exists) {
     throw new Error('User already exists');
   }
-  users.set(user.id, { ...user });
+  
+  await userDocRef.set(user);
 }
 
 export async function updateUserBalance(id: string, newBalance: number): Promise<void> {
-    // Simulate async database call
-  await new Promise(resolve => setTimeout(resolve, 50));
-  const user = users.get(id);
-  if (user) {
-    user.balance = newBalance;
-    users.set(id, user);
+  const userDocRef = usersCollection.doc(id);
+  const userDoc = await userDocRef.get();
+  
+  if (userDoc.exists) {
+    await userDocRef.update({ balance: newBalance });
   } else {
-    // In our new mock system, we might create a temporary user if they don't exist
-    // to prevent crashes, but for now, we'll just log an error.
-    console.error(`Attempted to update balance for a non-existent mock user: ${id}`);
+    console.error(`Attempted to update balance for a non-existent user: ${id}`);
+    throw new Error('User not found');
   }
 }
