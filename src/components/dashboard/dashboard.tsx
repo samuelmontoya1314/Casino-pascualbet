@@ -116,7 +116,7 @@ export default function Dashboard({ user }: { user: User }) {
     if (result && result.success) {
       toast({
         title: "¡Conexión Exitosa!",
-        description: "Se escribió un documento en Firestore. ¡Revisa tu consola de Firebase!",
+        description: result.message,
       });
     } else if (result) { // Check if result is not undefined
       toast({
