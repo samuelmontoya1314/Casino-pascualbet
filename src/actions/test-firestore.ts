@@ -13,26 +13,13 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
       status: 'success',
       timestamp: new Date().toISOString(),
     });
-    return { success: true, message: 'Successfully wrote to Firestore.' };
+    return { success: true, message: '¡Conexión Exitosa! Se escribió un documento en Firestore.' };
   } catch (error: any) {
     console.error("Firestore connection error:", error);
     
-    let errorMessage = 'An unknown error occurred while connecting to Firestore.';
-    if (error.code) {
-        switch (error.code) {
-            case 'PERMISSION_DENIED': // Firestore SDK v9+ uses string codes
-            case 7: // Older SDKs used number codes
-                errorMessage = 'Permission denied. Please check your Firestore security rules.';
-                break;
-            case 'UNAVAILABLE':
-            case 14:
-                errorMessage = 'The service is currently unavailable. This is a temporary condition and should be retried.';
-                break;
-            default:
-                errorMessage = `A Firestore error occurred: ${error.message} (Code: ${error.code})`;
-        }
-    } else if (error.message) {
-        errorMessage = error.message;
+    let errorMessage = 'No se pudo conectar a Firestore. Revisa la consola del servidor para más detalles.';
+    if (error.message) {
+        errorMessage = `Error de Conexión: ${error.message}`;
     }
     
     return { success: false, message: errorMessage };

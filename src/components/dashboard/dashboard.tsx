@@ -118,10 +118,16 @@ export default function Dashboard({ user }: { user: User }) {
         title: "¡Conexión Exitosa!",
         description: "Se escribió un documento en Firestore. ¡Revisa tu consola de Firebase!",
       });
-    } else {
+    } else if (result) { // Check if result is not undefined
       toast({
         title: "Error de Conexión",
-        description: result?.message || "No se pudo conectar a Firestore. Revisa la consola del servidor para más detalles.",
+        description: result.message,
+        variant: "destructive",
+      });
+    } else { // Fallback for unexpected undefined
+       toast({
+        title: "Error Inesperado",
+        description: "La función de prueba no devolvió un resultado. Revisa la consola del servidor.",
         variant: "destructive",
       });
     }
