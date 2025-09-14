@@ -20,10 +20,14 @@ const registerSchema = z.object({
             (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/.test(value), 
             'La contraseña debe contener al menos una mayúscula, un número y un carácter especial.'
         ),
-    fullName: z.string().min(1, "El nombre completo es requerido"),
+    fullName: z.string()
+        .min(1, "El nombre completo es requerido")
+        .regex(/^[a-zA-Z\s]+$/, "El nombre completo solo debe contener letras y espacios"),
     birthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
     nationality: z.string().min(1, "La nacionalidad es requerida"),
-    documentNumber: z.string().min(1, "El número de documento es requerido"),
+    documentNumber: z.string()
+        .min(1, "El número de documento es requerido")
+        .regex(/^[0-9]+$/, "El documento de identidad solo debe contener números"),
 });
 
 
@@ -48,14 +52,25 @@ export async function handleLogin(prevState: any, formData: FormData) {
 }
 
 export async function handleRegister(prevState: any, formData: FormData) {
-  const validatedFields = registerSchema.safeParse(Object.fromEntries(formData.entries()));
+  const rawFormData = Object.fromEntries(formData.entries());
+  // Sanitize documentNumber: remove dots and commas
+  if (typeof rawFormData.documentNumber === 'string') {
+      rawFormData.documentNumber = rawFormData.documentNumber.replace(/[.,]/g, '');
+  }
 
+  const validatedFields = registerSchema.safeParse(rawFormData);
+  
   if (!validatedFields.success) {
     const errorMessages = validatedFields.error.errors.map(e => e.message).join(', ');
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
   const { userId, fullName, documentNumber, nationality, birthDate } = validatedFields.data;
+
+  const existingUser = await findUserById(userId);
+  if (existingUser) {
+    return { error: 'El ID de usuario ya está en uso. Por favor, elige otro.' };
+  }
   
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.

@@ -13,6 +13,9 @@ import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { countries } from '@/lib/countries';
+import { ScrollArea } from '../ui/scroll-area';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -70,7 +73,20 @@ export function RegisterForm() {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="nationality">Nacionalidad</Label>
-                <Input id="nationality" name="nationality" placeholder="Nacionalidad" required className="h-12 bg-input" />
+                <Select name="nationality" required>
+                    <SelectTrigger className="w-full h-12 bg-input">
+                        <SelectValue placeholder="Selecciona tu país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <ScrollArea className="h-72">
+                            {countries.map(country => (
+                                <SelectItem key={country.code} value={country.name}>
+                                    {country.name}
+                                </SelectItem>
+                            ))}
+                        </ScrollArea>
+                    </SelectContent>
+                </Select>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="documentNumber">Documento de identidad</Label>
