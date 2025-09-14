@@ -54,7 +54,7 @@ export function RegisterForm() {
                 <Input 
                     id="userId" 
                     name="userId" 
-                    placeholder="Crea un ID de usuario" 
+                    placeholder={t('login.userIdPlaceholder')}
                     required 
                     className="h-12 bg-input"
                     value={userId}
@@ -67,7 +67,7 @@ export function RegisterForm() {
                     id="password" 
                     name="password" 
                     type="password" 
-                    placeholder="Crea una contraseña segura" 
+                    placeholder={t('login.passwordPlaceholder')}
                     required 
                     className="h-12 bg-input"
                     value={password}
