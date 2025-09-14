@@ -2,10 +2,12 @@ import admin from 'firebase-admin';
 
 // Check if the app is already initialized to prevent re-initialization
 if (!admin.apps.length) {
-  admin.initializeApp({
-    // The SDK will automatically detect the project ID and credentials
-    // from the environment when deployed to Firebase App Hosting.
-  });
+  try {
+    // When running on App Hosting, the SDK will automatically find the credentials
+    admin.initializeApp();
+  } catch (e) {
+    console.error('Firebase admin initialization error', e);
+  }
 }
 
 const firestore = admin.firestore();

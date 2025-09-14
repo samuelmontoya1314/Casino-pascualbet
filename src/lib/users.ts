@@ -48,27 +48,43 @@ const seedUsers: User[] = [
     },
 ];
 
-// Function to seed initial users if the collection is empty
+// Function to seed initial users if they don't exist
 const seedDatabase = async () => {
-    const snapshot = await usersCollection.limit(1).get();
-    if (snapshot.empty) {
-        console.log('Users collection is empty, seeding initial users...');
-        const batch = firestore.batch();
-        seedUsers.forEach(user => {
-            const docRef = usersCollection.doc(user.id);
-            batch.set(docRef, user);
-        });
+    console.log('Checking if seed users exist...');
+    const batch = firestore.batch();
+    let batchHasWrites = false;
+
+    for (const user of seedUsers) {
+        const userRef = usersCollection.doc(user.id);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log(`User ${user.id} does not exist, adding to batch.`);
+            batch.set(userRef, user);
+            batchHasWrites = true;
+        }
+    }
+
+    if (batchHasWrites) {
+        console.log('Committing batch to seed users.');
         await batch.commit();
         console.log('Initial users seeded.');
+    } else {
+        console.log('All seed users already exist.');
     }
 };
 
 // We call seedDatabase at the module level.
 // This will run once when the server starts.
-seedDatabase().catch(console.error);
+// Adding a catch to prevent unhandled promise rejections
+seedDatabase().catch(error => {
+    console.error("Error during database seeding:", error);
+});
 
 
 export async function findUserById(id: string): Promise<User | undefined> {
+  // Ensure seed users are checked before trying to find one
+  // This helps in serverless environments where startup logic might be inconsistent
+  await seedDatabase(); 
   const userDoc = await usersCollection.doc(id).get();
   if (!userDoc.exists) {
     return undefined;
