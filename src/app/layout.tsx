@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="es" className="h-full dark">
+    <html lang="es" className="h-full dark" suppressHydrationWarning>
       <body className={`antialiased h-full font-sans ${pressStart2P.variable}`}>
         {children}
         <Toaster />
