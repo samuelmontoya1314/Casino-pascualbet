@@ -39,23 +39,11 @@ export function RegisterForm() {
                 <Input id="password" name="password" type="password" placeholder="Crea una contraseña segura" required className="h-12 bg-input"/>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="firstName">Primer nombre (Cómo aparece en tu documento)</Label>
-                <Input id="firstName" name="firstName" required className="h-12 bg-input" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="secondName">Segundo nombre (Cómo aparece en tu documento)</Label>
-                <Input id="secondName" name="secondName" className="h-12 bg-input" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="firstLastName">Primer apellido (Cómo aparece en tu documento)</Label>
-                <Input id="firstLastName" name="firstLastName" required className="h-12 bg-input" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="secondLastName">Segundo apellido (Cómo aparece en tu documento)</Label>
-                <Input id="secondLastName" name="secondLastName" required className="h-12 bg-input" />
+                <Label htmlFor="fullName">Nombre completo</Label>
+                <Input id="fullName" name="fullName" required className="h-12 bg-input" />
             </div>
             <div className="space-y-2">
-                 <Label htmlFor="birthDate">Fecha de nacimiento (día/mes/año)</Label>
+                 <Label htmlFor="birthDate">Fecha de nacimiento</Label>
                  <Input id="birthDate" name="birthDate" type="hidden" value={date ? format(date, "yyyy-MM-dd") : ""} />
                  <Popover>
                     <PopoverTrigger asChild>
@@ -85,12 +73,8 @@ export function RegisterForm() {
                 <Input id="nationality" name="nationality" placeholder="Nacionalidad" required className="h-12 bg-input" />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="documentNumber">Número de tu cédula de ciudadanía o extranjería (No admitimos PPT)</Label>
+                <Label htmlFor="documentNumber">Documento de identidad</Label>
                 <Input id="documentNumber" name="documentNumber" required className="h-12 bg-input" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="documentIssuePlace">Lugar de expedición del documento</Label>
-                <Input id="documentIssuePlace" name="documentIssuePlace" placeholder="Lugar de expedición del documento" required className="h-12 bg-input" />
             </div>
             
             {state?.error && (

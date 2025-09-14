@@ -8,7 +8,7 @@ import { updateUser } from '@/actions/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { DialogFooter, DialogClose } from '../ui/dialog';
 
 interface EditProfileFormProps {
@@ -38,25 +38,9 @@ export function EditProfileForm({ user, onUpdate, onCancel }: EditProfileFormPro
 
     return (
         <form action={formAction} className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="firstName">Primer Nombre</Label>
-                    <Input id="firstName" name="firstName" defaultValue={user.firstName} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="secondName">Segundo Nombre</Label>
-                    <Input id="secondName" name="secondName" defaultValue={user.secondName} />
-                </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="firstLastName">Primer Apellido</Label>
-                    <Input id="firstLastName" name="firstLastName" defaultValue={user.firstLastName} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="secondLastName">Segundo Apellido</Label>
-                    <Input id="secondLastName" name="secondLastName" defaultValue={user.secondLastName} />
-                </div>
+             <div className="space-y-2">
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input id="name" name="name" defaultValue={user.name} />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -91,4 +75,3 @@ export function EditProfileForm({ user, onUpdate, onCancel }: EditProfileFormPro
         </form>
     );
 }
-

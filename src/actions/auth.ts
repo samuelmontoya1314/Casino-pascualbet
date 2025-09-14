@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
-import { findUserById } from '@/lib/users';
+import { findUserById, addUser } from '@/lib/users';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido'),
@@ -20,14 +20,10 @@ const registerSchema = z.object({
             (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/.test(value), 
             'La contraseña debe contener al menos una mayúscula, un número y un carácter especial.'
         ),
-    firstName: z.string().min(1, "El primer nombre es requerido"),
-    secondName: z.string().optional(),
-    firstLastName: z.string().min(1, "El primer apellido es requerido"),
-    secondLastName: z.string().min(1, "El segundo apellido es requerido"),
+    fullName: z.string().min(1, "El nombre completo es requerido"),
     birthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
     nationality: z.string().min(1, "La nacionalidad es requerida"),
     documentNumber: z.string().min(1, "El número de documento es requerido"),
-    documentIssuePlace: z.string().min(1, "El lugar de expedición es requerido"),
 });
 
 
@@ -59,25 +55,21 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, firstName, firstLastName, documentNumber, nationality, birthDate, documentIssuePlace, secondName, secondLastName } = validatedFields.data;
+  const { userId, fullName, documentNumber, nationality, birthDate } = validatedFields.data;
   
   // In this mock implementation, we just create the session directly
   // In a real app, you would save the user to the database here.
   const newUser = {
     id: userId,
-    name: `${firstName} ${firstLastName}`,
-    firstName,
-    secondName,
-    firstLastName,
-    secondLastName,
+    name: fullName,
     birthDate,
     nationality,
     documentNumber,
-    documentIssuePlace,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };
 
+  await addUser(newUser);
   await createSession(userId, newUser);
   redirect('/');
 }

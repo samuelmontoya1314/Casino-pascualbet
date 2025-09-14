@@ -6,14 +6,9 @@
     "properties": {
       "id": { "type": "string", "description": "Identificador único del usuario (ej. 'pascual', 'admin')." },
       "name": { "type": "string", "description": "Nombre completo para mostrar." },
-      "firstName": { "type": "string", "description": "Primer nombre del usuario." },
-      "secondName": { "type": "string", "description": "Segundo nombre (opcional)." },
-      "firstLastName": { "type": "string", "description": "Primer apellido del usuario." },
-      "secondLastName": { "type": "string", "description": "Segundo apellido del usuario." },
       "birthDate": { "type": "string", "description": "Fecha de nacimiento (formato YYYY-MM-DD)." },
       "nationality": { "type": "string", "description": "Nacionalidad del usuario." },
       "documentNumber": { "type": "string", "description": "Número del documento de identidad." },
-      "documentIssuePlace": { "type": "string", "description": "Lugar de expedición del documento." },
       "role": { "type": "string", "enum": ["admin", "user"], "description": "Rol del usuario en el sistema." },
       "balance": { "type": "number", "description": "Saldo disponible del usuario en la billetera." }
     },
@@ -23,24 +18,18 @@
     {
       "id": "admin",
       "name": "Admin User",
-      "firstName": "Admin",
-      "firstLastName": "User",
       "role": "admin",
       "balance": 10000
     },
     {
       "id": "pascual",
-      "name": "Pascual",
-      "firstName": "Pascual",
-      "firstLastName": "Bet",
+      "name": "Pascual Bet",
       "role": "user",
       "balance": 500
     },
     {
       "id": "usuario",
       "name": "Usuario de Prueba",
-      "firstName": "Usuario",
-      "firstLastName": "Prueba",
       "role": "user",
       "balance": 1000
     }
