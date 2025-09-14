@@ -25,7 +25,7 @@ type Bet = { type: BetType, value?: number, amount: number };
 
 interface RouletteGameProps {
   balance: number;
-  onBalanceChange: (amount: number) => void;
+  onBalanceChange: (amount: number, type: 'bet' | 'win') => void;
 }
 
 const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange }) => {
@@ -59,7 +59,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
 
     setResult(null);
     setMessage('');
-    onBalanceChange(-totalBet);
+    onBalanceChange(-totalBet, 'bet');
     setSpinning(true);
 
     setTimeout(() => {
@@ -94,7 +94,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ balance, onBalanceChange })
           });
           
           if (winnings > 0) {
-            onBalanceChange(winnings);
+            onBalanceChange(winnings, 'win');
             setMessage(`El número es ${winningNumber.num}. ¡Ganaste $${winnings}!`);
           } else {
             setMessage(`El número es ${winningNumber.num}. Suerte la próxima.`);

@@ -9,7 +9,7 @@ import { Badge } from '../ui/badge';
 
 interface PlinkoGameProps {
   balance: number;
-  onBalanceChange: (amount: number) => void;
+  onBalanceChange: (amount: number, type: 'bet' | 'win') => void;
 }
 
 const riskMultipliers = {
@@ -80,7 +80,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
     return new Promise<void>((resolve) => {
         setIsDropping(true);
         setWinningMultiplierIndex(null);
-        onBalanceChange(-betAmount);
+        onBalanceChange(-betAmount, 'bet');
         
         const finalIndex = calculateOutcome();
         const multiplier = multipliers[finalIndex];
@@ -100,7 +100,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ balance, onBalanceChange }) => 
         setTimeout(() => {
             setBallState(s => ({...s, show: false}));
             const profit = winnings;
-            onBalanceChange(profit);
+            onBalanceChange(profit, 'win');
             setWinningMultiplierIndex(finalIndex);
             setHistory(prev => [{ multiplier, profit: profit - betAmount }, ...prev.slice(0, 14)]);
             setIsDropping(false);

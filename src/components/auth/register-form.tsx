@@ -16,22 +16,19 @@ import { es } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { countries } from '@/lib/countries';
 import { ScrollArea } from '../ui/scroll-area';
-import { useI18n } from '@/hooks/use-i18n';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
-    const t = useI18n();
 
     return (
         <Button type="submit" className="w-full h-12 text-base font-bold uppercase" disabled={pending}>
-            {pending ? t('login.registering') : t('login.createAccountTitle')}
+            {pending ? 'Registrando...' : 'Crear Cuenta'}
         </Button>
     );
 }
 
 export function RegisterForm() {
     const [state, formAction] = useActionState(handleRegister, undefined);
-    const t = useI18n();
     
     // State to hold form values
     const [userId, setUserId] = useState('');
@@ -50,11 +47,11 @@ export function RegisterForm() {
     return (
         <form action={formAction} className="space-y-4">
              <div className="space-y-2">
-                <Label htmlFor="userId">{t('login.userId')}</Label>
+                <Label htmlFor="userId">ID de Usuario</Label>
                 <Input 
                     id="userId" 
                     name="userId" 
-                    placeholder={t('login.userIdPlaceholder')}
+                    placeholder="Elige un ID de usuario"
                     required 
                     className="h-12 bg-input"
                     value={userId}
@@ -62,12 +59,12 @@ export function RegisterForm() {
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password">{t('login.password')}</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input 
                     id="password" 
                     name="password" 
                     type="password" 
-                    placeholder={t('login.passwordPlaceholder')}
+                    placeholder="Crea una contraseña segura"
                     required 
                     className="h-12 bg-input"
                     value={password}
@@ -75,7 +72,7 @@ export function RegisterForm() {
                 />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="fullName">{t('login.fullName')}</Label>
+                <Label htmlFor="fullName">Nombre Completo</Label>
                 <Input 
                     id="fullName" 
                     name="fullName" 
@@ -151,7 +148,7 @@ export function RegisterForm() {
             {state?.error && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t('login.registrationFailed')}</AlertTitle>
+                    <AlertTitle>Fallo de Registro</AlertTitle>
                     <AlertDescription>{state.error}</AlertDescription>
                 </Alert>
             )}

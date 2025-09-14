@@ -43,7 +43,7 @@ const MiniCard = ({rank, suit}: {rank: string; suit: '♠' | '♥' | '♦' | '�
 
 interface PokerGameProps {
   balance: number;
-  onBalanceChange: (amount: number) => void;
+  onBalanceChange: (amount: number, type: 'bet' | 'win' | 'refund') => void;
 }
 
 const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
@@ -81,7 +81,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
     }
 
     const ante = bet;
-    onBalanceChange(-ante);
+    onBalanceChange(-ante, 'bet');
     setPot(ante);
     
     const newDeck = [...createDeck()].sort(() => Math.random() - 0.5);
@@ -150,7 +150,7 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
         setMessage("No tienes saldo suficiente.");
         return;
       }
-      onBalanceChange(-raiseAmount);
+      onBalanceChange(-raiseAmount, 'bet');
       setPot(pot + raiseAmount);
     }
     
@@ -170,12 +170,12 @@ const PokerGame: React.FC<PokerGameProps> = ({ balance, onBalanceChange }) => {
 
         if (winner === 'player') {
             setMessage(`¡Ganas con ${pHand.name}!`);
-            onBalanceChange(finalPot);
+            onBalanceChange(finalPot, 'win');
         } else if (winner === 'dealer') {
             setMessage(`El crupier gana con ${dHand.name}.`);
         } else {
             setMessage("Empate. Se devuelve la apuesta.");
-            onBalanceChange(pot); // Bets are returned (ante + bet / 2 per player)
+            onBalanceChange(pot, 'refund'); // Bets are returned (ante + bet / 2 per player)
         }
         setGameState('finished');
     }

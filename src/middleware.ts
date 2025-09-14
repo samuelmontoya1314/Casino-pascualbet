@@ -1,54 +1,21 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { locales, defaultLocale } from './lib/i18n';
-
-const PUBLIC_FILE = /\.(.*)$/;
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('secure-access-session');
+  const { pathname } = request.nextUrl;
 
-  // 1. Skip middleware for static files, images, and API routes.
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/static') ||
-    PUBLIC_FILE.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
-  
-  // 2. Handle i18n redirection.
-  const pathnameIsMissingLocale = locales.every(
-    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
-  );
-
-  // Redirect if there is no locale
-  if (pathnameIsMissingLocale) {
-    const newUrl = new URL(`/${defaultLocale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url);
-    return NextResponse.redirect(newUrl);
-  }
-
-  // 3. Handle authentication routing
-  const locale = locales.find(l => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) || defaultLocale;
-  
-  const publicPaths = ['/login', '/manual'];
-  // The path without locale starts after the locale prefix (e.g., /es/login -> /login)
-  const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/';
-  const isPublicPath = publicPaths.some(p => p === pathWithoutLocale);
-
-  const homeUrl = new URL(`/${locale}`, request.url);
-  const loginUrl = new URL(`/${locale}/login`, request.url);
+  const isPublicPath = pathname === '/login' || pathname === '/manual';
 
   // If not logged in and trying to access a protected route, redirect to login
   if (!sessionCookie && !isPublicPath) {
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // If logged in and trying to access login page, redirect to home
-  if (sessionCookie && pathWithoutLocale === '/login') {
-    return NextResponse.redirect(homeUrl);
+  if (sessionCookie && pathname === '/login') {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

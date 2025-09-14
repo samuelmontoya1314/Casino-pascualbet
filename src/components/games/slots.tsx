@@ -19,7 +19,7 @@ const getRandomSymbol = () => symbols[Math.floor(Math.random() * symbols.length)
 
 interface SlotsGameProps {
   balance: number;
-  onBalanceChange: (amount: number) => void;
+  onBalanceChange: (amount: number, type: 'bet' | 'win') => void;
 }
 
 const Reel = ({ symbol, isSpinning }: { symbol: typeof symbols[0], isSpinning: boolean }) => {
@@ -60,7 +60,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
     }
 
     setSpinning(true);
-    onBalanceChange(-betAmount);
+    onBalanceChange(-betAmount, 'bet');
     setMessage('');
     setWinningLine([false, false, false]);
 
@@ -85,12 +85,12 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ balance, onBalanceChange }) => {
         if (isJackpot) {
             const winnings = betAmount * resolvedReels[0].multiplier;
             setMessage(`¡Jackpot! ¡Ganas $${winnings}!`);
-            onBalanceChange(winnings);
+            onBalanceChange(winnings, 'win');
             setWinningLine([true, true, true]);
         } else if (isTwoInLine) {
             const winnings = betAmount * resolvedReels[0].multiplier * 0.5;
             setMessage(`¡Dos en línea! ¡Ganas $${winnings}!`);
-            onBalanceChange(winnings);
+            onBalanceChange(winnings, 'win');
             setWinningLine([true, true, false]);
         } else {
             setMessage("¡Suerte la próxima vez!");

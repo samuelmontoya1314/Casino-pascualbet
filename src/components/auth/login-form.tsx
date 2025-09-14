@@ -8,14 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { useI18n } from '@/hooks/use-i18n';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
-    const t = useI18n();
     return (
         <Button type="submit" className="w-full h-12 text-base font-bold uppercase" disabled={pending}>
-            {pending ? t('login.loggingIn') : t('login.logIn')}
+            {pending ? 'Iniciando Sesión...' : 'Entrar'}
         </Button>
     );
 }
@@ -24,7 +22,6 @@ export function LoginForm() {
     const [state, formAction] = useActionState(handleLogin, undefined);
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
-    const t = useI18n();
 
     const handleInput = (setter: (value: string) => void) => (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
@@ -35,11 +32,11 @@ export function LoginForm() {
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-2">
-                <Label htmlFor="userId">{t('login.userId')}</Label>
+                <Label htmlFor="userId">ID de Usuario</Label>
                 <Input 
                     id="userId" 
                     name="userId" 
-                    placeholder={t('login.userIdPlaceholder')}
+                    placeholder="Tu ID de usuario"
                     required 
                     className="h-12 bg-input" 
                     maxLength={24}
@@ -48,12 +45,12 @@ export function LoginForm() {
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password">{t('login.password')}</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input 
                     id="password" 
                     name="password" 
                     type="password" 
-                    placeholder={t('login.passwordPlaceholder')}
+                    placeholder="Tu contraseña"
                     required 
                     className="h-12 bg-input" 
                     maxLength={24} 
@@ -65,7 +62,7 @@ export function LoginForm() {
             {state?.error && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t('login.loginFailed')}</AlertTitle>
+                    <AlertTitle>Fallo de Inicio de Sesión</AlertTitle>
                     <AlertDescription>{state.error}</AlertDescription>
                 </Alert>
             )}

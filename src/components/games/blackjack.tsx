@@ -84,7 +84,7 @@ const MiniCard = ({rank, suit}: {rank: Rank | string; suit: Suit}) => {
 
 interface BlackjackGameProps {
   balance: number;
-  onBalanceChange: (amount: number) => void;
+  onBalanceChange: (amount: number, type: 'bet' | 'win' | 'refund') => void;
 }
 
 const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange }) => {
@@ -105,7 +105,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
     
     setGameState('playing');
     setMessage('');
-    onBalanceChange(-bet);
+    onBalanceChange(-bet, 'bet');
     
     const newDeck = shuffleDeck(createDeck());
     const playerHand: Hand = [newDeck.pop()!, newDeck.pop()!];
@@ -170,15 +170,15 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ balance, onBalanceChange 
           
           if (finalPlayerScore === 21 && playerHand.length === 2) {
              setMessage("¡Blackjack! ¡Ganas!");
-             onBalanceChange(bet * 2.5);
+             onBalanceChange(bet * 2.5, 'win');
           } else if (finalDealerScore > 21 || finalPlayerScore > finalDealerScore) {
             setMessage("¡Ganas!");
-            onBalanceChange(bet * 2);
+            onBalanceChange(bet * 2, 'win');
           } else if (finalPlayerScore < finalDealerScore) {
             setMessage("El crupier gana.");
           } else {
             setMessage("Empate. Se devuelve la apuesta.");
-            onBalanceChange(bet);
+            onBalanceChange(bet, 'refund');
           }
           setGameState('finished');
         }

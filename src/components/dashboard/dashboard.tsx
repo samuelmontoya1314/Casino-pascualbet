@@ -34,8 +34,6 @@ import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
 import { WalletDialog } from './wallet-dialog';
 import { Dialog } from '@radix-ui/react-dialog';
-import { LanguageSwitcher } from './language-switcher';
-import { useI18n } from '@/hooks/use-i18n';
 
 
 const LoadingComponent = () => (
@@ -60,7 +58,6 @@ export default function Dashboard({ user }: { user: User }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const { toast } = useToast();
-  const t = useI18n();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -79,7 +76,7 @@ export default function Dashboard({ user }: { user: User }) {
         if (result && result.error) {
             setBalance(currentBalance); // Revert on error
             toast({
-                title: t('dashboard.syncError'),
+                title: 'Error de Sincronización',
                 description: result.error,
                 variant: "destructive"
             });
@@ -140,7 +137,6 @@ export default function Dashboard({ user }: { user: User }) {
                  <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
-                <LanguageSwitcher />
                 <div className="flex items-center gap-3 rounded-none bg-secondary px-4 py-2 border">
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>
@@ -166,7 +162,7 @@ export default function Dashboard({ user }: { user: User }) {
                 </Dialog>
                 <div className="text-right hidden sm:block">
                   <p className="font-semibold text-sm">{sessionUser.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{t('dashboard.role')}: {sessionUser.role}</p>
+                  <p className="text-xs text-muted-foreground capitalize">Rol: {sessionUser.role}</p>
                 </div>
                 <AlertDialog>
                   <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
@@ -181,34 +177,34 @@ export default function Dashboard({ user }: { user: User }) {
                           </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>{t('dashboard.myAccount')}</DropdownMenuLabel>
+                          <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DialogTrigger asChild>
                             <DropdownMenuItem>
                                 <UserIcon className="mr-2 h-4 w-4"/>
-                                {t('dashboard.profile')}
+                                Perfil
                             </DropdownMenuItem>
                           </DialogTrigger>
                           <Link href="/manual">
                              <DropdownMenuItem>
                                   <HelpCircle className="mr-2 h-4 w-4"/>
-                                  {t('dashboard.help')}
+                                  Ayuda
                              </DropdownMenuItem>
                           </Link>
                           <DropdownMenuSeparator />
                           <AlertDialogTrigger asChild>
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <LogOut className="mr-2 h-4 w-4" />
-                                <span>{t('dashboard.logout')}</span>
+                                <span>Cerrar Sesión</span>
                               </DropdownMenuItem>
                           </AlertDialogTrigger>
                       </DropdownMenuContent>
                   </DropdownMenu>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t('dashboard.userProfile')}</DialogTitle>
+                            <DialogTitle>Perfil de Usuario</DialogTitle>
                             <DialogDescription>
-                                {t('dashboard.profileDescription')}
+                                Esta es la información de tu cuenta.
                             </DialogDescription>
                         </DialogHeader>
                         <EditProfileForm user={sessionUser} onUpdate={handleProfileUpdate} onCancel={() => setProfileOpen(false)} />
@@ -216,9 +212,9 @@ export default function Dashboard({ user }: { user: User }) {
                   </Dialog>
                   <AlertDialogContent>
                     <AlertDialogHeader className="text-center">
-                      <AlertDialogTitle className="text-center">{t('dashboard.logoutConfirmTitle')}</AlertDialogTitle>
+                      <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
                       <AlertDialogDescription className="text-center">
-                         {t('dashboard.logoutConfirmDescription')}
+                         ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="flex justify-center items-center my-4">
@@ -232,10 +228,10 @@ export default function Dashboard({ user }: { user: User }) {
                         />
                     </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>{t('dashboard.logoutCancel')}</AlertDialogCancel>
+                      <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
                       <form action={handleLogout} className="w-full sm:w-auto">
                         <AlertDialogAction type="submit" className="w-full">
-                           {t('dashboard.logoutConfirm')}
+                           Sí, abandonar
                         </AlertDialogAction>
                       </form>
                     </AlertDialogFooter>
@@ -247,10 +243,10 @@ export default function Dashboard({ user }: { user: User }) {
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
              <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
                 <TabsList className={`grid w-full ${sessionUser.role === 'admin' ? 'grid-cols-6' : 'grid-cols-5'}`}>
-                    <TabsTrigger value="slots">{t('games.slots')}</TabsTrigger>
-                    <TabsTrigger value="blackjack">{t('games.blackjack')}</TabsTrigger>
-                    <TabsTrigger value="roulette">{t('games.roulette')}</TabsTrigger>
-                    <TabsTrigger value="poker">{t('games.poker')}</TabsTrigger>
+                    <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
+                    <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
+                    <TabsTrigger value="roulette">Ruleta</TabsTrigger>
+                    <TabsTrigger value="poker">Póker</TabsTrigger>
                     <TabsTrigger value="plinko">Plinko</TabsTrigger>
                     {sessionUser.role === 'admin' && (
                         <TabsTrigger value="admin" className="flex items-center gap-2">
@@ -273,7 +269,7 @@ export default function Dashboard({ user }: { user: User }) {
               </Link>
             </TooltipTrigger>
             <TooltipContent side="left">
-                <p>{t('dashboard.userManual')}</p>
+                <p>Manual de Usuario</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
