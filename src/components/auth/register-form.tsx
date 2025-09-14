@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { countries } from '@/lib/countries';
@@ -58,7 +59,7 @@ export function RegisterForm() {
                         )}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "dd/MM/yyyy") : <span>DD/MM/YYYY</span>}
+                        {date ? format(date, "PPP", { locale: es }) : <span>DD/MM/YYYY</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">

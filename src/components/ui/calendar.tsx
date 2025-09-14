@@ -4,6 +4,7 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
+import { es } from "date-fns/locale"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -19,6 +20,7 @@ function Calendar({
   const currentYear = new Date().getFullYear();
   return (
     <DayPicker
+      locale={es}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
@@ -26,7 +28,7 @@ function Calendar({
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium hidden",
-        caption_dropdowns: "flex gap-2 [&_.rdp-dropdown]:bg-background [&_.rdp-dropdown]:text-foreground [&_.rdp-dropdown_select]:rounded-md",
+        caption_dropdowns: "flex gap-2 [&_.rdp-dropdown]:bg-background [&_.rdp-dropdown]:text-foreground [&_.rdp-dropdown_select]:rounded-md [&_.rdp-dropdown_select]:border [&_.rdp-dropdown_select]:px-1 [&_.rdp-dropdown_select]:py-0.5",
         vhidden: "hidden",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
