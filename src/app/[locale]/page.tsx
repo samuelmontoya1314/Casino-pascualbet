@@ -1,15 +1,15 @@
+
 import { getSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import Dashboard from '@/components/dashboard/dashboard';
 import type { User } from '@/lib/users';
+import { redirect } from 'next/navigation';
 
-export default async function HomePage() {
+export default async function HomePage({ params }: { params: { locale: string } }) {
   const session = await getSession();
 
   if (!session) {
-    // This redirect will be caught by the middleware, but it's good practice
-    // to have it here as a fallback.
-    redirect('/login');
+    // This redirect is a fallback, middleware should handle it.
+    redirect(`/${params.locale}/login`);
   }
   
   return <Dashboard user={session as User} />;
