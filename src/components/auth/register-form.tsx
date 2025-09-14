@@ -1,6 +1,6 @@
 
 'use client';
-import { useActionState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { handleRegister } from '@/actions/auth';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,6 @@ import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { countries } from '@/lib/countries';
 import { ScrollArea } from '../ui/scroll-area';
@@ -30,21 +29,58 @@ function SubmitButton() {
 
 export function RegisterForm() {
     const [state, formAction] = useActionState(handleRegister, undefined);
-    const [date, setDate] = useState<Date>()
+    
+    // State to hold form values
+    const [userId, setUserId] = useState('');
+    const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [date, setDate] = useState<Date | undefined>();
+    const [nationality, setNationality] = useState('');
+    const [documentNumber, setDocumentNumber] = useState('');
+
+    useEffect(() => {
+        if (state?.error) {
+            // Keep form data on error
+        }
+    }, [state]);
 
     return (
         <form action={formAction} className="space-y-4">
              <div className="space-y-2">
                 <Label htmlFor="userId">ID de Usuario</Label>
-                <Input id="userId" name="userId" placeholder="Crea un ID de usuario" required className="h-12 bg-input" />
+                <Input 
+                    id="userId" 
+                    name="userId" 
+                    placeholder="Crea un ID de usuario" 
+                    required 
+                    className="h-12 bg-input"
+                    value={userId}
+                    onChange={(e) => setUserId(e.target.value)}
+                />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" placeholder="Crea una contraseña segura" required className="h-12 bg-input"/>
+                <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    placeholder="Crea una contraseña segura" 
+                    required 
+                    className="h-12 bg-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="fullName">Nombre completo</Label>
-                <Input id="fullName" name="fullName" required className="h-12 bg-input" />
+                <Input 
+                    id="fullName" 
+                    name="fullName" 
+                    required 
+                    className="h-12 bg-input"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                />
             </div>
             <div className="space-y-2">
                  <Label htmlFor="birthDate">Fecha de nacimiento</Label>
@@ -78,7 +114,7 @@ export function RegisterForm() {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="nationality">Nacionalidad</Label>
-                <Select name="nationality" required>
+                <Select name="nationality" required value={nationality} onValueChange={setNationality}>
                     <SelectTrigger className="w-full h-12 bg-input">
                         <SelectValue placeholder="Selecciona tu país" />
                     </SelectTrigger>
@@ -100,9 +136,11 @@ export function RegisterForm() {
                     name="documentNumber" 
                     required 
                     className="h-12 bg-input"
+                    value={documentNumber}
                     onInput={(e) => {
                         const target = e.target as HTMLInputElement;
-                        target.value = target.value.replace(/[^0-9]/g, '');
+                        const numericValue = target.value.replace(/[^0-9]/g, '');
+                        setDocumentNumber(numericValue);
                     }}
                 />
             </div>

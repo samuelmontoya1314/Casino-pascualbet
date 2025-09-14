@@ -65,7 +65,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, fullName, documentNumber, nationality, birthDate } = validatedFields.data;
+  const { userId, fullName, documentNumber, nationality, birthDate, password } = validatedFields.data;
 
   const existingUser = await findUserById(userId);
   if (existingUser) {
@@ -76,6 +76,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
   // In a real app, you would save the user to the database here.
   const newUser = {
     id: userId,
+    password, // Storing password in mock DB
     name: fullName,
     birthDate,
     nationality,
