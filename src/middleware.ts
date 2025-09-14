@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { i18n } from '../next.config';
+import nextConfig from '../next.config';
 
 const PUBLIC_FILE = /\.(.*)$/;
 
@@ -20,12 +20,12 @@ export function middleware(request: NextRequest) {
   }
   
   // Handle i18n
-  const pathnameIsMissingLocale = i18n.locales.every(
+  const pathnameIsMissingLocale = nextConfig.i18n!.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
   if (pathnameIsMissingLocale) {
-    const locale = i18n.defaultLocale;
+    const locale = nextConfig.i18n!.defaultLocale;
     request.nextUrl.pathname = `/${locale}${pathname}`;
     // e.g. incoming request is /products
     // The new URL is now /en-US/products
