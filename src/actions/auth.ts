@@ -14,7 +14,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
     userId: z.string().min(3, 'El ID de usuario debe tener al menos 3 caracteres'),
     password: z.string()
-        .min(12, 'La contraseña debe tener al menos 12 caracteres')
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
         .max(24, 'La contraseña no puede tener más de 24 caracteres')
         .refine(
             (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/.test(value), 
