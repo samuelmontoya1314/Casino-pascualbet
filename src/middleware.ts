@@ -6,10 +6,10 @@ import nextConfig from '../next.config';
 const PUBLIC_FILE = /\.(.*)$/;
 
 export function middleware(request: NextRequest) {
-  const sessionCookie = request.cookies.get('secure-access-session');
   const { pathname } = request.nextUrl;
+  const sessionCookie = request.cookies.get('secure-access-session');
 
-  // Skip i18n for public files, static assets, and images
+  // 1. Skip middleware for static files, images, and API routes.
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -18,32 +18,33 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  
-  // Handle i18n
+
+  // 2. Handle internationalization routing.
   const pathnameIsMissingLocale = nextConfig.i18n!.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
   if (pathnameIsMissingLocale) {
     const locale = nextConfig.i18n!.defaultLocale;
-    request.nextUrl.pathname = `/${locale}${pathname}`;
-    // e.g. incoming request is /products
-    // The new URL is now /en-US/products
-    return NextResponse.redirect(request.nextUrl);
+    const newUrl = new URL(`/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url);
+    return NextResponse.redirect(newUrl);
   }
 
-  const localePath = `/${pathname.split('/')[1]}`;
-  const isAuthPath = `${localePath}/login` === pathname || `${localePath}/manual` === pathname;
+  // 3. Handle authentication routing.
+  const locale = pathname.split('/')[1];
+  const publicPaths = ['/login', '/manual'];
+  const isPublicPath = publicPaths.some(path => pathname === `/${locale}${path}` || pathname === path);
   
-  // Auth redirects
-  if (!sessionCookie && !isAuthPath && pathname !== '/login' && pathname !== '/manual') {
-      const loginUrl = new URL(pathname.startsWith('/en') ? '/en/login' : '/login', request.url)
-      return NextResponse.redirect(loginUrl);
+  // If not logged in and trying to access a protected route, redirect to login
+  if (!sessionCookie && !isPublicPath) {
+    const loginUrl = new URL(`/${locale}/login`, request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  if (sessionCookie && (pathname === '/login' || pathname === '/en/login')) {
-      const homeUrl = new URL(pathname.startsWith('/en') ? '/en' : '/', request.url)
-      return NextResponse.redirect(homeUrl)
+  // If logged in and trying to access login page, redirect to home
+  if (sessionCookie && pathname === `/${locale}/login`) {
+    const homeUrl = new URL(`/${locale}`, request.url);
+    return NextResponse.redirect(homeUrl);
   }
 
   return NextResponse.next();
