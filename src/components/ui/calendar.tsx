@@ -26,7 +26,7 @@ function Calendar({
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium hidden",
-        caption_dropdowns: "flex gap-2",
+        caption_dropdowns: "flex gap-2 [&_.rdp-dropdown]:bg-background [&_.rdp-dropdown]:text-foreground [&_.rdp-dropdown_select]:rounded-md",
         vhidden: "hidden",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
