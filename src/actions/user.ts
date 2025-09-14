@@ -10,7 +10,6 @@ import { addUser } from '@/lib/users';
 const updateUserSchema = z.object({
     name: z.string().min(1, "El nombre completo es requerido"),
     birthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
-    nationality: z.string().min(1, "La nacionalidad es requerida"),
 });
 
 export async function updateUser(prevState: any, formData: FormData) {
@@ -26,13 +25,12 @@ export async function updateUser(prevState: any, formData: FormData) {
         return { error: `Campos inválidos: ${errorMessages}`, success: false, data: null };
     }
 
-    const { name, birthDate, nationality } = validatedFields.data;
+    const { name, birthDate } = validatedFields.data;
 
     const updatedUser: User = {
         ...session,
         name,
         birthDate,
-        nationality,
     };
     
     // In-memory update

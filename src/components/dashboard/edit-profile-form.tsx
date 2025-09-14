@@ -47,19 +47,12 @@ export function EditProfileForm({ user, onUpdate, onCancel }: EditProfileFormPro
                     <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
                     <Input id="birthDate" name="birthDate" type="date" defaultValue={user.birthDate} />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="nationality">Nacionalidad</Label>
-                    <Input id="nationality" name="nationality" defaultValue={user.nationality} />
+                 <div className="space-y-2">
+                    <Label>ID de Usuario</Label>
+                    <Input defaultValue={user.id} disabled />
                 </div>
             </div>
-            <div className="space-y-2">
-                <Label>ID de Usuario</Label>
-                <Input defaultValue={user.id} disabled />
-            </div>
-            <div className="space-y-2">
-                <Label>Número de Documento</Label>
-                <Input defaultValue={user.documentNumber} disabled />
-            </div>
+            
             {state?.error && (
                 <div className="flex items-center gap-2 text-destructive text-sm p-2 rounded-md border border-destructive/50 bg-destructive/10">
                     <AlertCircle className="h-4 w-4" />

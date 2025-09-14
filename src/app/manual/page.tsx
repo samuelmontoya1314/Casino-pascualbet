@@ -41,12 +41,12 @@ export default function ManualPage() {
                 <div className="space-y-2">
                   <h3 className="font-bold text-primary uppercase">Registro de Nueva Cuenta</h3>
                   <div>1. En la pantalla de inicio, selecciona la pestaña <Badge variant="secondary" className="uppercase">Registrarse</Badge>.</div>
-                  <p>2. Completa el formulario con tu nombre, un ID de usuario único, tu teléfono y una contraseña.</p>
+                  <p>2. Completa el formulario con tu nombre, un ID de usuario único, fecha de nacimiento y una contraseña.</p>
                   <div className="flex justify-center p-4">
                      <div className="space-y-4 w-64 p-4 rounded-md bg-secondary/30">
                         <Input disabled placeholder="Nombre Completo" />
                         <Input disabled placeholder="ID de Usuario" />
-                        <Input disabled placeholder="Número de Teléfono (+1...)" />
+                        <Input disabled placeholder="Fecha de Nacimiento" />
                         <Input disabled type="password" placeholder="Contraseña" />
                         <Button disabled className="w-full uppercase"><UserPlus className="mr-2"/>Registrarse</Button>
                      </div>

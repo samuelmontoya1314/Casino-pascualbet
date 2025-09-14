@@ -7,29 +7,30 @@
       "id": { "type": "string", "description": "Identificador único del usuario (ej. 'pascual', 'admin')." },
       "name": { "type": "string", "description": "Nombre completo para mostrar." },
       "birthDate": { "type": "string", "description": "Fecha de nacimiento (formato YYYY-MM-DD)." },
-      "nationality": { "type": "string", "description": "Nacionalidad del usuario." },
-      "documentNumber": { "type": "string", "description": "Número del documento de identidad." },
       "role": { "type": "string", "enum": ["admin", "user"], "description": "Rol del usuario en el sistema." },
       "balance": { "type": "number", "description": "Saldo disponible del usuario en la billetera." }
     },
-    "required": ["id", "name", "role", "balance"]
+    "required": ["id", "name", "role", "balance", "birthDate"]
   },
   "sampleData": [
     {
       "id": "admin",
       "name": "Admin User",
+      "birthDate": "1990-01-01",
       "role": "admin",
       "balance": 10000
     },
     {
       "id": "pascual",
       "name": "Pascual Bet",
+      "birthDate": "1985-05-15",
       "role": "user",
       "balance": 500
     },
     {
       "id": "usuario",
       "name": "Usuario de Prueba",
+      "birthDate": "2000-10-20",
       "role": "user",
       "balance": 1000
     }

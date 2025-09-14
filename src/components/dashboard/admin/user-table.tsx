@@ -69,7 +69,7 @@ export function UserManagementTable() {
                 <TableHead>ID de Usuario</TableHead>
                 <TableHead>Nombre Completo</TableHead>
                 <TableHead>Rol</TableHead>
-                <TableHead>Nacionalidad</TableHead>
+                <TableHead>Fecha de Nacimiento</TableHead>
                 <TableHead className="text-right">Saldo</TableHead>
                 </TableRow>
             </TableHeader>
@@ -83,7 +83,7 @@ export function UserManagementTable() {
                             {user.role}
                         </Badge>
                     </TableCell>
-                    <TableCell>{user.nationality}</TableCell>
+                    <TableCell>{user.birthDate}</TableCell>
                     <TableCell className="text-right">{formatCurrency(user.balance)}</TableCell>
                 </TableRow>
                 ))}

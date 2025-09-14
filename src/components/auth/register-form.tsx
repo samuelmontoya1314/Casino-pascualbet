@@ -13,9 +13,6 @@ import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { countries } from '@/lib/countries';
-import { ScrollArea } from '../ui/scroll-area';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -35,8 +32,6 @@ export function RegisterForm() {
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [date, setDate] = useState<Date | undefined>();
-    const [nationality, setNationality] = useState('');
-    const [documentNumber, setDocumentNumber] = useState('');
 
     useEffect(() => {
         if (state?.error) {
@@ -111,38 +106,6 @@ export function RegisterForm() {
                         />
                     </PopoverContent>
                 </Popover>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="nationality">Nacionalidad</Label>
-                <Select name="nationality" required value={nationality} onValueChange={setNationality}>
-                    <SelectTrigger className="w-full h-12 bg-input">
-                        <SelectValue placeholder="Selecciona tu país" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <ScrollArea className="h-72">
-                            {countries.map(country => (
-                                <SelectItem key={country.code} value={country.name}>
-                                    {country.name}
-                                </SelectItem>
-                            ))}
-                        </ScrollArea>
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="documentNumber">Documento de identidad</Label>
-                <Input 
-                    id="documentNumber" 
-                    name="documentNumber" 
-                    required 
-                    className="h-12 bg-input"
-                    value={documentNumber}
-                    onInput={(e) => {
-                        const target = e.target as HTMLInputElement;
-                        const numericValue = target.value.replace(/[^0-9]/g, '');
-                        setDocumentNumber(numericValue);
-                    }}
-                />
             </div>
             
             {state?.error && (

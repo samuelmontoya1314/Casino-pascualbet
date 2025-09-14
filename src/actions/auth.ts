@@ -24,10 +24,6 @@ const registerSchema = z.object({
         .min(1, "El nombre completo es requerido")
         .regex(/^[a-zA-Z\s]+$/, "El nombre completo solo debe contener letras y espacios"),
     birthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
-    nationality: z.string().min(1, "La nacionalidad es requerida"),
-    documentNumber: z.string()
-        .min(1, "El número de documento es requerido")
-        .regex(/^[0-9]+$/, "El documento de identidad solo debe contener números"),
 });
 
 
@@ -54,10 +50,6 @@ export async function handleLogin(prevState: any, formData: FormData) {
 
 export async function handleRegister(prevState: any, formData: FormData) {
   const rawFormData = Object.fromEntries(formData.entries());
-  // Sanitize documentNumber: remove dots and commas
-  if (typeof rawFormData.documentNumber === 'string') {
-      rawFormData.documentNumber = rawFormData.documentNumber.replace(/[.,]/g, '');
-  }
 
   const validatedFields = registerSchema.safeParse(rawFormData);
   
@@ -66,7 +58,7 @@ export async function handleRegister(prevState: any, formData: FormData) {
     return { error: `Campos inválidos: ${errorMessages}` };
   }
 
-  const { userId, fullName, documentNumber, nationality, birthDate, password } = validatedFields.data;
+  const { userId, fullName, birthDate, password } = validatedFields.data;
 
   const existingUser = await findUserById(userId);
   if (existingUser) {
@@ -80,8 +72,6 @@ export async function handleRegister(prevState: any, formData: FormData) {
     password, // Storing password in mock DB
     name: fullName,
     birthDate,
-    nationality,
-    documentNumber,
     role: userId.toLowerCase() === 'admin' ? 'admin' : 'user',
     balance: 1000,
   };
