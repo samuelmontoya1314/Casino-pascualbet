@@ -9,8 +9,8 @@
     --foreground: 0 0% 98%;
     --card: 220 13% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 220 13% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 96%; /* Lighter background for popovers */
+    --popover-foreground: 220 13% 10%; /* Darker foreground for popovers */
     --primary: 207 90% 54%;
     --primary-foreground: 0 0% 98%;
     --secondary: 220 13% 18%;
@@ -32,8 +32,8 @@
     --foreground: 0 0% 98%;
     --card: 220 13% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 220 13% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 12%; /* Darker background for popovers */
+    --popover-foreground: 0 0% 98%; /* Lighter foreground for popovers */
     --primary: 207 90% 54%;
     --primary-foreground: 0 0% 98%;
     --secondary: 220 13% 18%;
