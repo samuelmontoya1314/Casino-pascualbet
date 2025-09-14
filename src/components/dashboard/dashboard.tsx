@@ -22,13 +22,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, DatabaseZap } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
 import type { User } from '@/lib/users';
 import { useState, useTransition, useMemo, useEffect } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
 import { updateBalance } from '@/actions/user';
-import { testFirestoreConnection } from '@/actions/test-firestore';
 import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
@@ -107,23 +106,6 @@ export default function Dashboard({ user }: { user: User }) {
     });
     setProfileOpen(false);
   }
-
-  const handleTestFirestore = async () => {
-    const result = await testFirestoreConnection();
-    // Add a safeguard to ensure 'result' is not undefined
-    if (result && result.success) {
-      toast({
-        title: "¡Conexión Exitosa!",
-        description: "Se escribió un documento en Firestore. ¡Revisa tu consola de Firebase!",
-      });
-    } else {
-      toast({
-        title: "Error de Conexión",
-        description: `No se pudo conectar a Firestore: ${result?.message || 'Error desconocido.'}`,
-        variant: "destructive",
-      });
-    }
-  };
   
   const ActiveGame = useMemo(() => {
     const gameProps = { balance, onBalanceChange: (amount:number) => handleBalanceChange(amount, 'bet') };
@@ -152,16 +134,6 @@ export default function Dashboard({ user }: { user: User }) {
                  <p className="font-bold text-xl tracking-tighter uppercase">PascualBet</p>
             </div>
             <div className="ml-auto flex items-center gap-4">
-                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button onClick={handleTestFirestore} variant="outline" size="icon">
-                            <DatabaseZap className="h-5 w-5 text-green-500" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Probar conexión a Firestore</p>
-                    </TooltipContent>
-                </Tooltip>
                 <div className="flex items-center gap-3 rounded-none bg-secondary px-4 py-2 border">
                     <Wallet className="h-6 w-6 text-primary"/>
                     <span className="text-xl font-bold text-foreground">{formatCurrency(balance)}</span>
@@ -296,5 +268,3 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
-
-    
