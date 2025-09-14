@@ -21,6 +21,9 @@ const users = new Map<string, User>([
       id: "admin",
       password: "password",
       name: "Admin User",
+      birthDate: "1990-01-01",
+      nationality: "Colombia",
+      documentNumber: "123456789",
       role: "admin",
       balance: 10000
     }
@@ -31,6 +34,9 @@ const users = new Map<string, User>([
       id: "pascual",
       password: "password123",
       name: "Pascual Bet",
+      birthDate: "1985-05-15",
+      nationality: "Mexico",
+      documentNumber: "987654321",
       role: "user",
       balance: 500
     }
@@ -41,6 +47,9 @@ const users = new Map<string, User>([
       id: "usuario",
       password: "password",
       name: "Usuario de Prueba",
+      birthDate: "2000-10-20",
+      nationality: "Argentina",
+      documentNumber: "1122334455",
       role: "user",
       balance: 1000
     }
@@ -50,6 +59,10 @@ const users = new Map<string, User>([
 
 export async function findUserById(id: string): Promise<User | undefined> {
   return users.get(id);
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  return Array.from(users.values());
 }
 
 export async function addUser(user: User): Promise<void> {

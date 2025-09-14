@@ -1,15 +1,14 @@
+
 'use client';
 import { handleLogout } from '@/actions/auth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -21,9 +20,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle } from 'lucide-react';
+import { LogOut, User as UserIcon, Wallet, Coins, HelpCircle, ShieldCheck } from 'lucide-react';
 import type { User } from '@/lib/users';
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, Suspense } from 'react';
 import { PascualBetIcon } from '@/components/pascualbet-icon';
 import Link from 'next/link';
 import { updateBalance } from '@/actions/user';
@@ -34,6 +33,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
 import { WalletDialog } from './wallet-dialog';
+import { Dialog } from '@radix-ui/react-dialog';
 
 
 const LoadingComponent = () => (
@@ -47,6 +47,7 @@ const BlackjackGame = dynamic(() => import('@/components/games/blackjack'), { lo
 const RouletteGame = dynamic(() => import('@/components/games/roulette'), { loading: () => <LoadingComponent /> });
 const PokerGame = dynamic(() => import('@/components/games/poker'), { loading: () => <LoadingComponent /> });
 const PlinkoGame = dynamic(() => import('@/components/games/plinko'), { loading: () => <LoadingComponent /> });
+const AdminTab = dynamic(() => import('@/components/dashboard/admin/admin-tab'), { loading: () => <LoadingComponent /> });
 
 
 export default function Dashboard({ user }: { user: User }) {
@@ -119,10 +120,12 @@ export default function Dashboard({ user }: { user: User }) {
         return <PokerGame {...gameProps} />;
       case 'plinko':
         return <PlinkoGame {...gameProps} />;
+      case 'admin':
+        return sessionUser.role === 'admin' ? <AdminTab /> : null;
       default:
         return null;
     }
-  }, [activeTab, balance]);
+  }, [activeTab, balance, sessionUser.role]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -237,13 +240,18 @@ export default function Dashboard({ user }: { user: User }) {
         </header>
         </TooltipProvider>
         <main className="flex-1 p-4 sm:px-6 flex flex-col items-center justify-start">
-            <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
-                <TabsList className="grid w-full grid-cols-5">
+             <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full max-w-7xl mt-6">
+                <TabsList className={`grid w-full ${sessionUser.role === 'admin' ? 'grid-cols-6' : 'grid-cols-5'}`}>
                     <TabsTrigger value="slots">Tragamonedas</TabsTrigger>
                     <TabsTrigger value="blackjack">Blackjack</TabsTrigger>
                     <TabsTrigger value="roulette">Ruleta</TabsTrigger>
                     <TabsTrigger value="poker">Póker</TabsTrigger>
                     <TabsTrigger value="plinko">Plinko</TabsTrigger>
+                    {sessionUser.role === 'admin' && (
+                        <TabsTrigger value="admin" className="flex items-center gap-2">
+                           <ShieldCheck className="h-4 w-4" /> Admin
+                        </TabsTrigger>
+                    )}
                 </TabsList>
                 <TabsContent value={activeTab} forceMount>
                    <div className="min-h-[600px]">{ActiveGame}</div>
