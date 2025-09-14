@@ -211,8 +211,8 @@ export default function Dashboard({ user }: { user: User }) {
                     </DialogContent>
                   </Dialog>
                   <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
+                    <AlertDialogHeader className="text-center">
+                      <AlertDialogTitle>¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
                       <AlertDialogDescription>
                          ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
@@ -227,7 +227,7 @@ export default function Dashboard({ user }: { user: User }) {
                             className="rounded-md w-full object-contain"
                         />
                     </div>
-                    <AlertDialogFooter>
+                    <AlertDialogFooter className="sm:justify-center">
                       <AlertDialogCancel>No, seguiré jugando</AlertDialogCancel>
                       <form action={handleLogout} className="w-full sm:w-auto">
                         <AlertDialogAction type="submit" className="w-full">
