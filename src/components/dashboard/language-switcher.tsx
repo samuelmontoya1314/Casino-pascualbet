@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
 import Image from 'next/image';
+import { locales } from '@/lib/i18n';
 
 export function LanguageSwitcher() {
   const router = useRouter();
@@ -18,9 +18,25 @@ export function LanguageSwitcher() {
   
   const currentLocale = pathname.split('/')[1];
 
-  const changeLocale = (locale: string) => {
-    const newPath = pathname.replace(`/${currentLocale}`, `/${locale}`);
-    router.push(locale === 'es' ? pathname.replace('/en', '') : `/en${pathname}`);
+  const changeLocale = (newLocale: string) => {
+    const segments = pathname.split('/');
+    const hasLocale = locales.includes(segments[1] as any);
+
+    let newPath;
+    if (hasLocale) {
+      segments[1] = newLocale;
+      newPath = segments.join('/');
+    } else {
+      newPath = `/${newLocale}${pathname}`;
+    }
+    
+    // Ensure we don't end up with double slashes or incorrect root paths
+    newPath = newPath.replace('//', '/');
+    if (newPath.startsWith(`/${newLocale}/${newLocale}`)) {
+       newPath = newPath.replace(`/${newLocale}`, '');
+    }
+
+    router.push(newPath);
     router.refresh();
   };
 

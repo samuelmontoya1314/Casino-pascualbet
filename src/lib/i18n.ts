@@ -5,6 +5,8 @@ export const dictionaries = {
 };
 
 export type Locale = keyof typeof dictionaries;
+export const locales = Object.keys(dictionaries) as Locale[];
+
 
 export const getTranslator = async (locale: Locale = 'es') => {
   const dictionaryLoader = dictionaries[locale] || dictionaries.es;
