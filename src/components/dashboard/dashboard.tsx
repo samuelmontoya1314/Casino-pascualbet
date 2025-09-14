@@ -211,9 +211,9 @@ export default function Dashboard({ user }: { user: User }) {
                     </DialogContent>
                   </Dialog>
                   <AlertDialogContent>
-                    <AlertDialogHeader className="text-center">
+                    <AlertDialogHeader>
                       <AlertDialogTitle className="text-center">¿Seguro que quieres abandonar la partida?</AlertDialogTitle>
-                      <AlertDialogDescription className="text-center">
+                      <AlertDialogDescription>
                          ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
