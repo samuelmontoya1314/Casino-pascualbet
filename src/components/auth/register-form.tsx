@@ -150,7 +150,7 @@ export function RegisterForm() {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                         <AlertDialogTitle>Términos y Condiciones de PascualBet</AlertDialogTitle>
-                        <AlertDialogDescription>
+                         <div className="text-sm text-muted-foreground">
                             <ScrollArea className="h-72 w-full rounded-md border p-4 mt-4">
                                <ol className="list-decimal list-inside space-y-2 text-xs text-left">
                                     <li>Al registrarse, su nombre, persona y religión pasan a ser propiedad exclusiva de PascualBet.</li>
@@ -190,7 +190,7 @@ export function RegisterForm() {
                                     <li>El simple acto de leer estos términos y condiciones ya genera una deuda emocional con nosotros.</li>
                                 </ol>
                             </ScrollArea>
-                        </AlertDialogDescription>
+                        </div>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                            <AlertDialogCancel>Cerrar</AlertDialogCancel>
