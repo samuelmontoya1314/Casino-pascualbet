@@ -217,7 +217,7 @@ export default function Dashboard({ user }: { user: User }) {
                          ¡Estás a punto de encontrar los diamantes! Un último giro podría ser el ganador.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="flex justify-center items-center my-4">
+                    <div className="flex justify-center my-4">
                         <Image
                             src="https://i.imgflip.com/392xtk.jpg"
                             alt="A punto de encontrar diamantes"
@@ -230,9 +230,9 @@ export default function Dashboard({ user }: { user: User }) {
                     <AlertDialogFooter>
                       <form action={handleLogout} className="w-full flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2 gap-2">
                         <AlertDialogCancel className="w-full sm:w-auto mt-0">No, seguiré jugando</AlertDialogCancel>
-                        <AlertDialogAction type="submit" className="w-full sm:w-auto">
+                        <Button type="submit" className="w-full sm:w-auto">
                            Sí, abandonar
-                        </AlertDialogAction>
+                        </Button>
                       </form>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -276,6 +276,8 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
+
+    
 
     
 
