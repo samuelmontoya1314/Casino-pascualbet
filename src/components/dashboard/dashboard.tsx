@@ -34,6 +34,7 @@ import Image from 'next/image';
 import { EditProfileForm } from './edit-profile-form';
 import { WalletDialog } from './wallet-dialog';
 import { Dialog } from '@radix-ui/react-dialog';
+import { useRouter } from 'next/navigation';
 
 
 const LoadingComponent = () => (
@@ -51,6 +52,7 @@ const AdminTab = dynamic(() => import('@/components/dashboard/admin/admin-tab'),
 
 
 export default function Dashboard({ user }: { user: User }) {
+  const router = useRouter();
   const [sessionUser, setSessionUser] = useState(user);
   const [balance, setBalance] = useState(user.balance);
   const [isPending, startTransition] = useTransition();
@@ -127,6 +129,13 @@ export default function Dashboard({ user }: { user: User }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, sessionUser.role]);
+
+  const onLogout = () => {
+    startTransition(async () => {
+        await handleLogout();
+        router.refresh();
+    });
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -229,9 +238,9 @@ export default function Dashboard({ user }: { user: User }) {
                     </div>
                     <AlertDialogFooter className="sm:justify-center">
                         <AlertDialogCancel className="w-full sm:w-auto mt-0">No, seguiré jugando</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleLogout()} className="w-full sm:w-auto">
-                           Sí, abandonar
-                        </AlertDialogAction>
+                        <Button onClick={onLogout} className="w-full sm:w-auto" disabled={isPending}>
+                           {isPending ? 'Cerrando sesión...' : 'Sí, abandonar'}
+                        </Button>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -274,13 +283,3 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
-
-    

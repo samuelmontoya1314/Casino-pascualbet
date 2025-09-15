@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
 import { findUserById, addUser } from '@/lib/users';
 import { differenceInYears } from 'date-fns';
+import { revalidatePath } from 'next/cache';
 
 const loginSchema = z.object({
   userId: z.string().min(1, 'El ID de usuario es requerido').max(24, 'El ID de usuario no puede tener más de 24 caracteres').regex(/^[a-zA-Z0-9]+$/, 'Solo se permiten letras y números.'),
@@ -93,5 +94,5 @@ export async function handleRegister(prevState: any, formData: FormData) {
 
 export async function handleLogout() {
   await deleteSession();
-  redirect('/login');
+  revalidatePath('/', 'layout');
 }
