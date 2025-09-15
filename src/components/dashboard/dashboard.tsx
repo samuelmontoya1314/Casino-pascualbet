@@ -227,13 +227,11 @@ export default function Dashboard({ user }: { user: User }) {
                             className="rounded-md w-full object-contain"
                         />
                     </div>
-                    <AlertDialogFooter>
-                      <form action={handleLogout} className="w-full flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2 gap-2">
+                    <AlertDialogFooter className="sm:justify-center">
                         <AlertDialogCancel className="w-full sm:w-auto mt-0">No, seguiré jugando</AlertDialogCancel>
-                        <Button type="submit" className="w-full sm:w-auto">
+                        <AlertDialogAction onClick={() => handleLogout()} className="w-full sm:w-auto">
                            Sí, abandonar
-                        </Button>
-                      </form>
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -276,6 +274,8 @@ export default function Dashboard({ user }: { user: User }) {
     </div>
   );
 }
+
+    
 
     
 
