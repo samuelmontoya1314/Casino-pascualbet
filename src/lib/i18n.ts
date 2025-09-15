@@ -4,6 +4,8 @@ export const i18n = {
   locales: ['en', 'es'],
 } as const;
 
+export const locales = i18n.locales;
+
 export type Locale = (typeof i18n)['locales'][number];
 
 export const dictionaries = {

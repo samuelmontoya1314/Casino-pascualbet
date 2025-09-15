@@ -10,20 +10,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Image from 'next/image';
-import { locales } from '@/lib/i18n';
+import { i18n } from '@/lib/i18n';
 
 export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   
-  const currentLocale = locales.find(loc => pathname.startsWith(`/${loc}`)) || 'es';
+  const currentLocale = i18n.locales.find(loc => pathname.startsWith(`/${loc}`)) || i18n.defaultLocale;
 
   const changeLocale = (newLocale: string) => {
     // A more robust way to handle path replacement
     const segments = pathname.split('/');
     
     // Check if the first segment is a locale
-    if (locales.includes(segments[1] as any)) {
+    if (i18n.locales.includes(segments[1] as any)) {
         segments[1] = newLocale; // replace it
     } else {
         segments.splice(1, 0, newLocale); // insert it
