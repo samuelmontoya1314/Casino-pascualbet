@@ -266,20 +266,6 @@ export default function Dashboard({ user }: { user: User }) {
                 </TabsContent>
             </Tabs>
         </main>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href="/manual">
-                <Button size="icon" variant="outline" className="fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full shadow-lg bg-primary/20 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground animate-pulse">
-                    <HelpCircle className="h-6 w-6" />
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-                <p>Manual de Usuario</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
     </div>
   );
 }
